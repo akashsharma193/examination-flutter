@@ -32,7 +32,10 @@ class _ExamScreenState extends State<ExamScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Test Completed"),
-          content: Text("Your answers have been recorded."),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: questionList.map((e) => Text(e['userAnswer'])).toList(),
+          ),
           actions: [
             TextButton(
               onPressed: () {
