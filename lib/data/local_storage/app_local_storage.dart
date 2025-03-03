@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:offline_test_app/app_models/app_user_model.dart';
 import 'package:path_provider/path_provider.dart';
@@ -13,6 +14,7 @@ class AppLocalStorage {
     final appDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDirectory.path);
     openBox();
+    await Future.delayed(Durations.medium4);
   }
 
   void openBox() async {
@@ -20,7 +22,8 @@ class AppLocalStorage {
   }
 
   UserModel get user {
-    return UserModel.fromJson(box.get('user-data') ?? {});
+    return UserModel.fromJson(
+        Map<String, dynamic>.from(box.get('user-data') ?? {}));
   }
 
   void setUserData(UserModel user) {
@@ -33,5 +36,9 @@ class AppLocalStorage {
 
   void setIsUserLoggedIn(bool value) {
     box.put('is-user-logged-in', value);
+  }
+
+  void clearStorage() {
+    box.clear();
   }
 }

@@ -5,9 +5,11 @@ import 'package:offline_test_app/controllers/auth_controller.dart';
 import 'package:offline_test_app/core/routes/app_route.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
+import 'package:offline_test_app/home.dart';
 
-void main() {
-  AppLocalStorage.instance.initAppLocalStorage();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppLocalStorage.instance.initAppLocalStorage();
   AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
   runApp(MyApp());
@@ -37,7 +39,9 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
       if (authController.isUserAuthenticated.value) {
-        Get.to(() => HomePage());
+        Future.delayed(Durations.medium3, () {
+          Get.offAllNamed('/home');
+        });
       }
       return Scaffold(
         body: Padding(
@@ -80,28 +84,5 @@ class LoginPage extends StatelessWidget {
         ),
       );
     });
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Home')),
-      body: Center(
-          child: Column(
-        children: [
-          Text('List of Exams will be here'),
-          SizedBox(
-            height: 50,
-          ),
-          Text('Hello ${AppLocalStorage.instance.user.name}')
-        ],
-      )),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.notifications),
-      ),
-    );
   }
 }

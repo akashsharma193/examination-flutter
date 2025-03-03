@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
@@ -22,11 +24,15 @@ class AppAuthController extends GetxController {
     try {
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
-
+      debugPrint("repsonse of login in authController : ${response}");
       switch (response) {
         case AppSuccess():
+          if (response.value.isEmpty()) {
+            return;
+          }
           isUserAuthenticated.value = true;
           localStorage.setIsUserLoggedIn(true);
+          log(response.value.toString());
           localStorage.setUserData(response.value);
           break;
         case AppFailure():

@@ -5,17 +5,32 @@ sealed class AppResult<T> {
   factory AppResult.success(T s) => AppSuccess(s);
   factory AppResult.failure(AppFailure f) =>
       AppFailure(errorMessage: f.errorMessage, code: f.code);
+
+  @override
+  String toString() {
+    return switch (this) {
+      AppSuccess<T> s => 'AppResult.success(${s.value})',
+      AppFailure f =>
+        'AppResult.failure(error: ${f.errorMessage}, code: ${f.code})',
+    };
+  }
 }
 
 class AppSuccess<T> extends AppResult<T> {
   T value;
   AppSuccess(this.value);
+
+  @override
+  String toString() => 'AppSuccess($value)';
 }
 
 class AppFailure<T> extends AppResult<T> {
   String? code;
   String errorMessage;
   AppFailure({required this.errorMessage, this.code});
+
+  @override
+  String toString() => 'AppFailure(error: $errorMessage, code: $code)';
 }
 
 class AppNoInternetFailure extends AppFailure {

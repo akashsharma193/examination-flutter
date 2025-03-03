@@ -14,10 +14,11 @@ class AuthRepo {
     try {
       final response = await dioService.postDio(
           endpoint: 'user/login', body: {'email': user, 'password': pass});
-
+      debugPrint("response of login  : ${response.runtimeType}");
       switch (response) {
         case AppSuccess():
-          return AppResult.success(UserModel.fromJson(response.value));
+          debugPrint("case Success-----");
+          return AppSuccess(UserModel.fromJson(response.value['data']));
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
@@ -26,7 +27,30 @@ class AuthRepo {
               errorMessage: 'Failed to login in Auth Repo default case');
       }
     } catch (e) {
-      log("erro caught in auth repo login func : $e");
+      log("error caught in auth repo login func : $e");
+      return AppResult.failure(AppSomethingWentWrong());
+    }
+  }
+
+  /// call  login api
+  Future<AppResult<dynamic>> logOut({required String userId}) async {
+    try {
+      final response = await dioService
+          .postDio(endpoint: 'user/logOut', body: {"userId": userId});
+      debugPrint("response of logout  : ${response.runtimeType}");
+      switch (response) {
+        case AppSuccess():
+          debugPrint("case Success-----");
+          return AppSuccess(null);
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+        default:
+          return AppFailure(
+              errorMessage: 'Failed to logout in Auth Repo default case');
+      }
+    } catch (e) {
+      log("error caught in auth repo Logout func : $e");
       return AppResult.failure(AppSomethingWentWrong());
     }
   }

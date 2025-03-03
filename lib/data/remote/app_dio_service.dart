@@ -17,18 +17,13 @@ class AppDioService {
   void initDioService(
       {required String baseUrl, List<Interceptor>? interceptors}) {
     _serviceDio.options = BaseOptions(
-
         baseUrl: baseUrl,
-        headers: {
-          'deviceId':'1234'
-        },
-        connectTimeout: const Duration(seconds: 5),
-        sendTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
+        headers: {'deviceId': '1234'},
+        connectTimeout: const Duration(minutes: 5),
+        sendTimeout: const Duration(minutes: 5),
+        receiveTimeout: const Duration(minutes: 5),
         contentType: 'application/json');
     _serviceDio.interceptors.addAll(interceptors ?? []);
-
-    
   }
 
   /// Get Request DIO
@@ -110,6 +105,7 @@ class AppDioService {
 _handleCaughtError(Object e, StackTrace s) {
   log('\n<---------------- \n Error Caught in Dio Service File \n',
       name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
+
   return AppSomethingWentWrong();
 }
 
