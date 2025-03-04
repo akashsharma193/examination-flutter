@@ -38,7 +38,8 @@ class AppNoInternetFailure extends AppFailure {
 }
 
 class AppSomethingWentWrong extends AppFailure {
-  AppSomethingWentWrong({super.errorMessage = AppStringConstants.unAuthrized});
+  AppSomethingWentWrong(
+      {super.errorMessage = AppStringConstants.somethingWentWrong});
 }
 
 class AppBadRequestFailure extends AppFailure {

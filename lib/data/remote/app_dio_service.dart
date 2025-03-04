@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
+import 'package:offline_test_app/services/device_service.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -14,16 +16,34 @@ class AppDioService {
 
   final Dio _serviceDio = dio;
 
-  void initDioService(
-      {required String baseUrl, List<Interceptor>? interceptors}) {
+  Future<void> initDioService(
+      {required String baseUrl, List<Interceptor>? interceptors}) async{
     _serviceDio.options = BaseOptions(
         baseUrl: baseUrl,
-        headers: {'deviceId': '1234'},
+        headers: {'deviceId':await DeviceService.instance.uniqueDeviceId},
         connectTimeout: const Duration(minutes: 5),
         sendTimeout: const Duration(minutes: 5),
         receiveTimeout: const Duration(minutes: 5),
         contentType: 'application/json');
     _serviceDio.interceptors.addAll(interceptors ?? []);
+
+    _serviceDio.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90,
+        enabled: true,
+        filter: (options, args) {
+          // don't print requests with uris containing '/posts'
+          if (options.path.contains('/posts')) {
+            return false;
+          }
+          // don't print responses with unit8 list data
+          return !args.isResponse || !args.hasUint8ListData;
+        }));
   }
 
   /// Get Request DIO

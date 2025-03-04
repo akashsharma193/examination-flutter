@@ -9,7 +9,7 @@ import 'package:offline_test_app/data/remote/app_dio_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLocalStorage.instance.initAppLocalStorage();
-  AppDioService.instance
+  await AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
   runApp(MyApp());
 }
