@@ -27,15 +27,15 @@ class AppAuthController extends GetxController {
       debugPrint("repsonse of login in authController : ${response}");
       switch (response) {
         case AppSuccess():
-          if (response.value.isEmpty()) {
-            return;
-          }
           isUserAuthenticated.value = true;
           localStorage.setIsUserLoggedIn(true);
           log(response.value.toString());
           localStorage.setUserData(response.value);
           break;
         case AppFailure():
+          Get.showSnackbar(GetSnackBar(
+            title: response.errorMessage,
+          ));
           isUserAuthenticated.value = false;
           localStorage.setIsUserLoggedIn(false);
         default:

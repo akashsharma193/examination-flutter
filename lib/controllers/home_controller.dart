@@ -10,8 +10,12 @@ import 'package:offline_test_app/repositories/exam_repo.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
+  RxBool isCompliencesLoading = false.obs;
   RxBool isChecked = false.obs;
+
   RxList<GetExamModel> allExams = <GetExamModel>[].obs;
+  RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
+
   final ExamRepo examRepo = ExamRepo();
 
   @override
@@ -74,22 +78,43 @@ class HomeController extends GetxController {
     );
   }
 
-  void showDialogPopUp() {
+  getCompliances() async {
+    try {
+      isCompliencesLoading.value = true;
+      update();
+      final resp = await examRepo.getCompliance();
+
+      switch (resp) {
+        case AppSuccess():
+          compliences.value =
+              resp.value.map((e) => e as Map<String, dynamic>).toList();
+          break;
+        case AppFailure():
+          compliences.value = [];
+        default:
+      }
+    } catch (e) {
+      debugPrint("error caught in home controller in getCompliances func : $e");
+    } finally {
+      isCompliencesLoading.value = false;
+      update();
+    }
+  }
+
+  void showDialogPopUp() async {
+    await getCompliances();
     Get.defaultDialog(
       title: "Test Acknowledgement",
       content: StatefulBuilder(builder: (context, setState) {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Column(
-              children: [
-                _buildReminder("📜 Read the instructions carefully."),
-                _buildReminder("🌐 Ensure No internet connection Available."),
-                _buildReminder("🚫 Do not switch apps or tabs."),
-                _buildReminder("🖊️ Keep necessary materials ready."),
-                _buildReminder("⏳ Manage your time wisely."),
-              ],
+              children: List.generate(compliences.length, (index) {
+                return _buildReminder(
+                    compliences[index]['compliance'] as String? ?? '');
+              }).toList(),
             ),
             CheckboxListTile(
               title: Text("I acknowledge the instructions."),

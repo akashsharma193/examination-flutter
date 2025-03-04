@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:offline_test_app/controllers/home_controller.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/drawer_widget.dart';
 
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Scaffold(
+        drawer: AppDrawer(),
         appBar: AppBar(
           title: Text('Home'),
           actions: [
@@ -37,7 +39,8 @@ class HomePage extends StatelessWidget {
               Expanded(
                 child: controller.allExams.isEmpty
                     ? Center(
-                        child: Text('No Exams Scheduled for you as of now..'),
+                        child: const Text(
+                            'No Exams Scheduled for you as of now..'),
                       )
                     : ListView.builder(
                         shrinkWrap: true,

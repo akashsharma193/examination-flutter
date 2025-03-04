@@ -34,4 +34,48 @@ class ExamRepo {
       return AppResult.failure(AppSomethingWentWrong());
     }
   }
+
+  Future<AppResult<List>> getCompliance() async {
+    try {
+      final response = await dioService.getDio(
+        endpoint: 'compliance/getCompliance',
+      );
+      switch (response) {
+        case AppSuccess():
+          return AppSuccess((response.value['data'] as List<dynamic>).toList());
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+        default:
+          return AppFailure(
+              errorMessage:
+                  'Failed to fetch  getCompliance in Exam Repo default case');
+      }
+    } catch (e) {
+      log("error caught in Exam repo getCompliance func : $e");
+      return AppResult.failure(AppSomethingWentWrong());
+    }
+  }
+
+  Future<AppResult<bool>> submitExam(List<QuestionModel> paper) async {
+    try {
+      final response = await dioService.postDio(
+          endpoint: 'answerPaper/saveAnswePaper',
+          body: {"answerPaper": paper.map((e) => e.toJson()).toList()});
+      switch (response) {
+        case AppSuccess():
+          return AppSuccess(true);
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+        default:
+          return AppFailure(
+              errorMessage:
+                  'Failed to fetch  getCompliance in Exam Repo default case');
+      }
+    } catch (e) {
+      log("error caught in Exam repo getCompliance func : $e");
+      return AppResult.failure(AppSomethingWentWrong());
+    }
+  }
 }
