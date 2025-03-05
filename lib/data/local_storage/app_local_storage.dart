@@ -38,6 +38,22 @@ class AppLocalStorage {
     box.put('is-user-logged-in', value);
   }
 
+  List<Map<String, dynamic>> getOfflineUnSubmittedExams() {
+    List examList =
+        (AppLocalStorage.instance.box.get('pending_exams') as List<dynamic>?) ??
+            <Map<String, dynamic>>[];
+    final list = examList.map((e) => Map<String, dynamic>.from(e)).toList();
+    return list;
+  }
+
+  void removeSingleExamFromStorage(Map<String, dynamic> data) {
+    final items = List<Map<String, dynamic>>.from(
+        AppLocalStorage.instance.box.get('pending_exams') ?? []);
+
+    items.removeWhere((e) => e['questionId'] == data['questionId']);
+    instance.box.put('pending_exams', items);
+  }
+
   void clearStorage() {
     box.clear();
   }

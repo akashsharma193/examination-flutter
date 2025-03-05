@@ -11,10 +11,12 @@ void main() async {
   await AppLocalStorage.instance.initAppLocalStorage();
   await AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
@@ -22,7 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         primaryColor: Colors.blue,
-        inputDecorationTheme: InputDecorationTheme(
+        inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
         ),
       ),
@@ -34,6 +36,8 @@ class MyApp extends StatelessWidget {
 }
 
 class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
@@ -48,35 +52,35 @@ class LoginPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Login',
+              const Text('Login',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                   controller: authController.emailController,
-                  decoration: InputDecoration(labelText: 'Email')),
-              SizedBox(height: 10),
+                  decoration: const InputDecoration(labelText: 'Email')),
+              const SizedBox(height: 10),
               TextField(
                   controller: authController.passController,
-                  decoration: InputDecoration(labelText: 'Password'),
+                  decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: authController.isLoading.value
                     ? () {}
                     : () {
                         authController.login();
                       },
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 50)),
                 child: authController.isLoading.value
-                    ? Center(
+                    ? const Center(
                         child: CircularProgressIndicator.adaptive(),
                       )
-                    : Text('Login'),
-                style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50)),
+                    : const Text('Login'),
               ),
               TextButton(
                 onPressed: () {},
-                child: Text("Don't have an account? Register"),
+                child: const Text("Don't have an account? Register"),
               ),
             ],
           ),

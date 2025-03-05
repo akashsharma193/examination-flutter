@@ -17,10 +17,10 @@ class AppDioService {
   final Dio _serviceDio = dio;
 
   Future<void> initDioService(
-      {required String baseUrl, List<Interceptor>? interceptors}) async{
+      {required String baseUrl, List<Interceptor>? interceptors}) async {
     _serviceDio.options = BaseOptions(
         baseUrl: baseUrl,
-        headers: {'deviceId':await DeviceService.instance.uniqueDeviceId},
+        headers: {'deviceId': await DeviceService.instance.uniqueDeviceId},
         connectTimeout: const Duration(minutes: 5),
         sendTimeout: const Duration(minutes: 5),
         receiveTimeout: const Duration(minutes: 5),
@@ -139,9 +139,9 @@ _handleDioExceptionError(DioException e) {
     return AppRequestTimeOutFailure();
   } else if (e.response?.statusCode != null) {
     if ((e.response?.statusCode ?? 0) >= 400) {
-      _handleClientSideError(e.response);
+      return _handleClientSideError(e.response);
     } else {
-      _handleServerSideError(e.response);
+      return _handleServerSideError(e.response);
     }
   } else {
     return AppSomethingWentWrong();
@@ -167,7 +167,7 @@ AppResult _handleOtherStatusCodeResponse(Response r) {
   }
 }
 
-_handleClientSideError(Response? r) {
+AppFailure _handleClientSideError(Response? r) {
   if (r == null) {
     return AppClientSideStautsError();
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
@@ -8,8 +9,8 @@ class AppDrawer extends StatelessWidget {
     super.key,
   });
   final Map<String, Widget> drawerItems = {
-    'Exam History': Icon(Icons.history_toggle_off_rounded),
-    'Log Out': Icon(Icons.logout_outlined),
+    'Exam History': const Icon(Icons.history_toggle_off_rounded),
+    'Log Out': const Icon(Icons.logout_outlined),
   };
 
   @override
@@ -27,40 +28,47 @@ class AppDrawer extends StatelessWidget {
               backgroundColor: Colors.blueGrey[200],
               child: Text(AppLocalStorage.instance.user.name.getInitials),
             ),
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Batch : ' + AppLocalStorage.instance.user.batch),
-                SizedBox(
+                Text('Batch : ${AppLocalStorage.instance.user.batch}'),
+                const SizedBox(
                   width: 20,
                 ),
-                Text('Org Code : ' + AppLocalStorage.instance.user.orgCode),
+                Text('Org Code : ${AppLocalStorage.instance.user.orgCode}'),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
-            Divider(),
-            SizedBox(
+            const Divider(),
+            const SizedBox(
               height: 20,
             ),
             ...drawerItems.entries.map((e) => Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [Text(e.key), e.value],
-                      ),
-                      const Divider()
-                    ],
+                  child: InkWell(
+                    onTap: () {
+                      if (e.key == 'Exam History') {
+                        Get.toNamed('/exam-history');
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [Text(e.key), e.value],
+                        ),
+                        const Divider()
+                      ],
+                    ),
                   ),
                 )),
-            Spacer(),
-            Divider(),
+            const Spacer(),
+            const Divider(),
             FutureBuilder(
                 future: AppPackageService.instance.initialize(),
                 builder: (context, snapshot) {
@@ -74,7 +82,7 @@ class AppDrawer extends StatelessWidget {
                     ],
                   );
                 }),
-            SizedBox(
+            const SizedBox(
               height: 50,
             ),
           ],

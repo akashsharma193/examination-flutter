@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
@@ -15,13 +14,37 @@ class HomeController extends GetxController {
 
   RxList<GetExamModel> allExams = <GetExamModel>[].obs;
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
-
+  GetExamModel selectedExam = GetExamModel.toEmpty();
   final ExamRepo examRepo = ExamRepo();
 
   @override
   void onInit() {
     super.onInit();
-    getExams();
+    refreshPage();
+  }
+
+  void refreshPage() {
+    getAndSubmitOfflinePendingExams();
+    isLoading(false);
+    isCompliencesLoading(false);
+    isChecked(false);
+    allExams.clear();
+    compliences.clear();
+    Future.delayed(Durations.medium3, getExams);
+    update();
+  }
+
+  getAndSubmitOfflinePendingExams() {
+    final unSubmitedExams =
+        AppLocalStorage.instance.getOfflineUnSubmittedExams();
+
+    for (Map<String, dynamic> item in unSubmitedExams) {
+      examRepo.submitExam(
+          List<QuestionModel>.from(item['answerPaper']
+              .map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
+              .toList()),
+          item['questionId']);
+    }
   }
 
   void getExams() async {
@@ -117,23 +140,24 @@ class HomeController extends GetxController {
               }).toList(),
             ),
             CheckboxListTile(
-              title: Text("I acknowledge the instructions."),
+              title: const Text("I acknowledge the instructions."),
               value: isChecked.value,
               onChanged: (value) {
                 isChecked.value = value!;
                 setState(() {});
               },
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: isChecked.value
                   ? () {
                       Get.to(() => ExamScreen(
-                            questions: allExams.firstOrNull?.questionList ?? [],
+                            questions: selectedExam.questionList ?? [],
+                            testId: selectedExam.questionId ?? '',
                           ));
                     }
                   : null, // Disabled if checkbox is unchecked
-              child: Text("Continue"),
+              child: const Text("Continue"),
             )
           ],
         );

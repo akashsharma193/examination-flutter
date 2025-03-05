@@ -5,19 +5,26 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/drawer_widget.dart';
 
 class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Scaffold(
         drawer: AppDrawer(),
+        floatingActionButton: FloatingActionButton.small(
+            child: const Icon(Icons.refresh),
+            onPressed: () {
+              controller.refreshPage();
+            }),
         appBar: AppBar(
-          title: Text('Home'),
+          title: const Text('Home'),
           actions: [
             IconButton(
                 onPressed: () {
                   controller.initialized ? controller.logOut() : null;
                 },
-                icon: Icon(Icons.logout_outlined))
+                icon: const Icon(Icons.logout_outlined))
           ],
         ),
         body: Padding(
@@ -25,22 +32,22 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
               Text(
                 'Hello, ${AppLocalStorage.instance.user.name}',
-                style: TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 24),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 20,
               ),
-              if (controller.isLoading.value) Text('Fetching exam details...'),
+              if (controller.isLoading.value)
+                const Text('Fetching exam details...'),
               Expanded(
                 child: controller.allExams.isEmpty
-                    ? Center(
-                        child: const Text(
-                            'No Exams Scheduled for you as of now..'),
+                    ? const Center(
+                        child: Text('No Exams Scheduled for you as of now..'),
                       )
                     : ListView.builder(
                         shrinkWrap: true,
@@ -51,6 +58,8 @@ class HomePage extends StatelessWidget {
                             padding: const EdgeInsets.all(8.0),
                             child: InkWell(
                               onTap: () {
+                                controller.selectedExam =
+                                    controller.allExams[index];
                                 controller.showDialogPopUp();
                               },
                               child: ListTile(

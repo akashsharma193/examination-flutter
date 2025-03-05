@@ -4,13 +4,15 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
+import 'package:offline_test_app/repositories/exam_repo.dart';
 
 class ExamScreen extends StatefulWidget {
   final List<QuestionModel> questions;
   final int examDurationMinutes; // Set exam duration in minutes
-
+  final String testId;
   const ExamScreen({
     super.key,
+    required this.testId,
     required this.questions,
     this.examDurationMinutes = 30, // Default: 30 minutes
   });
@@ -105,6 +107,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
   void dispose() {
     _timer.cancel();
     WidgetsBinding.instance.removeObserver(this);
+    _connectivityStream.drain();
     super.dispose();
   }
 
@@ -188,13 +191,19 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         currentQuestionIndex++;
       });
     } else {
+      ExamRepo repo = ExamRepo();
+      repo.submitExam(
+          questionList.map((e) => QuestionModel.fromJson(e)).toList(),
+          widget.testId);
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Test Completed"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: questionList.map((e) => Text(e['userAnswer'])).toList(),
+            children: questionList
+                .map((e) => Text(e['userAnswer'] ?? 'N/A'))
+                .toList(),
           ),
           actions: [
             TextButton(

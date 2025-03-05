@@ -24,7 +24,7 @@ class AppAuthController extends GetxController {
     try {
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
-      debugPrint("repsonse of login in authController : ${response}");
+      debugPrint("repsonse of login in authController : $response");
       switch (response) {
         case AppSuccess():
           isUserAuthenticated.value = true;
