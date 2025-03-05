@@ -151,10 +151,10 @@ class HomeController extends GetxController {
             ElevatedButton(
               onPressed: isChecked.value
                   ? () {
-                      Get.to(() => ExamScreen(
-                            questions: selectedExam.questionList ?? [],
-                            testId: selectedExam.questionId ?? '',
-                          ));
+                      Get.toNamed('/exam-screen', arguments: {
+                        "questions": selectedExam.questionList ?? [],
+                        "testId": selectedExam.questionId ?? '',
+                      });
                     }
                   : null, // Disabled if checkbox is unchecked
               child: const Text("Continue"),

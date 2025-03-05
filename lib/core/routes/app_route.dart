@@ -23,6 +23,15 @@ class AppRoute {
         name: '/exam-history',
         page: () => ExamHistoryScreen(),
         binding: ExamHistoryBinding()),
-    // GetPage(name: '/', page: () => LoginPage(), binding: AppAuthBinding()),
+    GetPage(
+        name: '/exam-screen',
+        page: () {
+          final args = Get.arguments;
+          return ExamScreen(
+            questions: args['questions'],
+            testId: args['testId'],
+          );
+        },
+        binding: AppAuthBinding()),
   ];
 }

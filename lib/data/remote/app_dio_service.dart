@@ -32,7 +32,7 @@ class AppDioService {
         requestBody: true,
         responseBody: true,
         responseHeader: false,
-        error: true,
+        error: false,
         compact: true,
         maxWidth: 90,
         enabled: true,
@@ -60,13 +60,13 @@ class AppDioService {
         }
       });
     } on DioException catch (e) {
-      _handleDioExceptionError(e);
+      return _handleDioExceptionError(e);
     } catch (e, s) {
       debugPrint("error caught in get request in Dio service  :$e");
 
       return _handleCaughtError(e, s);
     }
-    return AppResult.failure(AppSomethingWentWrong());
+    // return AppResult.failure(AppSomethingWentWrong());
   }
 
   /// POST Request DIO
@@ -131,6 +131,11 @@ _handleCaughtError(Object e, StackTrace s) {
 
 _handleDioExceptionError(DioException e) {
   log("Error caught in DioException on api :  ${e.requestOptions.uri}\n,error: ${e.error},message: ${e.message}");
+
+  if (e.type == DioExceptionType.connectionError) {
+    log("no internet available.....");
+    return AppNoInternetFailure();
+  }
   if (e.type == DioExceptionType.connectionTimeout) {
     return AppConnectionTimeOutFailure();
   } else if (e.type == DioExceptionType.sendTimeout) {

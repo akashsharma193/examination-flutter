@@ -25,6 +25,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
   int currentQuestionIndex = 0;
   bool isInternetActive = false;
   late Stream<ConnectivityResult> _connectivityStream;
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   late Timer _timer;
   int remainingSeconds = 0;
@@ -46,13 +47,13 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     _connectivityStream = Connectivity().onConnectivityChanged.map((results) {
       return results.isNotEmpty ? results.first : ConnectivityResult.none;
     });
-    _connectivityStream.listen(_checkConnectivity);
+    _connectivitySubscription = _connectivityStream.listen(_checkConnectivity);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
+        state == AppLifecycleState.detached && warningCount <= 4) {
       // User switched apps or minimized the app
       warningCount++;
 
@@ -70,6 +71,9 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
   }
 
   void _showWarningDialog() {
+    if (Get.isDialogOpen ?? false) {
+      return;
+    }
     Get.dialog(
       AlertDialog(
         title: Text("Warning!"),
@@ -93,7 +97,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         actions: [
           TextButton(
             onPressed: () {
-              Get.until((s) => Get.currentRoute == '/home');
+              Get.offAllNamed('/home');
             },
             child: Text("OK"),
           ),
@@ -108,6 +112,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     _timer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _connectivityStream.drain();
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
@@ -120,8 +125,11 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         });
       } else {
         timer.cancel();
-        Get.until((s) => Get.currentRoute == '/home');
-        // submit(); // Auto-submit when time runs out
+        ExamRepo repo = ExamRepo();
+        repo.submitExam(
+            questionList.map((e) => QuestionModel.fromJson(e)).toList(),
+            widget.testId);
+        Get.offAllNamed('/home');
       }
     });
   }
@@ -131,7 +139,9 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     if (hasInternet) {
       if (!isInternetActive) {
         isInternetActive = true;
-        _showInternetNotAllowedDialog();
+        if (Get.currentRoute == '/exam-screen') {
+          _showInternetNotAllowedDialog();
+        }
       }
     } else {
       isInternetActive = false;
@@ -192,23 +202,20 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
       });
     } else {
       ExamRepo repo = ExamRepo();
-      repo.submitExam(
-          questionList.map((e) => QuestionModel.fromJson(e)).toList(),
-          widget.testId);
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Test Completed"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: questionList
-                .map((e) => Text(e['userAnswer'] ?? 'N/A'))
-                .toList(),
-          ),
+          content: Text(
+              'Do you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
           actions: [
             TextButton(
               onPressed: () {
-                Get.until((s) => Get.currentRoute == '/home');
+                repo.submitExam(
+                    questionList.map((e) => QuestionModel.fromJson(e)).toList(),
+                    widget.testId);
+                Get.offAllNamed('/home');
               },
               child: Text("OK"),
             )
