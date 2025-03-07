@@ -11,6 +11,7 @@ void main() async {
   await AppLocalStorage.instance.initAppLocalStorage();
   await AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
+  // AppLocalStorage.instance.clearStorage();
   runApp(const MyApp());
 }
 

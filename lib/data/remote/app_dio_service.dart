@@ -24,26 +24,19 @@ class AppDioService {
         connectTimeout: const Duration(minutes: 5),
         sendTimeout: const Duration(minutes: 5),
         receiveTimeout: const Duration(minutes: 5),
+        validateStatus: (code){
+          return code!=null && code >=200 && code <=503;
+        },
         contentType: 'application/json');
     _serviceDio.interceptors.addAll(interceptors ?? []);
 
     _serviceDio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: false,
-        compact: true,
-        maxWidth: 90,
-        enabled: true,
-        filter: (options, args) {
-          // don't print requests with uris containing '/posts'
-          if (options.path.contains('/posts')) {
-            return false;
-          }
-          // don't print responses with unit8 list data
-          return !args.isResponse || !args.hasUint8ListData;
-        }));
+      requestHeader: true,
+      requestBody: true,
+      responseBody: true,
+      maxWidth: 90,
+      enabled: true,
+    ));
   }
 
   /// Get Request DIO
@@ -86,13 +79,13 @@ class AppDioService {
         }
       });
     } on DioException catch (e) {
-      _handleDioExceptionError(e);
+      return _handleDioExceptionError(e);
     } catch (e, s) {
       debugPrint("error caught in POST request in Dio service  :$e");
 
       return _handleCaughtError(e, s);
     }
-    return AppResult.failure(AppSomethingWentWrong());
+    // return AppResult.failure(AppSomethingWentWrong());
   }
 
   /// Delete Request DIO
@@ -129,7 +122,7 @@ _handleCaughtError(Object e, StackTrace s) {
   return AppSomethingWentWrong();
 }
 
-_handleDioExceptionError(DioException e) {
+AppResult _handleDioExceptionError(DioException e) {
   log("Error caught in DioException on api :  ${e.requestOptions.uri}\n,error: ${e.error},message: ${e.message}");
 
   if (e.type == DioExceptionType.connectionError) {
@@ -142,7 +135,11 @@ _handleDioExceptionError(DioException e) {
     return AppRequestTimeOutFailure();
   } else if (e.type == DioExceptionType.receiveTimeout) {
     return AppRequestTimeOutFailure();
-  } else if (e.response?.statusCode != null) {
+  }
+  else if (e.type == DioExceptionType.badResponse) {
+    return AppRequestTimeOutFailure();
+  }
+  else if (e.response?.statusCode != null) {
     if ((e.response?.statusCode ?? 0) >= 400) {
       return _handleClientSideError(e.response);
     } else {
@@ -178,15 +175,15 @@ AppFailure _handleClientSideError(Response? r) {
   }
   switch (r.statusCode ?? 0) {
     case 400:
-      return AppBadRequestFailure(errorMessage: r.data['error']);
+      return AppBadRequestFailure(errorMessage: r.data['message']);
     case 401:
-      return ApUnAuthorizedFailure(errorMessage: r.data['error']);
+      return ApUnAuthorizedFailure(errorMessage: r.data['message']);
     case 403:
-      return AppForbidFailuure(errorMessage: r.data['error']);
+      return AppForbidFailuure(errorMessage: r.data['message']);
     case 404:
-      return AppDataNotFoundFailure(errorMessage: r.data['error']);
+      return AppDataNotFoundFailure(errorMessage: r.data['message']);
     default:
-      return AppClientSideStautsError(errorMessage: r.data['error']);
+      return AppClientSideStautsError(errorMessage: r.data['message']);
   }
 }
 
@@ -196,14 +193,14 @@ _handleServerSideError(Response? r) {
   }
   switch (r.statusCode ?? 0) {
     case 500:
-      return AppBadRequestFailure(errorMessage: r.data['error']);
+      return AppBadRequestFailure(errorMessage: r.data['message']);
     case 501:
-      return ApUnAuthorizedFailure(errorMessage: r.data['error']);
+      return ApUnAuthorizedFailure(errorMessage: r.data['message']);
     case 502:
-      return AppForbidFailuure(errorMessage: r.data['error']);
+      return AppForbidFailuure(errorMessage: r.data['message']);
     case 503:
-      return AppDataNotFoundFailure(errorMessage: r.data['error']);
+      return AppDataNotFoundFailure(errorMessage: r.data['message']);
     default:
-      return AppServerSideError(errorMessage: r.data['error']);
+      return AppServerSideError(errorMessage: r.data['message']);
   }
 }

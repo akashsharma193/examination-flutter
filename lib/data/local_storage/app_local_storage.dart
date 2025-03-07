@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:offline_test_app/app_models/app_user_model.dart';
@@ -13,11 +15,11 @@ class AppLocalStorage {
   Future<void> initAppLocalStorage() async {
     final appDirectory = await getApplicationDocumentsDirectory();
     Hive.init(appDirectory.path);
-    openBox();
+    await openBox();
     await Future.delayed(Durations.medium4);
   }
 
-  void openBox() async {
+  Future<void> openBox() async {
     box = await Hive.openBox('offline_test_app');
   }
 

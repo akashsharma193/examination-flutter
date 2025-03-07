@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
+import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
@@ -61,6 +62,7 @@ class ExamRepo {
   Future<AppResult<bool>> submitExam(
       List<QuestionModel> paper, String testID) async {
     try {
+      log("calling sub exam in exam repo  :${DateTime.now()}");
       bool isOnline = await _checkInternet();
       Map<String, dynamic> examData = {
         "answerPaper": paper.map((e) => e.toJson()).toList(),
@@ -119,6 +121,7 @@ class ExamRepo {
     }
   }
 
+
   Future<bool> _checkInternet() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     return !connectivityResult.contains(ConnectivityResult.none);
@@ -142,5 +145,34 @@ class ExamRepo {
 
     pendingExams.removeWhere((exam) => exam['testId'] == testId);
     AppLocalStorage.instance.box.put('pending_exams', pendingExams);
+  }
+
+
+
+  Future<AppResult<TestResultDetailModel>> getTestResultDetails(
+      {required String userId,required String qID}) async {
+    try {
+      final response =
+      await dioService.postDio(endpoint: 'answerPaper/getResult', body: {
+        "userId": AppLocalStorage.instance.user.userId,
+        "questionId":qID,
+      });
+      switch (response) {
+        case AppSuccess():
+          return AppSuccess(
+             TestResultDetailModel.fromJson(response.value['data'] )
+          );
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+        default:
+          return AppFailure(
+              errorMessage:
+              'Failed to fetch  getTestResuult detail in Exam Repo default case');
+      }
+    } catch (e) {
+      log("error caught in Exam repo getTestResult func : $e");
+      return AppResult.failure(AppSomethingWentWrong());
+    }
   }
 }
