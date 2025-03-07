@@ -16,13 +16,14 @@ class TestResultScreen extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text("Test Result"),
-            backgroundColor: Colors.blueAccent,
+            title:  Text("Test Result of $qId"),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())
               : Column(
             children: [
+              SizedBox(height: 20,),
+              Text("Total question :${controller.testResultDetailModel.correctAnswer} "),
               _buildScoreSection(controller.testResultDetailModel),
               Expanded(child: _buildQuestionList(controller.testResultDetailModel)),
             ],

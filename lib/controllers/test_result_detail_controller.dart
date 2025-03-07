@@ -16,11 +16,13 @@ class TestResultDetailController extends GetxController {
       switch (v) {
         case AppSuccess():
           testResultDetailModel = v.value;
+          update();
           break;
         case AppFailure():
           Get.showSnackbar(GetSnackBar(
             message: v.errorMessage,
           ));
+          update();
           break;
       }
     });

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
+import 'package:offline_test_app/internet_checker_dialog.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 
 class ExamScreen extends StatefulWidget {
@@ -58,7 +60,14 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
       warningCount++;
 
       if (warningCount >= 4) {
-        autoSubmitExam(); // Auto-submit on 4th warning
+        _connectivityStream.listen((v) {
+          if (v == ConnectivityResult.mobile || v == ConnectivityResult.wifi) {
+            autoSubmitExam();
+          } else {
+            InternetCheckDialog.show(context, autoSubmitExam);
+          }
+        });
+        // Auto-submit on 4th warning
       }
     }
 
@@ -90,6 +99,8 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
   }
 
   void autoSubmitExam() {
+    ExamRepo examRepo = ExamRepo();
+    examRepo.submitExam(widget.questions, widget.testId);
     Get.dialog(
       AlertDialog(
         title: Text("Test Auto-Submitted"),
@@ -195,7 +206,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     }
   }
 
-  void nextQuestion() {
+  void nextQuestion(BuildContext myContext) {
     if (currentQuestionIndex < questionList.length - 1) {
       setState(() {
         currentQuestionIndex++;
@@ -203,25 +214,44 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     } else {
       ExamRepo repo = ExamRepo();
 
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text("Test Completed"),
-          content: Text(
-              'Do you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
-          actions: [
-            TextButton(
-              onPressed: () {
-                repo.submitExam(
-                    questionList.map((e) => QuestionModel.fromJson(e)).toList(),
-                    widget.testId);
-                Get.offAllNamed('/home');
-              },
-              child: Text("OK"),
-            )
-          ],
-        ),
-      );
+      Get.dialog(
+          AlertDialog(
+            title: Text("Test Completed"),
+            content: Text(
+                'Do you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Get.back();
+                  _connectivityStream.listen((v) {
+                    log("connection : $v");
+                    if (v == ConnectivityResult.mobile ||
+                        v == ConnectivityResult.wifi) {
+                      print("submitting exam");
+                      repo.submitExam(
+                          questionList
+                              .map((e) => QuestionModel.fromJson(e))
+                              .toList(),
+                          widget.testId);
+                      Get.offAllNamed('/home');
+                    } else {
+                      debugPrint("no inernet..");
+
+                      InternetCheckDialog.show(myContext, () {
+                        repo.submitExam(
+                            questionList
+                                .map((e) => QuestionModel.fromJson(e))
+                                .toList(),
+                            widget.testId);
+                      });
+                    }
+                  });
+                },
+                child: Text("OK"),
+              )
+            ],
+          ),
+          barrierDismissible: false);
     }
   }
 
@@ -325,7 +355,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                     child: Text("Previous"),
                   ),
                 ElevatedButton(
-                  onPressed: nextQuestion,
+                  onPressed: () => nextQuestion(context),
                   child: Text(currentQuestionIndex == questionList.length - 1
                       ? "Submit"
                       : "Next"),

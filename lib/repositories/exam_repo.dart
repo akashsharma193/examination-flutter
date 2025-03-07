@@ -24,8 +24,7 @@ class ExamRepo {
               .map((e) => GetExamModel.fromJson(e))
               .toList());
         case AppFailure():
-          return AppFailure(
-              errorMessage: response.errorMessage, code: response.code);
+          return AppResult.failure(response);
         default:
           return AppFailure(
               errorMessage:
@@ -33,7 +32,7 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo getALlExams func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 
@@ -55,7 +54,7 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo getCompliance func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 
@@ -91,7 +90,7 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo submitExam func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 
@@ -117,7 +116,7 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo getExamHistory func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 
@@ -172,7 +171,7 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo getTestResult func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 }

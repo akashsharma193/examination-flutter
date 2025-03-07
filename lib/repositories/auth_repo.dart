@@ -28,7 +28,7 @@ class AuthRepo {
       }
     } catch (e) {
       log("error caught in auth repo login func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 
@@ -51,7 +51,7 @@ class AuthRepo {
       }
     } catch (e) {
       log("error caught in auth repo Logout func : $e");
-      return AppResult.failure(AppSomethingWentWrong());
+      return AppResult.failure(AppFailure());
     }
   }
 }

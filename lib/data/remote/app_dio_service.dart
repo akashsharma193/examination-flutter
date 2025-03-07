@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +22,9 @@ class AppDioService {
     _serviceDio.options = BaseOptions(
         baseUrl: baseUrl,
         headers: {'deviceId': await DeviceService.instance.uniqueDeviceId},
-        connectTimeout: const Duration(minutes: 5),
-        sendTimeout: const Duration(minutes: 5),
-        receiveTimeout: const Duration(minutes: 5),
+        connectTimeout: const Duration(minutes: 2),
+        sendTimeout: const Duration(minutes: 2),
+        receiveTimeout: const Duration(minutes: 2),
         validateStatus: (code){
           return code!=null && code >=200 && code <=503;
         },
@@ -59,34 +60,44 @@ class AppDioService {
 
       return _handleCaughtError(e, s);
     }
-    // return AppResult.failure(AppSomethingWentWrong());
+    // return AppResult.failure(AppFailure());
   }
 
   /// POST Request DIO
-  Future<AppResult> postDio(
-      {required String endpoint,
-      required Map<String, dynamic> body,
-      Map<String, dynamic>? queryParams,
-      Map<String, dynamic>? headers}) async {
+  Future<AppResult> postDio({
+    required String endpoint,
+    required Map<String, dynamic> body,
+    Map<String, dynamic>? queryParams,
+    Map<String, dynamic>? headers,
+  }) async {
     try {
-      return _serviceDio
-          .post(endpoint, data: body, queryParameters: queryParams)
-          .then((v) {
-        if (v.statusCode == 201) {
-          return AppSuccess(v.data);
-        } else {
-          return _handleOtherStatusCodeResponse(v);
-        }
-      });
+      log("📡 [DIO] Sending POST request to: $endpoint");
+      log("📌 [DIO] Request Body: $body");
+      log("🔍 [DIO] Query Params: $queryParams");
+
+      final response = await _serviceDio.post(endpoint, data: body, queryParameters: queryParams);
+
+      log("✅ [DIO] Response received from: $endpoint");
+      log("🔗 [DIO] Status Code: ${response.statusCode}");
+      log("📩 [DIO] Response Data: ${response.data}");
+
+      if (response.statusCode == 201) {
+        return AppSuccess(response.data);
+      } else {
+        return _handleOtherStatusCodeResponse(response);
+      }
+    } on SocketException catch (e) {
+      log("🚫 [DIO] SocketException in POST: No Internet - $e");
+      return AppResult.failure(AppNoInternetFailure());
     } on DioException catch (e) {
+      log("❌ [DIO] DioException in POST request: $endpoint");
       return _handleDioExceptionError(e);
     } catch (e, s) {
-      debugPrint("error caught in POST request in Dio service  :$e");
-
+      log("💥 [DIO] Unknown Error in POST request: $endpoint", error: e, stackTrace: s);
       return _handleCaughtError(e, s);
     }
-    // return AppResult.failure(AppSomethingWentWrong());
   }
+
 
   /// Delete Request DIO
   Future<AppResult> deleteDio(
@@ -111,7 +122,7 @@ class AppDioService {
 
       return _handleCaughtError(e, s);
     }
-    return AppResult.failure(AppSomethingWentWrong());
+    return AppResult.failure(AppFailure());
   }
 }
 
@@ -119,25 +130,28 @@ _handleCaughtError(Object e, StackTrace s) {
   log('\n<---------------- \n Error Caught in Dio Service File \n',
       name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
 
-  return AppSomethingWentWrong();
+  return AppResult.failure(AppFailure());
 }
 
 AppResult _handleDioExceptionError(DioException e) {
-  log("Error caught in DioException on api :  ${e.requestOptions.uri}\n,error: ${e.error},message: ${e.message}");
-
+  log("❌ DioException caught in API request: ${e.requestOptions.uri}");
+  log("👉 Dio Error Type: ${e.type}");
+  log("📝 Error Message: ${e.message}");
+  log("🔗 Status Code: ${e.response?.statusCode}");
+  log("📡 Response Data: ${e.response?.data}");
   if (e.type == DioExceptionType.connectionError) {
     log("no internet available.....");
-    return AppNoInternetFailure();
-  }
+    return AppResult.failure(AppNoInternetFailure());
+  }else
   if (e.type == DioExceptionType.connectionTimeout) {
-    return AppConnectionTimeOutFailure();
+    return AppResult.failure(AppConnectionTimeOutFailure());
   } else if (e.type == DioExceptionType.sendTimeout) {
-    return AppRequestTimeOutFailure();
+    return AppResult.failure(AppRequestTimeOutFailure());
   } else if (e.type == DioExceptionType.receiveTimeout) {
-    return AppRequestTimeOutFailure();
+    return AppResult.failure(AppRequestTimeOutFailure());
   }
   else if (e.type == DioExceptionType.badResponse) {
-    return AppRequestTimeOutFailure();
+    return AppResult.failure(AppRequestTimeOutFailure());
   }
   else if (e.response?.statusCode != null) {
     if ((e.response?.statusCode ?? 0) >= 400) {
@@ -146,7 +160,7 @@ AppResult _handleDioExceptionError(DioException e) {
       return _handleServerSideError(e.response);
     }
   } else {
-    return AppSomethingWentWrong();
+    return AppResult.failure(AppFailure());
   }
 }
 
@@ -164,43 +178,43 @@ AppResult _handleOtherStatusCodeResponse(Response r) {
     case > 500:
       return _handleServerSideError(r);
     default:
-      return AppSomethingWentWrong(
+      return AppFailure(
           errorMessage: 'Something Went Wrong... ${r.statusCode}');
   }
 }
 
-AppFailure _handleClientSideError(Response? r) {
+AppResult _handleClientSideError(Response? r) {
   if (r == null) {
-    return AppClientSideStautsError();
+    return AppResult.failure(AppClientSideStautsError());
   }
   switch (r.statusCode ?? 0) {
     case 400:
-      return AppBadRequestFailure(errorMessage: r.data['message']);
+      return AppResult.failure(AppBadRequestFailure(errorMessage: r.data['message']));
     case 401:
-      return ApUnAuthorizedFailure(errorMessage: r.data['message']);
+      return AppResult.failure(ApUnAuthorizedFailure(errorMessage: r.data['message']));
     case 403:
-      return AppForbidFailuure(errorMessage: r.data['message']);
+      return AppResult.failure(AppForbidFailuure(errorMessage: r.data['message']));
     case 404:
-      return AppDataNotFoundFailure(errorMessage: r.data['message']);
+      return AppResult.failure(AppDataNotFoundFailure(errorMessage: r.data['message']));
     default:
-      return AppClientSideStautsError(errorMessage: r.data['message']);
+      return AppResult.failure(AppClientSideStautsError(errorMessage: r.data['message']));
   }
 }
 
 _handleServerSideError(Response? r) {
   if (r == null) {
-    return AppServerSideError();
+    return AppResult.failure(AppServerSideError());
   }
   switch (r.statusCode ?? 0) {
     case 500:
-      return AppBadRequestFailure(errorMessage: r.data['message']);
+      return AppResult.failure(AppBadRequestFailure(errorMessage: r.data['message']));
     case 501:
-      return ApUnAuthorizedFailure(errorMessage: r.data['message']);
+      return AppResult.failure(ApUnAuthorizedFailure(errorMessage: r.data['message']));
     case 502:
-      return AppForbidFailuure(errorMessage: r.data['message']);
+      return AppResult.failure(AppForbidFailuure(errorMessage: r.data['message']));
     case 503:
-      return AppDataNotFoundFailure(errorMessage: r.data['message']);
+      return AppResult.failure(AppDataNotFoundFailure(errorMessage: r.data['message']));
     default:
-      return AppServerSideError(errorMessage: r.data['message']);
+      return AppResult.failure(AppServerSideError(errorMessage: r.data['message']));
   }
 }

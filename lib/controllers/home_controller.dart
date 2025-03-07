@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
@@ -111,8 +112,9 @@ class HomeController extends GetxController {
           allExams.value = resp.value;
           break;
         case AppFailure():
+          Fluttertoast.showToast(msg: 'Failed to fetch exam : ${resp.errorMessage}');
           allExams.value = [];
-        default:
+          break;
       }
     } catch (e) {
       debugPrint("error caught in home controller in getexams func : $e");
