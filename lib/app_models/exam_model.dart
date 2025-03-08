@@ -7,8 +7,8 @@ class GetExamModel {
   final dynamic userId;
   final String? questionId;
   final String? examDuration;
-  final String? stratTime;
-  final String? endTime;
+  final DateTime? stratTime;
+  final DateTime? endTime;
 
   GetExamModel({
     this.questionList,
@@ -35,8 +35,8 @@ class GetExamModel {
         userId: json["userId"],
         questionId: json["questionId"],
         examDuration: json["examDuration"],
-        stratTime: json["stratTime"],
-        endTime: json["endTime"],
+        stratTime: DateTime.tryParse(json["stratTime"] ?? ''),
+        endTime: DateTime.tryParse(json["endTime"] ?? ''),
       );
 
   Map<String, dynamic> toJson() => {
@@ -69,8 +69,8 @@ class GetExamModel {
         userId: null,
         questionId: '',
         examDuration: '',
-        stratTime: '',
-        endTime: '',
+        stratTime: DateTime.now(),
+        endTime: DateTime.now(),
       );
 
   /// Checks if the model is empty
@@ -83,8 +83,8 @@ class GetExamModel {
       (userId == null) &&
       (questionId == null || questionId!.isEmpty) &&
       (examDuration == null || examDuration!.isEmpty) &&
-      (stratTime == null || stratTime!.isEmpty) &&
-      (endTime == null || endTime!.isEmpty);
+      (stratTime == null || stratTime != null) &&
+      (endTime == null || endTime != null);
 }
 
 class QuestionModel {

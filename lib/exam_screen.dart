@@ -44,20 +44,24 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     // Initialize Timer
     remainingSeconds = widget.examDurationMinutes * 60;
     startTimer();
-
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     log("appLife scycle changes  : ${state.name}");
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached ) {
+        state == AppLifecycleState.detached) {
       // User switched apps or minimized the app
       warningCount++;
 
       if (warningCount >= 4) {
-        Get.to(()=>TestCompletedScreen(list: questionList.map((e)=>QuestionModel.fromJson(Map<String,dynamic>.from(e))).toList(), testID: widget.testId));
-            // autoSubmitExam();
+        Get.to(() => TestCompletedScreen(
+            list: questionList
+                .map(
+                    (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
+                .toList(),
+            testID: widget.testId));
+        // autoSubmitExam();
 
         // Auto-submit on 4th warning
       }
@@ -117,7 +121,6 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     });
   }
 
-
   String formatTime(int seconds) {
     int minutes = seconds ~/ 60;
     int sec = seconds % 60;
@@ -154,8 +157,12 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
             actions: [
               TextButton(
                 onPressed: () {
-
-               Get.offAll(()=>TestCompletedScreen(list:  questionList.map((e)=>QuestionModel.fromJson(Map<String,dynamic>.from(e))).toList(),testID:  widget.testId));
+                  Get.offAll(() => TestCompletedScreen(
+                      list: questionList
+                          .map((e) => QuestionModel.fromJson(
+                              Map<String, dynamic>.from(e)))
+                          .toList(),
+                      testID: widget.testId));
                 },
                 child: Text("OK"),
               )
@@ -257,7 +264,9 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
             ),
             SizedBox(height: 20),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: currentQuestionIndex == 0
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.spaceBetween,
               children: [
                 if (currentQuestionIndex != 0)
                   ElevatedButton(

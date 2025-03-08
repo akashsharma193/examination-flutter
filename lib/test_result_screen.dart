@@ -15,32 +15,50 @@ class TestResultScreen extends StatefulWidget {
 
 class _TestResultScreenState extends State<TestResultScreen> {
   final controllerrrr = Get.put(TestResultDetailController());
-@override
+  @override
   void initState() {
-   controllerrrr.fetchData(widget.qId);
+    controllerrrr.fetchData(widget.qId);
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<TestResultDetailController>(
       builder: (controller) {
         return Scaffold(
-          floatingActionButton: FloatingActionButton.small(onPressed: (){
-            controller.refreshData(widget.qId);
-          },child: Icon(Icons.refresh),),
+          floatingActionButton: FloatingActionButton.small(
+            onPressed: () {
+              controller.refreshData(widget.qId);
+            },
+            child: Icon(Icons.refresh),
+          ),
           appBar: AppBar(
-            title:  Text("Test Result of ${widget.qId}"),
+            title: Text("Test Result of ${widget.qId}"),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())
-              : Column(
-            children: [
-              SizedBox(height: 20,),
-              Text("Total question :${controller.testResultDetailModel.totalQuestion} "),
-              _buildScoreSection(controller.testResultDetailModel),
-              Expanded(child: _buildQuestionList(controller.testResultDetailModel)),
-            ],
-          ),
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                              "Total question: ${controller.testResultDetailModel.totalQuestion}, "),
+                          Text(
+                              "Attempted: ${controller.testResultDetailModel.totalQuestion - controller.testResultDetailModel.unAttemptedCount}, "),
+                          Text(
+                              "Not Attempted: ${controller.testResultDetailModel.unAttemptedCount} "),
+                        ],
+                      ),
+                      _buildScoreSection(controller.testResultDetailModel),
+                      ..._buildQuestionList(controller.testResultDetailModel),
+                    ],
+                  ),
+                ),
         );
       },
     );
@@ -74,7 +92,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         title: "${model.correctAnswer}",
                         radius: 50,
                         titleStyle:
-                        const TextStyle(fontSize: 16, color: Colors.white),
+                            const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                       PieChartSectionData(
                         value: model.incorrectAnswer.toDouble(),
@@ -82,7 +100,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         title: "${model.incorrectAnswer}",
                         radius: 50,
                         titleStyle:
-                        const TextStyle(fontSize: 16, color: Colors.white),
+                            const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ],
                   ),
@@ -117,10 +135,10 @@ class _TestResultScreenState extends State<TestResultScreen> {
   }
 
   /// List of Questions with User Answers
-  Widget _buildQuestionList(TestResultDetailModel model) {
-    return ListView.builder(
-      itemCount: model.finalResult.length,
-      itemBuilder: (context, index) {
+  List<Widget> _buildQuestionList(TestResultDetailModel model) {
+    return List.generate(
+      model.finalResult.length,
+      (index) {
         final question = model.finalResult[index];
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -139,8 +157,9 @@ class _TestResultScreenState extends State<TestResultScreen> {
                   children: question.option.map((option) {
                     Color optionColor = Colors.grey[200]!;
                     if (option == question.userAnswer) {
-                      optionColor =
-                      option == question.correctAnswer ? Colors.green : Colors.red;
+                      optionColor = option == question.correctAnswer
+                          ? Colors.green
+                          : Colors.red;
                     } else if (option == question.correctAnswer) {
                       optionColor = Colors.greenAccent;
                     }
@@ -156,13 +175,13 @@ class _TestResultScreenState extends State<TestResultScreen> {
                           Icon(
                             option == question.userAnswer
                                 ? (option == question.correctAnswer
-                                ? Icons.check_circle
-                                : Icons.cancel)
+                                    ? Icons.check_circle
+                                    : Icons.cancel)
                                 : Icons.circle_outlined,
                             color: option == question.userAnswer
                                 ? (option == question.correctAnswer
-                                ? Colors.white
-                                : Colors.white)
+                                    ? Colors.white
+                                    : Colors.white)
                                 : Colors.black,
                           ),
                           const SizedBox(width: 10),

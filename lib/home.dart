@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:offline_test_app/controllers/home_controller.dart';
+import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/drawer_widget.dart';
 
@@ -62,12 +63,38 @@ class HomePage extends StatelessWidget {
                                     controller.allExams[index];
                                 controller.showDialogPopUp();
                               },
-                              child: ListTile(
-                                tileColor: Colors.black26,
-                                title: Text(singleItem.subjectName ?? '-'),
-                                subtitle: Text(singleItem.teacherName ?? '-'),
-                                trailing: Text(
-                                    '${singleItem.stratTime} - ${singleItem.endTime}'),
+                              child: Material(
+                                elevation: 2,
+                                borderRadius: BorderRadius.circular(12),
+                                child: ListTile(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  tileColor: Colors.black26,
+                                  title: Text(singleItem.subjectName ?? '-'),
+                                  subtitle: Text(
+                                      'by ${singleItem.teacherName ?? '-'}'),
+                                  trailing: SizedBox(
+                                    width: 140,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Start Time : ${singleItem.stratTime?.formatTime}',
+                                          textAlign: TextAlign.end,
+                                        ),
+                                        Obx(
+                                          () => Text(
+                                            'Exam  starts in : ${controller.examTimers[singleItem.questionId] ?? 'Calculating...'}',
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           );

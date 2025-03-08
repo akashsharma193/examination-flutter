@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 
 import 'package:dio/dio.dart';
@@ -21,6 +22,10 @@ class HomeController extends GetxController {
   RxList<GetExamModel> allExams = <GetExamModel>[].obs;
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
   GetExamModel selectedExam = GetExamModel.toEmpty();
+
+  // Stores remaining time for each exam (key: examId, value: remaining time)
+  RxMap<String, String> examTimers = <String, String>{}.obs;
+
   final ExamRepo examRepo = ExamRepo();
 
   @override
@@ -111,6 +116,7 @@ class HomeController extends GetxController {
             return;
           }
           allExams.value = resp.value;
+          _initializeTimers();
           break;
         case AppFailure():
           Fluttertoast.showToast(
@@ -126,12 +132,40 @@ class HomeController extends GetxController {
     }
   }
 
+  void _initializeTimers() {
+    for (var exam in allExams) {
+      if (exam.stratTime != null) {
+        _startCountdown(exam.questionId ?? 'uniqExam', exam.stratTime!);
+      }
+    }
+  }
+
+  void _startCountdown(String examId, DateTime startTime) {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      final now = DateTime.now();
+      final remaining = startTime.difference(now);
+
+      if (remaining.isNegative) {
+        examTimers[examId] = "Exam Started!";
+        timer.cancel();
+      } else {
+        final hours = remaining.inHours;
+        final minutes = remaining.inMinutes % 60;
+        final seconds = remaining.inSeconds % 60;
+        examTimers[examId] =
+            "$hours h : $minutes m : $seconds s"; // Format as HH:MM:SS
+      }
+
+      examTimers.refresh(); // Update the UI
+    });
+  }
+
   void logOut() async {
     try {
       final AuthRepo repo = AuthRepo();
       repo.logOut(userId: AppLocalStorage.instance.user.userId);
       AppLocalStorage.instance.clearStorage();
-      Get.offAllNamed('/');
+      Get.offAllNamed('/login');
     } catch (e) {
       debugPrint("error in logout authcontroller : $e");
     } finally {
@@ -212,7 +246,8 @@ class HomeController extends GetxController {
                         Get.toNamed('/exam-screen', arguments: {
                           "questions": selectedExam.questionList ?? [],
                           "testId": selectedExam.questionId ?? '',
-                          'name': selectedExam.subjectName
+                          'name': selectedExam.subjectName,
+                          'time': selectedExam.examDuration ?? '0',
                         });
                       }
                     }

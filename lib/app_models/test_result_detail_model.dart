@@ -4,14 +4,15 @@ class TestResultDetailModel {
   int correctAnswer;
   int incorrectAnswer;
   int totalMarks;
+  int unAttemptedCount;
 
-  TestResultDetailModel({
-    required this.finalResult,
-    required this.totalQuestion,
-    required this.correctAnswer,
-    required this.incorrectAnswer,
-    required this.totalMarks,
-  });
+  TestResultDetailModel(
+      {required this.finalResult,
+      required this.totalQuestion,
+      required this.correctAnswer,
+      required this.incorrectAnswer,
+      required this.totalMarks,
+      this.unAttemptedCount = 0});
 
   factory TestResultDetailModel.fromJson(Map<String, dynamic> json) {
     return TestResultDetailModel(
@@ -22,6 +23,7 @@ class TestResultDetailModel {
       correctAnswer: json['correctAnswer'] ?? 0,
       incorrectAnswer: json['incorrectAnswer'] ?? 0,
       totalMarks: json['totalMarks'] ?? 0,
+      unAttemptedCount: json['unAttempted'] ?? 0,
     );
   }
 
@@ -32,6 +34,7 @@ class TestResultDetailModel {
       'correctAnswer': correctAnswer,
       'incorrectAnswer': incorrectAnswer,
       'totalMarks': totalMarks,
+      'unAttempted': unAttemptedCount,
     };
   }
 
@@ -40,22 +43,23 @@ class TestResultDetailModel {
         correctAnswer == 0 &&
         incorrectAnswer == 0 &&
         totalMarks == 0 &&
+        unAttemptedCount == 0 &&
         finalResult.isEmpty;
   }
 
   static TestResultDetailModel toEmpty() {
     return TestResultDetailModel(
-      finalResult: [],
-      totalQuestion: 0,
-      correctAnswer: 0,
-      incorrectAnswer: 0,
-      totalMarks: 0,
-    );
+        finalResult: [],
+        totalQuestion: 0,
+        correctAnswer: 0,
+        incorrectAnswer: 0,
+        totalMarks: 0,
+        unAttemptedCount: 0);
   }
 
   @override
   String toString() {
-    return 'TestResultDetailModel(totalQuestion: $totalQuestion, correctAnswer: $correctAnswer, incorrectAnswer: $incorrectAnswer, totalMarks: $totalMarks, finalResult: $finalResult)';
+    return 'TestResultDetailModel(totalQuestion: $totalQuestion, correctAnswer: $correctAnswer, incorrectAnswer: $incorrectAnswer, totalMarks: $totalMarks,unAttempted : $unAttemptedCount, finalResult: $finalResult)';
   }
 }
 

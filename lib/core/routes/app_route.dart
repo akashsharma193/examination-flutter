@@ -33,6 +33,7 @@ class AppRoute {
             questions: args['questions'],
             testId: args['testId'],
             examName: args['name']??'Untitled Exam',
+            examDurationMinutes: args['time'],
           );
         },
         binding: AppBindings()),
