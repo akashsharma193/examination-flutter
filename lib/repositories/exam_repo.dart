@@ -17,7 +17,7 @@ class ExamRepo {
     try {
       final response = await dioService.postDio(
           endpoint: 'questionPaper/getExam',
-          body: {"orgCode": orgCode, "batch": batchId});
+          body: {"orgCode": orgCode, "batch": batchId,"userId":AppLocalStorage.instance.user.userId});
       switch (response) {
         case AppSuccess():
           return AppSuccess((response.value['data'] as List<dynamic>)
@@ -156,6 +156,8 @@ class ExamRepo {
         "userId": AppLocalStorage.instance.user.userId,
         "questionId":qID,
       });
+      log("response of getresult: $response");
+
       switch (response) {
         case AppSuccess():
           return AppSuccess(

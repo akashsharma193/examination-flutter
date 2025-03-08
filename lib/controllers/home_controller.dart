@@ -11,6 +11,7 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/exam_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/services/internet_service_checker.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
@@ -39,7 +40,7 @@ class HomeController extends GetxController {
     update();
   }
 
-  getAndSubmitOfflinePendingExams() async{
+  getAndSubmitOfflinePendingExams() async {
     final unSubmitedExams =
         AppLocalStorage.instance.getOfflineUnSubmittedExams();
 
@@ -47,7 +48,7 @@ class HomeController extends GetxController {
       debugPrint("item  = $item");
       List<QuestionModel> questionList = List<QuestionModel>.from(
           item['answerPaper'].map(
-                  (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
+              (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
       final res = await examRepo.submitExam(questionList, item['questionId']);
 
       switch (res) {
@@ -58,7 +59,7 @@ class HomeController extends GetxController {
           print("failed to submit exam in isolate : ${res.errorMessage}");
         default:
       }
-      await Future.delayed(Duration(seconds:1));
+      await Future.delayed(Duration(seconds: 1));
     }
   }
 
@@ -112,7 +113,8 @@ class HomeController extends GetxController {
           allExams.value = resp.value;
           break;
         case AppFailure():
-          Fluttertoast.showToast(msg: 'Failed to fetch exam : ${resp.errorMessage}');
+          Fluttertoast.showToast(
+              msg: 'Failed to fetch exam : ${resp.errorMessage}');
           allExams.value = [];
           break;
       }
@@ -200,11 +202,19 @@ class HomeController extends GetxController {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: isChecked.value
-                  ? () {
-                      Get.toNamed('/exam-screen', arguments: {
-                        "questions": selectedExam.questionList ?? [],
-                        "testId": selectedExam.questionId ?? '',
-                      });
+                  ? () async {
+                      if (await InternetServiceChecker().isInternetConnected) {
+                        Get.snackbar(
+                            "Error", 'No internet Allowed in the Examination',
+                            snackPosition: SnackPosition.BOTTOM);
+                        return;
+                      } else {
+                        Get.toNamed('/exam-screen', arguments: {
+                          "questions": selectedExam.questionList ?? [],
+                          "testId": selectedExam.questionId ?? '',
+                          'name': selectedExam.subjectName
+                        });
+                      }
                     }
                   : null, // Disabled if checkbox is unchecked
               child: const Text("Continue"),

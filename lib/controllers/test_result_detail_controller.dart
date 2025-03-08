@@ -21,6 +21,7 @@ class TestResultDetailController extends GetxController {
         case AppFailure():
           Get.showSnackbar(GetSnackBar(
             message: v.errorMessage,
+            title: v.code,
           ));
           update();
           break;
@@ -28,5 +29,9 @@ class TestResultDetailController extends GetxController {
     });
 
     update();
+  }
+
+  void refreshData(String qId) {
+    fetchData(qId);
   }
 }

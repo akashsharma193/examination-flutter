@@ -54,4 +54,26 @@ class AuthRepo {
       return AppResult.failure(AppFailure());
     }
   }
+
+  Future<AppResult<UserModel>> register(Map<String,dynamic> body) async{
+    try {
+      final response = await dioService
+          .postDio(endpoint: 'user/registration', body:body);
+      debugPrint("response of registration  : ${response.runtimeType}");
+      switch (response) {
+        case AppSuccess():
+          debugPrint("case Success-----");
+          return AppSuccess(UserModel.fromJson(response.value['data']));
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+        default:
+          return AppFailure(
+              errorMessage: 'Failed to registration in Auth Repo default case');
+      }
+    } catch (e) {
+      log("error caught in auth repo registration func : $e");
+      return AppResult.failure(AppFailure());
+    }
+  }
 }

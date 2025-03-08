@@ -4,26 +4,39 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/test_result_detail_controller.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 
-class TestResultScreen extends StatelessWidget {
+class TestResultScreen extends StatefulWidget {
   final String qId;
 
   const TestResultScreen({super.key, required this.qId});
 
   @override
+  State<TestResultScreen> createState() => _TestResultScreenState();
+}
+
+class _TestResultScreenState extends State<TestResultScreen> {
+  final controllerrrr = Get.put(TestResultDetailController());
+@override
+  void initState() {
+   controllerrrr.fetchData(widget.qId);
+    super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
     return GetBuilder<TestResultDetailController>(
-      init: TestResultDetailController()..fetchData(qId),
       builder: (controller) {
         return Scaffold(
+          floatingActionButton: FloatingActionButton.small(onPressed: (){
+            controller.refreshData(widget.qId);
+          },child: Icon(Icons.refresh),),
           appBar: AppBar(
-            title:  Text("Test Result of $qId"),
+            title:  Text("Test Result of ${widget.qId}"),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())
               : Column(
             children: [
               SizedBox(height: 20,),
-              Text("Total question :${controller.testResultDetailModel.correctAnswer} "),
+              Text("Total question :${controller.testResultDetailModel.totalQuestion} "),
               _buildScoreSection(controller.testResultDetailModel),
               Expanded(child: _buildQuestionList(controller.testResultDetailModel)),
             ],
@@ -48,7 +61,7 @@ class TestResultScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            height: 150,
+            height: 200,
             child: Stack(
               alignment: Alignment.center,
               children: [

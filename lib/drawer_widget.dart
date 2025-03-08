@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/network_log_screen.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -10,6 +11,7 @@ class AppDrawer extends StatelessWidget {
   });
   final Map<String, Widget> drawerItems = {
     'Exam History': const Icon(Icons.history_toggle_off_rounded),
+    'Network Logs': const Icon(Icons.bug_report),
     'Log Out': const Icon(Icons.logout_outlined),
   };
 
@@ -42,6 +44,10 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
             const SizedBox(
+              height: 10,
+            ),
+            Text(AppLocalStorage.instance.user.userId),
+            const SizedBox(
               height: 20,
             ),
             const Divider(),
@@ -54,6 +60,8 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       if (e.key == 'Exam History') {
                         Get.toNamed('/exam-history');
+                      }else  if (e.key == 'Network Logs') {
+                        Get.to(()=>NetworkLogScreen());
                       }
                     },
                     child: Column(

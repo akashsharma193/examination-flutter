@@ -1,0 +1,1 @@
+/Users/Abhishek/Documents/client_projects/offline_test_app/build/app/intermediates/cxx/RelWithDebInfo/24172i1m/obj/arm64-v8a

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
+import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 import 'package:offline_test_app/services/device_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -31,13 +32,7 @@ class AppDioService {
         contentType: 'application/json');
     _serviceDio.interceptors.addAll(interceptors ?? []);
 
-    _serviceDio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseBody: true,
-      maxWidth: 90,
-      enabled: true,
-    ));
+    _serviceDio.interceptors.add(NetworkLogInterceptor());
   }
 
   /// Get Request DIO

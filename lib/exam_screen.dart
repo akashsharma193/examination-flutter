@@ -7,14 +7,17 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/internet_checker_dialog.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/test_completed_screen.dart';
 
 class ExamScreen extends StatefulWidget {
   final List<QuestionModel> questions;
   final int examDurationMinutes; // Set exam duration in minutes
   final String testId;
+  final String examName;
   const ExamScreen({
     super.key,
     required this.testId,
+    required this.examName,
     required this.questions,
     this.examDurationMinutes = 30, // Default: 30 minutes
   });
@@ -25,9 +28,6 @@ class ExamScreen extends StatefulWidget {
 class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
   List<Map<String, dynamic>> questionList = [];
   int currentQuestionIndex = 0;
-  bool isInternetActive = false;
-  late Stream<ConnectivityResult> _connectivityStream;
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   late Timer _timer;
   int remainingSeconds = 0;
@@ -45,44 +45,37 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     remainingSeconds = widget.examDurationMinutes * 60;
     startTimer();
 
-    // Correctly handling the updated stream type
-    _connectivityStream = Connectivity().onConnectivityChanged.map((results) {
-      return results.isNotEmpty ? results.first : ConnectivityResult.none;
-    });
-    _connectivitySubscription = _connectivityStream.listen(_checkConnectivity);
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    log("appLife scycle changes  : ${state.name}");
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached && warningCount <= 4) {
+        state == AppLifecycleState.detached ) {
       // User switched apps or minimized the app
       warningCount++;
 
       if (warningCount >= 4) {
-        _connectivityStream.listen((v) {
-          if (v == ConnectivityResult.mobile || v == ConnectivityResult.wifi) {
-            autoSubmitExam();
-          } else {
-            InternetCheckDialog.show(context, autoSubmitExam);
-          }
-        });
+        Get.to(()=>TestCompletedScreen(list: questionList.map((e)=>QuestionModel.fromJson(Map<String,dynamic>.from(e))).toList(), testID: widget.testId));
+            // autoSubmitExam();
+
         // Auto-submit on 4th warning
       }
     }
 
     if (state == AppLifecycleState.resumed) {
+      log("sate resume  : $warningCount");
       // Show warning when user comes back
       if (warningCount > 0 && warningCount < 4) {
+        log("showing dialog...");
         _showWarningDialog();
       }
     }
   }
 
   void _showWarningDialog() {
-    if (Get.isDialogOpen ?? false) {
-      return;
-    }
+    Get.closeAllSnackbars();
+
     Get.dialog(
       AlertDialog(
         title: Text("Warning!"),
@@ -98,32 +91,11 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     );
   }
 
-  void autoSubmitExam() {
-    ExamRepo examRepo = ExamRepo();
-    examRepo.submitExam(widget.questions, widget.testId);
-    Get.dialog(
-      AlertDialog(
-        title: Text("Test Auto-Submitted"),
-        content: Text("Your test has been submitted automatically."),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.offAllNamed('/home');
-            },
-            child: Text("OK"),
-          ),
-        ],
-      ),
-      barrierDismissible: false,
-    );
-  }
-
   @override
   void dispose() {
     _timer.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    _connectivityStream.drain();
-    _connectivitySubscription.cancel();
+
     super.dispose();
   }
 
@@ -145,46 +117,6 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     });
   }
 
-  void _checkConnectivity(ConnectivityResult result) {
-    bool hasInternet = result != ConnectivityResult.none;
-    if (hasInternet) {
-      if (!isInternetActive) {
-        isInternetActive = true;
-        if (Get.currentRoute == '/exam-screen') {
-          _showInternetNotAllowedDialog();
-        }
-      }
-    } else {
-      isInternetActive = false;
-      if (Get.isDialogOpen ?? false) {
-        Get.back(); // Close dialog when internet is disconnected
-      }
-    }
-  }
-
-  void _showInternetNotAllowedDialog() {
-    Get.dialog(
-      WillPopScope(
-        onWillPop: () async => false, // Prevent back button dismissal
-        child: AlertDialog(
-          title: Text("Internet Not Allowed"),
-          content: Text(
-              "Please disconnect from the internet to continue to the Exam."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                if (!isInternetActive) {
-                  Get.back(); // Close only if internet is off
-                }
-              },
-              child: Text("OK"),
-            ),
-          ],
-        ),
-      ),
-      barrierDismissible: false, // Prevent tap outside dismissal
-    );
-  }
 
   String formatTime(int seconds) {
     int minutes = seconds ~/ 60;
@@ -218,34 +150,12 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
           AlertDialog(
             title: Text("Test Completed"),
             content: Text(
-                'Do you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
+                'Turn on Internet \nDo you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
             actions: [
               TextButton(
                 onPressed: () {
-                  Get.back();
-                  _connectivityStream.listen((v) {
-                    log("connection : $v");
-                    if (v == ConnectivityResult.mobile ||
-                        v == ConnectivityResult.wifi) {
-                      print("submitting exam");
-                      repo.submitExam(
-                          questionList
-                              .map((e) => QuestionModel.fromJson(e))
-                              .toList(),
-                          widget.testId);
-                      Get.offAllNamed('/home');
-                    } else {
-                      debugPrint("no inernet..");
 
-                      InternetCheckDialog.show(myContext, () {
-                        repo.submitExam(
-                            questionList
-                                .map((e) => QuestionModel.fromJson(e))
-                                .toList(),
-                            widget.testId);
-                      });
-                    }
-                  });
+               Get.offAll(()=>TestCompletedScreen(list:  questionList.map((e)=>QuestionModel.fromJson(Map<String,dynamic>.from(e))).toList(),testID:  widget.testId));
                 },
                 child: Text("OK"),
               )
@@ -261,7 +171,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("सामान्य ज्ञान परीक्षा"),
+        title: Text(widget.examName),
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 16.0),

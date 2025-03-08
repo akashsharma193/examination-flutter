@@ -5,6 +5,7 @@ import 'package:offline_test_app/controllers/auth_controller.dart';
 import 'package:offline_test_app/core/routes/app_route.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
+import 'package:offline_test_app/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       getPages: AppRoute.routes,
+
       initialRoute: '/',
       // home: LoginPage(),
     );
@@ -80,7 +82,9 @@ class LoginPage extends StatelessWidget {
                     : const Text('Login'),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Get.to(()=>RegistrationPage());
+                },
                 child: const Text("Don't have an account? Register"),
               ),
             ],
