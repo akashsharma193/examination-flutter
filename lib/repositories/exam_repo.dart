@@ -135,4 +135,23 @@ class ExamRepo {
       return AppResult.failure(const AppFailure());
     }
   }
+
+  Future<AppResult<bool>> createExam(Map<String, dynamic> examData) async {
+    try {
+      final response = await dioService.postDio(
+          endpoint: 'questionPaper/createQuestionPaper', body: examData);
+      log("response of createExam: $response");
+
+      switch (response) {
+        case AppSuccess():
+          return const AppSuccess(true);
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+      }
+    } catch (e) {
+      log("error caught in Exam repo createExam func : $e");
+      return AppResult.failure(const AppFailure());
+    }
+  }
 }
