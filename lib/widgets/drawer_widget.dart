@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/network_log_screen.dart';
+import 'package:offline_test_app/screens/network_log_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
 

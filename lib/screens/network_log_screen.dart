@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 
 class NetworkLogScreen extends StatelessWidget {
+  const NetworkLogScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final logs = NetworkLogInterceptor.networkLogs;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Network Logs')),
+      appBar: AppBar(title: const Text('Network Logs')),
       body: ListView.builder(
         itemCount: logs.length,
         itemBuilder: (context, index) {
@@ -15,8 +17,12 @@ class NetworkLogScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: ExpansionTile(
-              collapsedBackgroundColor:log["statusCode"]==200 ||log["statusCode"]==201 ?Colors.green:Colors.red ,
-              title: Text(log["url"], style: TextStyle(fontWeight: FontWeight.bold)),
+              collapsedBackgroundColor:
+                  log["statusCode"] == 200 || log["statusCode"] == 201
+                      ? Colors.green
+                      : Colors.red,
+              title: Text(log["url"],
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text("Status: ${log["statusCode"] ?? 'Error'}"),
               children: [
                 _buildLogTile("Headers", log["headers"]),

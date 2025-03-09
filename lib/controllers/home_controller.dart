@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/exam_screen.dart';
+import 'package:offline_test_app/screens/exam_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/services/internet_service_checker.dart';

@@ -5,7 +5,7 @@ import 'package:offline_test_app/controllers/auth_controller.dart';
 import 'package:offline_test_app/core/routes/app_route.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
-import 'package:offline_test_app/register_screen.dart';
+import 'package:offline_test_app/screens/register_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

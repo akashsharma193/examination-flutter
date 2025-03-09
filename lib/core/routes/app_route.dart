@@ -1,10 +1,9 @@
 import 'package:get/route_manager.dart';
 import 'package:offline_test_app/core/routes/app_bindings.dart';
 import 'package:offline_test_app/core/routes/middle_wares.dart';
-import 'package:offline_test_app/exam_history_screen.dart';
-import 'package:offline_test_app/exam_screen.dart';
-import 'package:offline_test_app/home.dart';
-import 'package:offline_test_app/internet_middleware.dart';
+import 'package:offline_test_app/screens/exam_history_screen.dart';
+import 'package:offline_test_app/screens/exam_screen.dart';
+import 'package:offline_test_app/screens/home.dart';
 import 'package:offline_test_app/main.dart';
 
 class AppRoute {
@@ -26,13 +25,12 @@ class AppRoute {
         binding: ExamHistoryBinding()),
     GetPage(
         name: '/exam-screen',
-
         page: () {
           final args = Get.arguments;
           return ExamScreen(
             questions: args['questions'],
             testId: args['testId'],
-            examName: args['name']??'Untitled Exam',
+            examName: args['name'] ?? 'Untitled Exam',
             examDurationMinutes: args['time'],
           );
         },

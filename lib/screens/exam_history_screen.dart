@@ -4,9 +4,9 @@ import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/test_result_screen.dart';
+import 'package:offline_test_app/screens/test_result_screen.dart';
 
-import 'controllers/test_result_detail_controller.dart';
+import '../controllers/test_result_detail_controller.dart';
 
 class ExamHistoryScreen extends StatelessWidget {
   const ExamHistoryScreen({super.key});

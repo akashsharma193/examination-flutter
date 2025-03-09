@@ -5,9 +5,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/internet_checker_dialog.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/test_completed_screen.dart';
+import 'package:offline_test_app/widgets/test_completed_screen.dart';
 
 class ExamScreen extends StatefulWidget {
   final List<QuestionModel> questions;
