@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/auth_controller.dart';
 
 class RegistrationPage extends StatefulWidget {
+  const RegistrationPage({super.key});
+
   @override
   _RegistrationPageState createState() => _RegistrationPageState();
 }
@@ -28,7 +30,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         });
       }
       return Scaffold(
-        appBar: AppBar(title: Text("Register")),
+        appBar: AppBar(title: const Text("Register")),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -36,47 +38,47 @@ class _RegistrationPageState extends State<RegistrationPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     height: 50,
                   ),
                   _buildTextField(
                       authController.nameController, "Name", "Enter your name"),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   _buildTextField(
                       authController.mobileController, "Mobile ", null,
                       isMobile: true, isRequired: true),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   _buildTextField(authController.registerEmailController,
                       "Email", "Enter a valid email",
                       isEmail: true),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   _buildTextField(
                       authController.batchController, "Batch", "Enter batch"),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   _buildTextField(authController.orgCodeController, "Org Code",
                       "Enter org code"),
-                  SizedBox(
+                  const SizedBox(
                     height: 16,
                   ),
                   _buildTextField(authController.registerPassController,
                       "Password", "Enter a password",
                       isPassword: true),
-                  SizedBox(height: 59),
+                  const SizedBox(height: 59),
                   ElevatedButton(
                     onPressed: () => _submitForm(authController),
                     child: authController.isRegisterLoading.value
-                        ? Center(
+                        ? const Center(
                             child: CircularProgressIndicator.adaptive(),
                           )
-                        : Text("Submit"),
+                        : const Text("Submit"),
                   ),
                 ],
               ),

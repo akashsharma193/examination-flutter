@@ -30,7 +30,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
             onPressed: () {
               controller.refreshData(widget.qId);
             },
-            child: Icon(Icons.refresh),
+            child: const Icon(Icons.refresh),
           ),
           appBar: AppBar(
             title: Text("Test Result of ${widget.qId}"),
@@ -40,7 +40,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
               : SingleChildScrollView(
                   child: Column(
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       Row(

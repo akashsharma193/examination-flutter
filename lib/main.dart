@@ -83,7 +83,7 @@ class LoginPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  Get.to(()=>RegistrationPage());
+                  Get.to(()=>const RegistrationPage());
                 },
                 child: const Text("Don't have an account? Register"),
               ),

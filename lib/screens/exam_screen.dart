@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
@@ -81,13 +80,13 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
 
     Get.dialog(
       AlertDialog(
-        title: Text("Warning!"),
+        title: const Text("Warning!"),
         content: Text(
             "You switched apps or minimized the exam.\nWarning: $warningCount/3"),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),
@@ -104,7 +103,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
 
   /// **⏳ Start Countdown Timer**
   void startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds > 0) {
         setState(() {
           remainingSeconds--;
@@ -146,11 +145,10 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         currentQuestionIndex++;
       });
     } else {
-      ExamRepo repo = ExamRepo();
 
       Get.dialog(
           AlertDialog(
-            title: Text("Test Completed"),
+            title: const Text("Test Completed"),
             content: Text(
                 'Turn on Internet \nDo you want to submit TEST , Attempted ${questionList.map((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).toList().length}/${questionList.length} '),
             actions: [
@@ -163,7 +161,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                           .toList(),
                       testID: widget.testId));
                 },
-                child: Text("OK"),
+                child: const Text("OK"),
               )
             ],
           ),
@@ -180,29 +178,29 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         title: Text(widget.examName),
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsets.only(right: 16.0),
             child: Center(
               child: Text(
                 "⏳ ${formatTime(remainingSeconds)}",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Container(
-              padding: EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
-                border: Border(top: BorderSide(color: Colors.black26)),
+                border: const Border(top: BorderSide(color: Colors.black26)),
               ),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -219,7 +217,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                       child: Container(
                         width: 40,
                         height: 40,
-                        margin: EdgeInsets.symmetric(horizontal: 5),
+                        margin: const EdgeInsets.symmetric(horizontal: 5),
                         decoration: BoxDecoration(
                           color: isSelected ? Colors.blue : Colors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -240,14 +238,14 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             Text(
               "Q ${currentQuestionIndex + 1}/${questionList.length}: ${currentQuestion["question"]}",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Column(
               children:
                   List<String>.from(currentQuestion["option"]).map((option) {
@@ -261,7 +259,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                 );
               }).toList(),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: currentQuestionIndex == 0
                   ? MainAxisAlignment.end
@@ -270,7 +268,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                 if (currentQuestionIndex != 0)
                   ElevatedButton(
                     onPressed: pvsQuestion,
-                    child: Text("Previous"),
+                    child: const Text("Previous"),
                   ),
                 ElevatedButton(
                   onPressed: () => nextQuestion(context),

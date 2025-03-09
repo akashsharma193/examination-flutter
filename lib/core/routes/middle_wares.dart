@@ -41,12 +41,12 @@ class InternetCheckMiddleware extends GetMiddleware {
   void _showAlertDialog() {
     Get.dialog(
       AlertDialog(
-        title: Text("Internet Detected"),
-        content: Text("You can't attempt the exam while online."),
+        title: const Text("Internet Detected"),
+        content: const Text("You can't attempt the exam while online."),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text("OK"),
+            child: const Text("OK"),
           ),
         ],
       ),

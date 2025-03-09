@@ -40,22 +40,22 @@ class TestCompletedScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.emoji_events, size: 80, color: Colors.amber),
-              SizedBox(height: 20),
-              Text(
+              const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
+              const SizedBox(height: 20),
+              const Text(
                 "Congratulations!",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 "You have successfully completed the test.\nGreat job!",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: _goToHome,
-                child: Text("Go to Home"),
+                child: const Text("Go to Home"),
               ),
             ],
           ),

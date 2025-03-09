@@ -31,7 +31,7 @@ class ExamHistoryController extends GetxController {
           break;
         case AppFailure():
           allAttemptedExamsList = [];
-        default:
+       
       }
     } catch (e) {
       debugPrint(

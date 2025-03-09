@@ -63,8 +63,7 @@ void checkIfAlreadyLoggedIn(){
             message: response.errorMessage,
           ));
           isUserAuthenticated.value = false;
-          localStorage.setIsUserLoggedIn(false);
-        default:
+       
       }
     } catch (e) {
       debugPrint("error in login authcontroller : $e");
@@ -106,7 +105,6 @@ void checkIfAlreadyLoggedIn(){
           isUserAuthenticated.value = false;
           localStorage.setIsUserLoggedIn(false);
           break;
-        default:
       }
     } catch (e) {
       debugPrint("Error in register authController: $e");

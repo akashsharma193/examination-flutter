@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 import 'package:offline_test_app/services/device_service.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -83,7 +82,7 @@ class AppDioService {
       }
     } on SocketException catch (e) {
       log("🚫 [DIO] SocketException in POST: No Internet - $e");
-      return AppResult.failure(AppNoInternetFailure());
+      return AppResult.failure(const AppNoInternetFailure());
     } on DioException catch (e) {
       log("❌ [DIO] DioException in POST request: $endpoint");
       return _handleDioExceptionError(e);
@@ -105,7 +104,7 @@ class AppDioService {
           .delete(endpoint, data: body, queryParameters: queryParams)
           .then((v) {
         if (v.statusCode == 204) {
-          return AppSuccess(null);
+          return const AppSuccess(null);
         } else {
           return _handleOtherStatusCodeResponse(v);
         }
@@ -117,7 +116,7 @@ class AppDioService {
 
       return _handleCaughtError(e, s);
     }
-    return AppResult.failure(AppFailure());
+    return AppResult.failure(const AppFailure());
   }
 }
 
@@ -125,7 +124,7 @@ _handleCaughtError(Object e, StackTrace s) {
   log('\n<---------------- \n Error Caught in Dio Service File \n',
       name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
 
-  return AppResult.failure(AppFailure());
+  return AppResult.failure(const AppFailure());
 }
 
 AppResult _handleDioExceptionError(DioException e) {
@@ -136,17 +135,17 @@ AppResult _handleDioExceptionError(DioException e) {
   log("📡 Response Data: ${e.response?.data}");
   if (e.type == DioExceptionType.connectionError) {
     log("no internet available.....");
-    return AppResult.failure(AppNoInternetFailure());
+    return AppResult.failure(const AppNoInternetFailure());
   }else
   if (e.type == DioExceptionType.connectionTimeout) {
-    return AppResult.failure(AppConnectionTimeOutFailure());
+    return AppResult.failure(const AppConnectionTimeOutFailure());
   } else if (e.type == DioExceptionType.sendTimeout) {
-    return AppResult.failure(AppRequestTimeOutFailure());
+    return AppResult.failure(const AppRequestTimeOutFailure());
   } else if (e.type == DioExceptionType.receiveTimeout) {
-    return AppResult.failure(AppRequestTimeOutFailure());
+    return AppResult.failure(const AppRequestTimeOutFailure());
   }
   else if (e.type == DioExceptionType.badResponse) {
-    return AppResult.failure(AppRequestTimeOutFailure());
+    return AppResult.failure(const AppRequestTimeOutFailure());
   }
   else if (e.response?.statusCode != null) {
     if ((e.response?.statusCode ?? 0) >= 400) {
@@ -155,7 +154,7 @@ AppResult _handleDioExceptionError(DioException e) {
       return _handleServerSideError(e.response);
     }
   } else {
-    return AppResult.failure(AppFailure());
+    return AppResult.failure(const AppFailure());
   }
 }
 
@@ -180,7 +179,7 @@ AppResult _handleOtherStatusCodeResponse(Response r) {
 
 AppResult _handleClientSideError(Response? r) {
   if (r == null) {
-    return AppResult.failure(AppClientSideStautsError());
+    return AppResult.failure(const AppClientSideStautsError());
   }
   switch (r.statusCode ?? 0) {
     case 400:
@@ -198,7 +197,7 @@ AppResult _handleClientSideError(Response? r) {
 
 _handleServerSideError(Response? r) {
   if (r == null) {
-    return AppResult.failure(AppServerSideError());
+    return AppResult.failure(const AppServerSideError());
   }
   switch (r.statusCode ?? 0) {
     case 500:

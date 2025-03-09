@@ -22,7 +22,7 @@ class NetworkLogScreen extends StatelessWidget {
                       ? Colors.green
                       : Colors.red,
               title: Text(log["url"],
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text("Status: ${log["statusCode"] ?? 'Error'}"),
               children: [
                 _buildLogTile("Headers", log["headers"]),
@@ -40,13 +40,13 @@ class NetworkLogScreen extends StatelessWidget {
 
   Widget _buildLogTile(String title, dynamic data) {
     return Padding(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
           Text(data != null ? data.toString() : 'No Data'),
-          Divider(),
+          const Divider(),
         ],
       ),
     );

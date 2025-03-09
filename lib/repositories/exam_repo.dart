@@ -15,9 +15,12 @@ class ExamRepo {
   Future<AppResult<List<GetExamModel>>> getAllExams(
       {required String orgCode, required String batchId}) async {
     try {
-      final response = await dioService.postDio(
-          endpoint: 'questionPaper/getExam',
-          body: {"orgCode": orgCode, "batch": batchId,"userId":AppLocalStorage.instance.user.userId});
+      final response =
+          await dioService.postDio(endpoint: 'questionPaper/getExam', body: {
+        "orgCode": orgCode,
+        "batch": batchId,
+        "userId": AppLocalStorage.instance.user.userId
+      });
       switch (response) {
         case AppSuccess():
           return AppSuccess((response.value['data'] as List<dynamic>)
@@ -25,14 +28,10 @@ class ExamRepo {
               .toList());
         case AppFailure():
           return AppResult.failure(response);
-        default:
-          return AppFailure(
-              errorMessage:
-                  'Failed to fetch all exams in Exam Repo default case');
       }
     } catch (e) {
       log("error caught in Exam repo getALlExams func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 
@@ -47,14 +46,10 @@ class ExamRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage:
-                  'Failed to fetch  getCompliance in Exam Repo default case');
       }
     } catch (e) {
       log("error caught in Exam repo getCompliance func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 
@@ -79,18 +74,14 @@ class ExamRepo {
       switch (response) {
         case AppSuccess():
           AppLocalStorage.instance.removeSingleExamFromStorage(examData);
-          return AppSuccess(true);
+          return const AppSuccess(true);
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage:
-                  'Failed to fetch  submitExam in Exam Repo default case');
       }
     } catch (e) {
       log("error caught in Exam repo submitExam func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 
@@ -109,17 +100,12 @@ class ExamRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage:
-                  'Failed to fetch  getExamHistory in Exam Repo default case');
       }
     } catch (e) {
       log("error caught in Exam repo getExamHistory func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
-
 
   Future<bool> _checkInternet() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -138,42 +124,28 @@ class ExamRepo {
         .put('pending_exams', pendingExams.toSet().toList());
   }
 
-  Future<void> _clearStoredExam(String testId) async {
-    List<Map<String, dynamic>> pendingExams = List<Map<String, dynamic>>.from(
-        AppLocalStorage.instance.box.get('pending_exams') ?? []);
-
-    pendingExams.removeWhere((exam) => exam['testId'] == testId);
-    AppLocalStorage.instance.box.put('pending_exams', pendingExams);
-  }
-
-
-
   Future<AppResult<TestResultDetailModel>> getTestResultDetails(
-      {required String userId,required String qID}) async {
+      {required String userId, required String qID}) async {
     try {
       final response =
-      await dioService.postDio(endpoint: 'answerPaper/getResult', body: {
+          await dioService.postDio(endpoint: 'answerPaper/getResult', body: {
         "userId": AppLocalStorage.instance.user.userId,
-        "questionId":qID,
+        "questionId": qID,
       });
       log("response of getresult: $response");
 
       switch (response) {
         case AppSuccess():
           return AppSuccess(
-             TestResultDetailModel.fromJson(response.value['data'] )
-          );
+              TestResultDetailModel.fromJson(response.value['data']));
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage:
-              'Failed to fetch  getTestResuult detail in Exam Repo default case');
+     
       }
     } catch (e) {
       log("error caught in Exam repo getTestResult func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 }

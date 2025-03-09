@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:isolate';
+import 'dart:developer';
 
-import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/screens/exam_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/services/internet_service_checker.dart';
@@ -58,47 +55,12 @@ class HomeController extends GetxController {
 
       switch (res) {
         case AppSuccess():
-          print("success isolate exam sub ");
+          log("success  exam sub getAndSubmitOfflinePendingExams");
           break;
         case AppFailure():
-          print("failed to submit exam in isolate : ${res.errorMessage}");
-        default:
+          log("failed to submit exam  getAndSubmitOfflinePendingExams: ${res.errorMessage}");
       }
-      await Future.delayed(Duration(seconds: 1));
-    }
-  }
-
-  Future<void> submitExamInIsolate(Map<String, dynamic> data) async {
-    try {
-      print("calling isolate func : ${DateTime.now()}");
-      Dio dio = Dio(BaseOptions(
-        connectTimeout: Duration(seconds: 120),
-        receiveTimeout: Duration(seconds: 120),
-      ));
-
-      // Convert JSON back to List<QuestionModel>
-      List<QuestionModel> questionList = List<QuestionModel>.from(
-          data['answerPaper'].map(
-              (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
-      final res = await examRepo.submitExam(questionList, data['questionId']);
-
-      switch (res) {
-        case AppSuccess():
-          print("success isolate exam sub ");
-          break;
-        case AppFailure():
-          print("failed to submit exam in isolate : ${res.errorMessage}");
-        default:
-      }
-      // Make API request
-      // final response = await dio.post(
-      //   'https://online-examination-xlcp.onrender.com/answerPaper/saveAnswePaper',
-      //   data: data,
-      // );
-
-      print("✅ Exam Submitted: ${res.runtimeType}");
-    } catch (e) {
-      print("❌ Error Submitting Exam: $e");
+      await Future.delayed(const Duration(seconds: 1));
     }
   }
 
@@ -141,7 +103,7 @@ class HomeController extends GetxController {
   }
 
   void _startCountdown(String examId, DateTime startTime) {
-    Timer.periodic(Duration(seconds: 1), (timer) {
+    Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
       final remaining = startTime.difference(now);
 
@@ -200,7 +162,6 @@ class HomeController extends GetxController {
           break;
         case AppFailure():
           compliences.value = [];
-        default:
       }
     } catch (e) {
       debugPrint("error caught in home controller in getCompliances func : $e");

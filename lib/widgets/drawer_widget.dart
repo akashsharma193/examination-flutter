@@ -62,7 +62,7 @@ class AppDrawer extends StatelessWidget {
                       if (e.key == 'Exam History') {
                         Get.toNamed('/exam-history');
                       } else if (e.key == 'Network Logs') {
-                        Get.to(() => NetworkLogScreen());
+                        Get.to(() => const NetworkLogScreen());
                       } else if (e.key == 'Log Out') {
                         final AuthRepo repo = AuthRepo();
                         repo.logOut(

@@ -22,13 +22,10 @@ class AuthRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage: 'Failed to login in Auth Repo default case');
       }
     } catch (e) {
       log("error caught in auth repo login func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 
@@ -41,24 +38,22 @@ class AuthRepo {
       switch (response) {
         case AppSuccess():
           debugPrint("case Success-----");
-          return AppSuccess(null);
+          return const AppSuccess(null);
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage: 'Failed to logout in Auth Repo default case');
+        
       }
     } catch (e) {
       log("error caught in auth repo Logout func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 
-  Future<AppResult<UserModel>> register(Map<String,dynamic> body) async{
+  Future<AppResult<UserModel>> register(Map<String, dynamic> body) async {
     try {
-      final response = await dioService
-          .postDio(endpoint: 'user/registration', body:body);
+      final response =
+          await dioService.postDio(endpoint: 'user/registration', body: body);
       debugPrint("response of registration  : ${response.runtimeType}");
       switch (response) {
         case AppSuccess():
@@ -67,13 +62,11 @@ class AuthRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-        default:
-          return AppFailure(
-              errorMessage: 'Failed to registration in Auth Repo default case');
+     
       }
     } catch (e) {
       log("error caught in auth repo registration func : $e");
-      return AppResult.failure(AppFailure());
+      return AppResult.failure(const AppFailure());
     }
   }
 }
