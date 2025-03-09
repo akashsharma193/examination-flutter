@@ -65,7 +65,7 @@ class ExamRepo {
       };
 
       if (!isOnline) {
-        _storeExamOffline(testID, examData);
+        AppLocalStorage.instance.storeExamOffline(examData);
         return AppResult.success(true);
       }
 
@@ -112,18 +112,6 @@ class ExamRepo {
     return !connectivityResult.contains(ConnectivityResult.none);
   }
 
-  Future<void> _storeExamOffline(
-      String testId, Map<String, dynamic> examData) async {
-    List<Map<String, dynamic>> pendingExams =
-        (AppLocalStorage.instance.box.get('pending_exams') as List<dynamic>? ??
-                [])
-            .map((e) => Map<String, dynamic>.from(e as Map<dynamic, dynamic>))
-            .toList();
-    pendingExams.add(examData);
-    AppLocalStorage.instance.box
-        .put('pending_exams', pendingExams.toSet().toList());
-  }
-
   Future<AppResult<TestResultDetailModel>> getTestResultDetails(
       {required String userId, required String qID}) async {
     try {
@@ -141,7 +129,6 @@ class ExamRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
-     
       }
     } catch (e) {
       log("error caught in Exam repo getTestResult func : $e");

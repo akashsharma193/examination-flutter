@@ -49,12 +49,20 @@ class ExamHistoryScreen extends StatelessWidget {
                                   },
                                   tileColor: Colors.black26,
                                   title: Text(singleItem.subjectName ?? '-'),
-                                  subtitle: Text(
-                                      'by ${singleItem.teacherName ?? '-'}'),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          'by ${singleItem.teacherName ?? '-'}'),
+                                      Text(
+                                          'by ${singleItem.stratTime?.formatTime ?? '-'}'),
+                                    ],
+                                  ),
                                   trailing: SizedBox(
                                     width: 90,
                                     child: Text(
-                                      '${singleItem.stratTime?.formatTime} \n ${singleItem.endTime?.formatTime}',
+                                      'End :${singleItem.endTime?.formatTime}',
                                       textAlign: TextAlign.end,
                                     ),
                                   ),

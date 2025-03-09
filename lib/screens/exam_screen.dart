@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
-
+import 'dart:js_interop';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/widgets/test_completed_screen.dart';
+import 'package:web/web.dart' as web;
 
 class ExamScreen extends StatefulWidget {
   final List<QuestionModel> questions;
-  final int examDurationMinutes; // Set exam duration in minutes
+  final String examDurationMinutes; // Set exam duration in minutes
   final String testId;
   final String examName;
   const ExamScreen({
@@ -17,7 +19,7 @@ class ExamScreen extends StatefulWidget {
     required this.testId,
     required this.examName,
     required this.questions,
-    this.examDurationMinutes = 30, // Default: 30 minutes
+    this.examDurationMinutes = '30', // Default: 30 minutes
   });
   @override
   _ExamScreenState createState() => _ExamScreenState();
@@ -40,7 +42,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     questionList = widget.questions.map((e) => e.toJson()).toList();
 
     // Initialize Timer
-    remainingSeconds = widget.examDurationMinutes * 60;
+    remainingSeconds = (int.tryParse(widget.examDurationMinutes) ?? 0) * 60;
     startTimer();
   }
 
@@ -145,7 +147,6 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
         currentQuestionIndex++;
       });
     } else {
-
       Get.dialog(
           AlertDialog(
             title: const Text("Test Completed"),
@@ -182,7 +183,8 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
             child: Center(
               child: Text(
                 "⏳ ${formatTime(remainingSeconds)}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),

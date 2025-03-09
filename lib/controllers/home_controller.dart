@@ -171,7 +171,19 @@ class HomeController extends GetxController {
     }
   }
 
-  void showDialogPopUp() async {
+  void showExamNotLiveDialog({bool isExamEnded = false}) {
+    Get.defaultDialog(
+      title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(isExamEnded
+            ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
+            : 'Exam will start soon, come back when Exam is Live!'),
+      ),
+    );
+  }
+
+  void showAcknowledgementDialogPopUp() async {
     await getCompliances();
     Get.defaultDialog(
       title: "Test Acknowledgement",

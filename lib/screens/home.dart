@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/controllers/home_controller.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
@@ -7,6 +8,23 @@ import 'package:offline_test_app/widgets/drawer_widget.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
+
+  bool isExamLive(GetExamModel model) {
+    if (model.stratTime == null || model.endTime == null) {
+      return false;
+    } else {
+      return DateTime.now().isAfter(model.stratTime!) &&
+          DateTime.now().isBefore(model.endTime!);
+    }
+  }
+
+  bool isExamEnded(GetExamModel model) {
+    if (model.endTime == null) {
+      return false;
+    } else {
+      return DateTime.now().isAfter(model.endTime!);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +77,14 @@ class HomePage extends StatelessWidget {
                             padding: const EdgeInsets.all(8.0),
                             child: InkWell(
                               onTap: () {
-                                controller.selectedExam =
-                                    controller.allExams[index];
-                                controller.showDialogPopUp();
+                                if (isExamLive(singleItem)) {
+                                  controller.selectedExam =
+                                      controller.allExams[index];
+                                  controller.showAcknowledgementDialogPopUp();
+                                } else {
+                                  controller.showExamNotLiveDialog(
+                                      isExamEnded: isExamEnded(singleItem));
+                                }
                               },
                               child: Material(
                                 elevation: 2,
@@ -72,26 +95,26 @@ class HomePage extends StatelessWidget {
                                   ),
                                   tileColor: Colors.black26,
                                   title: Text(singleItem.subjectName ?? '-'),
-                                  subtitle: Text(
-                                      'by ${singleItem.teacherName ?? '-'}'),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          'by ${singleItem.teacherName ?? '-'} '),
+                                      Text(
+                                        'Start Time : ${singleItem.stratTime?.formatTime}',
+                                      ),
+                                    ],
+                                  ),
                                   trailing: SizedBox(
                                     width: 140,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Start Time : ${singleItem.stratTime?.formatTime}',
-                                          textAlign: TextAlign.end,
-                                        ),
-                                        Obx(
-                                          () => Text(
-                                            'Exam  starts in : ${controller.examTimers[singleItem.questionId] ?? 'Calculating...'}',
-                                            textAlign: TextAlign.end,
-                                          ),
-                                        ),
-                                      ],
+                                    child: Obx(
+                                      () => Text(
+                                        controller.examTimers[
+                                                singleItem.questionId] ??
+                                            'Calculating...',
+                                        textAlign: TextAlign.end,
+                                      ),
                                     ),
                                   ),
                                 ),

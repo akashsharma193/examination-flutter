@@ -13,6 +13,7 @@ class AppDrawer extends StatelessWidget {
   final Map<String, Widget> drawerItems = {
     'Exam History': const Icon(Icons.history_toggle_off_rounded),
     'Network Logs': const Icon(Icons.bug_report),
+    'create-exam': const Icon(Icons.add),
     'Log Out': const Icon(Icons.logout_outlined),
   };
 
@@ -69,7 +70,9 @@ class AppDrawer extends StatelessWidget {
                             userId: AppLocalStorage.instance.user.userId);
                         AppLocalStorage.instance.clearStorage();
                         Get.offAllNamed('/login');
-                      }
+                      }else if (e.key == 'create-exam') {
+                        Get.to(() => const NetworkLogScreen());
+                      } 
                     },
                     child: Column(
                       children: [
