@@ -157,11 +157,11 @@ class ExamRepo {
     }
   }
 
-  void forgotPassword() async {
+  void forgotPassword(String text) async {
     try {
       final response =
           await dioService.postDio(endpoint: 'user/forceLogOutRequest', body: {
-        "email": AppLocalStorage.instance.user.email,
+        "email": text,
       });
 
       log("response of forgotPassword: $response");

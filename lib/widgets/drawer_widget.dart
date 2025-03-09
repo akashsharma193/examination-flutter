@@ -24,14 +24,18 @@ class AppDrawer extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(
               height: 50,
             ),
-            CircleAvatar(
-              radius: 40,
-              backgroundColor: Colors.blueGrey[200],
-              child: Text(AppLocalStorage.instance.user.name.getInitials),
+            Align(
+              alignment: Alignment.center,
+              child: CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.blueGrey[200],
+                child: Text(AppLocalStorage.instance.user.name.getInitials),
+              ),
             ),
             const SizedBox(
               height: 10,
@@ -49,7 +53,8 @@ class AppDrawer extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            Text(AppLocalStorage.instance.user.userId),
+            Text('user ID : ' + AppLocalStorage.instance.user.userId),
+            Text('email : ' + AppLocalStorage.instance.user.email),
             const SizedBox(
               height: 20,
             ),
@@ -94,11 +99,13 @@ class AppDrawer extends StatelessWidget {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SizedBox.shrink();
                   }
-                  return Column(
-                    children: [
-                      Text(AppPackageService.instance.appName),
-                      Text(AppPackageService.instance.appVersion),
-                    ],
+                  return Center(
+                    child: Column(
+                      children: [
+                        Text(AppPackageService.instance.appName),
+                        Text(AppPackageService.instance.appVersion),
+                      ],
+                    ),
                   );
                 }),
             const SizedBox(

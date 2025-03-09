@@ -38,8 +38,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool isObscure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -64,9 +71,19 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 10),
               TextField(
                   controller: authController.passController,
-                  decoration: const InputDecoration(labelText: 'Password'),
+                  decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffix: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isObscure = !isObscure;
+                            });
+                          },
+                          icon: Icon(isObscure
+                              ? Icons.visibility_off
+                              : Icons.visibility))),
                   obscureText: true),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(

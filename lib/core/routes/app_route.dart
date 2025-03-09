@@ -10,15 +10,16 @@ class AppRoute {
   static final routes = [
     GetPage(
         name: '/',
-        page: () => const LoginPage(),
+        page: () => LoginPage(),
         binding: AppBindings(),
         middlewares: [AuthMiddleWare()]),
     GetPage(
         name: '/login',
-        page: () => const LoginPage(),
+        page: () => LoginPage(),
         binding: AppBindings(),
         middlewares: [AuthMiddleWare()]),
-    GetPage(name: '/home', page: () => const HomePage(), binding: HomeBinding()),
+    GetPage(
+        name: '/home', page: () => const HomePage(), binding: HomeBinding()),
     GetPage(
         name: '/exam-history',
         page: () => const ExamHistoryScreen(),

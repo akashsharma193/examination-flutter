@@ -114,6 +114,6 @@ class AppAuthController extends GetxController {
 
   void forgotPassword() {
     ExamRepo repo = ExamRepo();
-    repo.forgotPassword();
+    repo.forgotPassword(emailController.text);
   }
 }

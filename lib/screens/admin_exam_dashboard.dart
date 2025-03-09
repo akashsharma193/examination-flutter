@@ -37,7 +37,10 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
         _startTime != null &&
         _endTime != null) {
       Map<String, dynamic> examData = {
-        "questionList": _questions,
+        "questionList": _questions
+            .map((e) =>
+                Map<String, dynamic>.from(e)..remove('correctAnswerIndex'))
+            .toList(),
         "examDuration": examDuration.toString(),
         "subjectName": _subjectController.text,
         "teacherName": _teacherController.text,
