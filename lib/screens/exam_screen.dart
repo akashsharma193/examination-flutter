@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:js_interop';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/widgets/test_completed_screen.dart';
-import 'package:web/web.dart' as web;
 
 class ExamScreen extends StatefulWidget {
   final List<QuestionModel> questions;

@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:get/route_manager.dart';
+import 'package:get/utils.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';
@@ -152,6 +154,26 @@ class ExamRepo {
     } catch (e) {
       log("error caught in Exam repo createExam func : $e");
       return AppResult.failure(const AppFailure());
+    }
+  }
+
+  void forgotPassword() async {
+    try {
+      final response =
+          await dioService.postDio(endpoint: 'user/forceLogOutRequest', body: {
+        "email": AppLocalStorage.instance.user.email,
+      });
+
+      log("response of forgotPassword: $response");
+      switch (response) {
+        case AppSuccess():
+          Get.snackbar('Success',
+              'Youu are log out forcefully\n you will get email for reset pass...');
+        case AppFailure():
+          Get.snackbar('Failed', '${response.errorMessage}.Please try again,');
+      }
+    } catch (e) {
+      log("error caught in Exam repo forgotPassword func : $e");
     }
   }
 }

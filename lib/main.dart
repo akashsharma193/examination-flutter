@@ -67,6 +67,15 @@ class LoginPage extends StatelessWidget {
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true),
               const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                    onPressed: () {
+                      authController.forgotPassword();
+                    },
+                    child: const Text('Forgot Password?')),
+              ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: authController.isLoading.value
                     ? () {}
@@ -83,9 +92,11 @@ class LoginPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  Get.to(()=>const RegistrationPage());
+                  Get.to(() => const RegistrationPage());
                 },
-                child: const Text("Don't have an account? Register"),
+                child: const Text(
+                  "Don't have an account? Register",
+                ),
               ),
             ],
           ),

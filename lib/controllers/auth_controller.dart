@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:offline_test_app/repositories/exam_repo.dart';
 
 class AppAuthController extends GetxController {
   RxBool isUserAuthenticated = false.obs;
@@ -17,7 +18,6 @@ class AppAuthController extends GetxController {
   // text controllers
   final emailController = TextEditingController();
   final passController = TextEditingController();
-
 
   @override
   void onReady() {
@@ -34,16 +34,14 @@ class AppAuthController extends GetxController {
   final registerPassController = TextEditingController();
   final orgCodeController = TextEditingController();
 
-void checkIfAlreadyLoggedIn(){
-  if(AppLocalStorage.instance.isLoggedIn){
-    isUserAuthenticated.value=true;
-
+  void checkIfAlreadyLoggedIn() {
+    if (AppLocalStorage.instance.isLoggedIn) {
+      isUserAuthenticated.value = true;
+    }
   }
-}
+
   // api calls
   void login() async {
-
-
     isLoading.value = true;
     update();
     try {
@@ -63,7 +61,6 @@ void checkIfAlreadyLoggedIn(){
             message: response.errorMessage,
           ));
           isUserAuthenticated.value = false;
-       
       }
     } catch (e) {
       debugPrint("error in login authcontroller : $e");
@@ -72,8 +69,6 @@ void checkIfAlreadyLoggedIn(){
       update();
     }
   }
-
-
 
   // Register API Call
   void register() async {
@@ -87,8 +82,7 @@ void checkIfAlreadyLoggedIn(){
         "batch": batchController.text.trim(),
         "password": registerPassController.text.trim(),
         "orgCode": orgCodeController.text.trim()
-      }
-      );
+      });
 
       debugPrint("Response of register in authController: $response");
 
@@ -98,20 +92,28 @@ void checkIfAlreadyLoggedIn(){
           localStorage.setIsUserLoggedIn(true);
           log(response.value.toString());
           localStorage.setUserData(response.value);
-          Get.snackbar("Success", "Registration Successful", snackPosition: SnackPosition.BOTTOM);
+          Get.snackbar("Success", "Registration Successful",
+              snackPosition: SnackPosition.BOTTOM);
           break;
         case AppFailure():
-          Get.snackbar("Error", response.errorMessage, snackPosition: SnackPosition.BOTTOM);
+          Get.snackbar("Error", response.errorMessage,
+              snackPosition: SnackPosition.BOTTOM);
           isUserAuthenticated.value = false;
           localStorage.setIsUserLoggedIn(false);
           break;
       }
     } catch (e) {
       debugPrint("Error in register authController: $e");
-      Get.snackbar("Error", "Something went wrong!", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar("Error", "Something went wrong!",
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       isRegisterLoading.value = false;
       update();
     }
+  }
+
+  void forgotPassword() {
+    ExamRepo repo = ExamRepo();
+    repo.forgotPassword();
   }
 }

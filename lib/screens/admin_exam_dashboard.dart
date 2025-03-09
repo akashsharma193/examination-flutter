@@ -38,7 +38,7 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
         _endTime != null) {
       Map<String, dynamic> examData = {
         "questionList": _questions,
-        "examDuration": _durationController.text,
+        "examDuration": examDuration.toString(),
         "subjectName": _subjectController.text,
         "teacherName": _teacherController.text,
         "orgCode": _orgCodeController.text,
@@ -73,6 +73,9 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(
+                  height: 20,
+                ),
                 _buildTextField("Subject Name", _subjectController),
                 _buildTextField("Teacher Name", _teacherController),
                 _buildTextField("Organization Code", _orgCodeController),
@@ -226,6 +229,8 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
                     onChanged: (val) {
                       setState(() {
                         _questions[index]["correctAnswerIndex"] = val;
+                        _questions[index]['correctAnswer'] =
+                            _questions[index]["options"][optionIndex];
                       });
                     },
                   ),
