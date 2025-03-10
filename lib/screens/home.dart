@@ -10,10 +10,10 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   bool isExamLive(GetExamModel model) {
-    if (model.stratTime == null || model.endTime == null) {
+    if (model.startTime == null || model.endTime == null) {
       return false;
     } else {
-      return DateTime.now().isAfter(model.stratTime!) &&
+      return DateTime.now().isAfter(model.startTime!) &&
           DateTime.now().isBefore(model.endTime!);
     }
   }
@@ -102,7 +102,7 @@ class HomePage extends StatelessWidget {
                                       Text(
                                           'by ${singleItem.teacherName ?? '-'} '),
                                       Text(
-                                        'Start Time : ${singleItem.stratTime?.formatTime}',
+                                        'Start Time : ${singleItem.startTime?.formatTime}',
                                       ),
                                     ],
                                   ),

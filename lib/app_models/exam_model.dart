@@ -7,7 +7,7 @@ class GetExamModel {
   final dynamic userId;
   final String? questionId;
   final String? examDuration;
-  final DateTime? stratTime;
+  final DateTime? startTime;
   final DateTime? endTime;
 
   GetExamModel({
@@ -19,7 +19,7 @@ class GetExamModel {
     this.userId,
     this.questionId,
     this.examDuration,
-    this.stratTime,
+    this.startTime,
     this.endTime,
   });
 
@@ -35,7 +35,7 @@ class GetExamModel {
         userId: json["userId"],
         questionId: json["questionId"],
         examDuration: json["examDuration"],
-        stratTime: DateTime.tryParse(json["stratTime"] ?? ''),
+        startTime: DateTime.tryParse(json["startTime"] ?? ''),
         endTime: DateTime.tryParse(json["endTime"] ?? ''),
       );
 
@@ -50,13 +50,13 @@ class GetExamModel {
         "userId": userId,
         "questionId": questionId,
         "examDuration": examDuration,
-        "stratTime": stratTime,
+        "startTime": startTime,
         "endTime": endTime,
       };
 
   @override
   String toString() {
-    return 'GetExamModel(subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, examDuration: $examDuration, stratTime: $stratTime, endTime: $endTime, questionList: $questionList)';
+    return 'GetExamModel(subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, examDuration: $examDuration, startTime: $startTime, endTime: $endTime, questionList: $questionList)';
   }
 
   /// Returns an empty instance of GetExamModel
@@ -69,7 +69,7 @@ class GetExamModel {
         userId: null,
         questionId: '',
         examDuration: '',
-        stratTime: DateTime.now(),
+        startTime: DateTime.now(),
         endTime: DateTime.now(),
       );
 
@@ -83,7 +83,7 @@ class GetExamModel {
       (userId == null) &&
       (questionId == null || questionId!.isEmpty) &&
       (examDuration == null || examDuration!.isEmpty) &&
-      (stratTime == null || stratTime != null) &&
+      (startTime == null || startTime != null) &&
       (endTime == null || endTime != null);
 }
 

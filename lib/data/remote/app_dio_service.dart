@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 import 'package:offline_test_app/services/device_service.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -23,8 +24,8 @@ class AppDioService {
     _serviceDio.options = BaseOptions(
         baseUrl: baseUrl,
         headers: {
-          'deviceId':
-              kIsWeb ? '12345' : await DeviceService.instance.uniqueDeviceId
+          'Content-Type': 'application/json',
+          'deviceId': await DeviceService.instance.uniqueDeviceId
         },
         connectTimeout: const Duration(minutes: 2),
         sendTimeout: const Duration(minutes: 2),
@@ -33,7 +34,10 @@ class AppDioService {
           return code != null && code >= 200 && code <= 503;
         },
         contentType: 'application/json');
-    _serviceDio.interceptors.addAll(interceptors ?? []);
+    _serviceDio.interceptors.addAll(interceptors ??
+        [
+          PrettyDioLogger(request: true, requestBody: true, responseBody: true)
+        ]);
 
     _serviceDio.interceptors.add(NetworkLogInterceptor());
   }
@@ -80,7 +84,7 @@ class AppDioService {
       log("🔗 [DIO] Status Code: ${response.statusCode}");
       log("📩 [DIO] Response Data: ${response.data}");
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         return AppSuccess(response.data);
       } else {
         return _handleOtherStatusCodeResponse(response);

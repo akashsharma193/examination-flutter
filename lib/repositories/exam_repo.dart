@@ -9,6 +9,7 @@ import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class ExamRepo {
   final dioService = AppDioService.instance;
@@ -146,10 +147,10 @@ class ExamRepo {
 
       switch (response) {
         case AppSuccess():
-          return const AppSuccess(true);
+          return AppResult.success(true);
         case AppFailure():
-          return AppFailure(
-              errorMessage: response.errorMessage, code: response.code);
+          return AppResult.failure(AppFailure(
+              errorMessage: response.errorMessage, code: response.code));
       }
     } catch (e) {
       log("error caught in Exam repo createExam func : $e");
@@ -167,10 +168,13 @@ class ExamRepo {
       log("response of forgotPassword: $response");
       switch (response) {
         case AppSuccess():
-          Get.snackbar('Success',
-              'Youu are log out forcefully\n you will get email for reset pass...');
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: true,
+              subTitle:
+                  'You are log out forcefully\n you will get email for reset pass...');
         case AppFailure():
-          Get.snackbar('Failed', '${response.errorMessage}.Please try again,');
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: false, subTitle: response.errorMessage);
       }
     } catch (e) {
       log("error caught in Exam repo forgotPassword func : $e");

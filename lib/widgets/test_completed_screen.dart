@@ -3,15 +3,18 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class TestCompletedScreen extends StatelessWidget {
- final List<QuestionModel> list ;
- final String testID;
+  final List<QuestionModel> list;
+  final String testID;
 
-  const TestCompletedScreen({super.key, required this.list, required this.testID});
+  const TestCompletedScreen(
+      {super.key, required this.list, required this.testID});
   Future<bool> _checkInternet() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    final result = connectivityResult.where((e)=>e!=ConnectivityResult.none);
+    final result =
+        connectivityResult.where((e) => e != ConnectivityResult.none);
     return result.isNotEmpty;
   }
 
@@ -22,11 +25,9 @@ class TestCompletedScreen extends StatelessWidget {
       repo.submitExam(list, testID);
       Get.offAllNamed('/home'); // Navigate to home page
     } else {
-      Get.snackbar(
-        "No Internet",
-        "Please connect to the internet to proceed.",
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppSnackbarWidget.showSnackBar(
+          isSuccess: false,
+          subTitle: "Please connect to the internet to proceed.");
     }
   }
 

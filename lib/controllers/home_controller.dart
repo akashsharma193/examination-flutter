@@ -10,6 +10,7 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/services/internet_service_checker.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
@@ -96,8 +97,8 @@ class HomeController extends GetxController {
 
   void _initializeTimers() {
     for (var exam in allExams) {
-      if (exam.stratTime != null) {
-        _startCountdown(exam.questionId ?? 'uniqExam', exam.stratTime!);
+      if (exam.startTime != null) {
+        _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime!);
       }
     }
   }
@@ -211,9 +212,9 @@ class HomeController extends GetxController {
               onPressed: isChecked.value
                   ? () async {
                       if (await InternetServiceChecker().isInternetConnected) {
-                        Get.snackbar(
-                            "Error", 'No internet Allowed in the Examination',
-                            snackPosition: SnackPosition.BOTTOM);
+                        AppSnackbarWidget.showSnackBar(
+                            isSuccess: false,
+                            subTitle: 'No internet Allowed in the Examination');
                         return;
                       } else {
                         Get.toNamed('/exam-screen', arguments: {

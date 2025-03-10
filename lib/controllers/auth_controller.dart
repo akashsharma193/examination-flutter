@@ -6,6 +6,7 @@ import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class AppAuthController extends GetxController {
   RxBool isUserAuthenticated = false.obs;
@@ -54,12 +55,11 @@ class AppAuthController extends GetxController {
           localStorage.setIsUserLoggedIn(true);
           log(response.value.toString());
           localStorage.setUserData(response.value);
+          repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
           break;
         case AppFailure():
-          Get.showSnackbar(GetSnackBar(
-            title: response.errorMessage,
-            message: response.errorMessage,
-          ));
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: false, subTitle: response.errorMessage);
           isUserAuthenticated.value = false;
       }
     } catch (e) {
@@ -88,24 +88,26 @@ class AppAuthController extends GetxController {
 
       switch (response) {
         case AppSuccess():
-          isUserAuthenticated.value = true;
-          localStorage.setIsUserLoggedIn(true);
           log(response.value.toString());
-          localStorage.setUserData(response.value);
-          Get.snackbar("Success", "Registration Successful",
-              snackPosition: SnackPosition.BOTTOM);
+          AppSnackbarWidget.showSnackBar(
+            isSuccess: true,
+            subTitle: "Registration Successful",
+          );
+          Get.toNamed('/login');
           break;
         case AppFailure():
-          Get.snackbar("Error", response.errorMessage,
-              snackPosition: SnackPosition.BOTTOM);
+          log("error occured in register : ");
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: false, subTitle: response.errorMessage);
           isUserAuthenticated.value = false;
           localStorage.setIsUserLoggedIn(false);
           break;
       }
     } catch (e) {
       debugPrint("Error in register authController: $e");
-      Get.snackbar("Error", "Something went wrong!",
-          snackPosition: SnackPosition.BOTTOM);
+      AppSnackbarWidget.showSnackBar(
+          isSuccess: false,
+          subTitle: 'Error occured in registeration, try again');
     } finally {
       isRegisterLoading.value = false;
       update();

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class AdminExamDashboard extends StatefulWidget {
   @override
@@ -53,12 +54,13 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
       examRepo.createExam(examData).then((v) {
         switch (v) {
           case AppSuccess():
-            Get.snackbar("Success", "Exam created successfully",
-                snackPosition: SnackPosition.BOTTOM);
+            AppSnackbarWidget.showSnackBar(
+                isSuccess: true, subTitle: "Exam created successfully");
+            Get.back();
             break;
           case AppFailure():
-            Get.snackbar("Error", v.errorMessage,
-                snackPosition: SnackPosition.BOTTOM);
+            AppSnackbarWidget.showSnackBar(
+                isSuccess: false, subTitle: v.errorMessage);
         }
       });
     }
@@ -131,6 +133,9 @@ class _AdminExamDashboardState extends State<AdminExamDashboard> {
                     onPressed: _submitForm,
                     child: Text("Submit Exam", style: TextStyle(fontSize: 18)),
                   ),
+                ),
+                SizedBox(
+                  height: 20,
                 ),
               ],
             ),
