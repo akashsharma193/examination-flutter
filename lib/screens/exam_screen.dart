@@ -217,7 +217,11 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                       height: 40,
                       margin: const EdgeInsets.symmetric(horizontal: 5),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue : Colors.white,
+                        color: (questionList[index]['isMarked'] ?? false)
+                            ? Colors.yellow
+                            : isSelected
+                                ? Colors.blue
+                                : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.black),
                       ),
@@ -240,16 +244,29 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
             ),
             Row(
               children: [
-                Text(
-                  "Q ${currentQuestionIndex + 1}/${questionList.length}: ${currentQuestion["question"]}",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    "Q ${currentQuestionIndex + 1}/${questionList.length}: ${currentQuestion["question"]}",
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(
                   width: 10,
                 ),
                 IconButton(
-                    onPressed: () {}, icon: Icon(Icons.bookmark_add_outlined))
+                    onPressed: () {
+                      setState(() {
+                        questionList[currentQuestionIndex]["isMarked"] =
+                            !(questionList[currentQuestionIndex]["isMarked"] ??
+                                false);
+                      });
+                    },
+                    icon: Icon((questionList[currentQuestionIndex]
+                                ["isMarked"] ??
+                            false)
+                        ? Icons.bookmark
+                        : Icons.bookmark_add_outlined))
               ],
             ),
             const SizedBox(height: 20),

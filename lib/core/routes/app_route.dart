@@ -4,7 +4,8 @@ import 'package:offline_test_app/core/routes/middle_wares.dart';
 import 'package:offline_test_app/screens/exam_history_screen.dart';
 import 'package:offline_test_app/screens/exam_screen.dart';
 import 'package:offline_test_app/screens/home.dart';
-import 'package:offline_test_app/main.dart';
+
+import 'package:offline_test_app/screens/login_page.dart';
 
 class AppRoute {
   static final routes = [

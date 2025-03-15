@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/auth_controller.dart';
+import 'package:offline_test_app/widgets/custom_text_field.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -15,119 +15,92 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   void _submitForm(AppAuthController authController) {
     if (_formKey.currentState!.validate()) {
-      // Get.snackbar("Success", "Form Submitted Successfully",
-      //     snackPosition: SnackPosition.BOTTOM);
       authController.register();
     }
   }
 
-  bool isObscurePass = false;
   @override
-  Widget build(BuildContext context) {
-    return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value) {
-        Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
-        });
-      }
-      return Scaffold(
-        appBar: AppBar(title: const Text("Register")),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(
-                    height: 50,
-                  ),
-                  _buildTextField(
-                      authController.nameController, "Name", "Enter your name"),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  _buildTextField(
-                      authController.mobileController, "Mobile ", null,
-                      isMobile: true, isRequired: true),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  _buildTextField(authController.registerEmailController,
-                      "Email", "Enter a valid email",
-                      isEmail: true),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  _buildTextField(
-                      authController.batchController, "Batch", "Enter batch"),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  _buildTextField(authController.orgCodeController, "Org Code",
-                      "Enter org code"),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  _buildTextField(authController.registerPassController,
-                      "Password", "Enter a password",
-                      isObscurePass: isObscurePass, isPassword: true),
-                  const SizedBox(height: 59),
-                  ElevatedButton(
-                    onPressed: () => _submitForm(authController),
-                    child: authController.isRegisterLoading.value
-                        ? const Center(
-                            child: CircularProgressIndicator.adaptive(),
-                          )
-                        : const Text("Submit"),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
+  void initState() {
+    super.initState();
+    final authController = Get.find<AppAuthController>();
+    ever(authController.isUserAuthenticated, (isAuthenticated) {
+      if (isAuthenticated) Get.offAllNamed('/home');
     });
   }
 
-  Widget _buildTextField(
-      TextEditingController controller, String label, String? errorMessage,
-      {bool isRequired = true,
-      bool isEmail = false,
-      bool isObscurePass = false,
-      bool isPassword = false,
-      bool isMobile = false}) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword && isObscurePass,
-      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
-      inputFormatters: isMobile
-          ? [
-              FilteringTextInputFormatter.digitsOnly, // Only allow numbers
-              LengthLimitingTextInputFormatter(10), // Enforce max length
-            ]
-          : [],
-      decoration: InputDecoration(
-          labelText: label,
-          suffix: isPassword
-              ? IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isObscurePass = !isObscurePass;
-                    });
-                  },
-                  icon: Icon(
-                      isObscurePass ? Icons.visibility : Icons.visibility_off))
-              : null),
-      validator: (value) {
-        if (isRequired && (value == null || value.trim().isEmpty)) {
-          return errorMessage;
-        }
-        if (isEmail && !GetUtils.isEmail(value ?? "")) {
-          return "Enter a valid email";
-        }
-        return null;
-      },
+  @override
+  Widget build(BuildContext context) {
+    final authController = Get.find<AppAuthController>();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Register")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const SizedBox(height: 50),
+              CustomTextField(
+                controller: authController.nameController,
+                label: "Name",
+                errorMessage: "Enter your name",
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: authController.mobileController,
+                label: "Mobile",
+                isMobile: true,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: authController.registerEmailController,
+                label: "Email",
+                isEmail: true,
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: authController.batchController,
+                label: "Batch",
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: authController.orgCodeController,
+                label: "Org Code",
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                controller: authController.registerPassController,
+                label: "Password",
+                isPassword: true,
+              ),
+              const SizedBox(height: 40),
+              Obx(() => SubmitButton(
+                    isLoading: authController.isRegisterLoading.value,
+                    onPressed: () => _submitForm(authController),
+                  )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SubmitButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  const SubmitButton(
+      {super.key, required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      child: isLoading
+          ? const CircularProgressIndicator.adaptive()
+          : const Text("Submit"),
     );
   }
 }
