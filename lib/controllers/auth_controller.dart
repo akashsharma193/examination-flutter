@@ -46,6 +46,19 @@ class AppAuthController extends GetxController {
     isLoading.value = true;
     update();
     try {
+      if (!emailController.text.isEmail) {
+        AppSnackbarWidget.showSnackBar(
+            isSuccess: false, subTitle: 'Enail is not valid');
+        return;
+      }
+      if (!RegExp(r'^(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$')
+          .hasMatch(passController.text)) {
+        AppSnackbarWidget.showSnackBar(
+            isSuccess: false,
+            subTitle:
+                'Password should contain 1 special symbol and atleast 6 char long...');
+        return;
+      }
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
       debugPrint("repsonse of login in authController : $response");

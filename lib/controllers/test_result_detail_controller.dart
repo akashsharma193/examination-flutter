@@ -3,6 +3,7 @@ import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class TestResultDetailController extends GetxController {
   bool isLoading = false;
@@ -19,10 +20,10 @@ class TestResultDetailController extends GetxController {
           update();
           break;
         case AppFailure():
-          Get.showSnackbar(GetSnackBar(
-            message: v.errorMessage,
-            title: v.code,
-          ));
+          AppSnackbarWidget.showSnackBar(
+            isSuccess: false,
+            subTitle: v.errorMessage,
+          );
           update();
           break;
       }

@@ -45,7 +45,7 @@ class ExamHistoryScreen extends StatelessWidget {
                                   onTap: () {
                                     Get.put(TestResultDetailController());
                                     Get.to(() => TestResultScreen(
-                                        qId: singleItem.questionId ?? ''));
+                                        qId: singleItem.subjectName ?? ''));
                                   },
                                   tileColor: Colors.black26,
                                   title: Text(singleItem.subjectName ?? '-'),
@@ -56,7 +56,7 @@ class ExamHistoryScreen extends StatelessWidget {
                                       Text(
                                           'by ${singleItem.teacherName ?? '-'}'),
                                       Text(
-                                          'by ${singleItem.stratTime?.formatTime ?? '-'}'),
+                                          'started on : ${singleItem.stratTime?.formatTime ?? '-'}'),
                                     ],
                                   ),
                                   trailing: SizedBox(

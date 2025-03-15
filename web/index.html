@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,12 +28,35 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>offline_test_app</title>
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  <script>
+    <!--Update with yours config-->
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCPDruIF3PUNUemrXWVX_H1TECAll8dJec',
+      appId: '1:243295987001:web:2e6cce918237ee735174e8',
+      messagingSenderId: '243295987001',
+      projectId: 'offline-14ce6',
+      authDomain: 'offline-14ce6.firebaseapp.com',
+      storageBucket: 'offline-14ce6.firebasestorage.app',
+      measurementId: 'G-RTYXPH7TRY',
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  <script src="main.dart.js" type="application/javascript"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      });
+    }
+  </script>
 </body>
+
 </html>

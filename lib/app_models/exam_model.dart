@@ -104,9 +104,9 @@ class QuestionModel {
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => QuestionModel(
         question: json["question"],
-        option: json["option"] == null
+        option: json['options'] == null
             ? []
-            : List<String>.from(json["option"]!.map((x) => x)),
+            : List<String>.from(json['options']!.map((x) => x)),
         correctAnswer: json["correctAnswer"],
         userAnswer: json["userAnswer"],
         color: json["color"],
@@ -114,7 +114,7 @@ class QuestionModel {
 
   Map<String, dynamic> toJson() => {
         "question": question,
-        "option":
+        'options':
             option == null ? [] : List<dynamic>.from(option!.map((x) => x)),
         "correctAnswer": correctAnswer,
         "userAnswer": userAnswer,

@@ -33,7 +33,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
             child: const Icon(Icons.refresh),
           ),
           appBar: AppBar(
-            title: Text("Test Result of ${widget.qId}"),
+            title: Text("Result of ${widget.qId}"),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -90,6 +90,14 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         value: model.correctAnswer.toDouble(),
                         color: Colors.green,
                         title: "${model.correctAnswer}",
+                        radius: 50,
+                        titleStyle:
+                            const TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                      PieChartSectionData(
+                        value: model.unAttemptedCount.toDouble(),
+                        color: Colors.grey,
+                        title: "${model.unAttemptedCount}",
                         radius: 50,
                         titleStyle:
                             const TextStyle(fontSize: 16, color: Colors.white),

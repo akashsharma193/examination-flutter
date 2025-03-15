@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppSnackbarWidget {
-  static void showSnackBar(
+  static Future<void> showSnackBar(
       {bool isSuccess = false, String subTitle = ''}) async {
-    log("showing snackbar from widget;;;;");
+    log("showing snackbar from widget...");
     Get.snackbar(
       isSuccess ? 'Success' : 'Failed',
       subTitle,

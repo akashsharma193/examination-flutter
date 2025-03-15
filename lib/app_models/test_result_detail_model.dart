@@ -81,7 +81,7 @@ class FinalResult {
   factory FinalResult.fromJson(Map<String, dynamic> json) {
     return FinalResult(
       question: json['question'] ?? '',
-      option: List<String>.from(json['option'] ?? []),
+      option: List<String>.from(json['options'] ?? []),
       correctAnswer: json['correctAnswer'] ?? '',
       userAnswer: json['userAnswer'] ?? '',
       color: json['color'] ?? '',
@@ -91,7 +91,7 @@ class FinalResult {
   Map<String, dynamic> toJson() {
     return {
       'question': question,
-      'option': option,
+      'options': option,
       'correctAnswer': correctAnswer,
       'userAnswer': userAnswer,
       'color': color,

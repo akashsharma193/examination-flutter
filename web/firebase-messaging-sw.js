@@ -10,11 +10,19 @@ firebase.initializeApp({
   appId: "1:243295987001:web:2e6cce918237ee735174e8",
   measurementId: "G-RTYXPH7TRY"
 });
-// Necessary to receive background messages:
+firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
+/*messaging.onMessage((payload) => {
+console.log('Message received. ', payload);*/
+messaging.onBackgroundMessage(function (payload) {
+  console.log('Received background message ', payload);
 
-// Optional:
-messaging.onBackgroundMessage((m) => {
-  console.log("onBackgroundMessage", m);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+  };
+
+  self.registration.showNotification(notificationTitle,
+    notificationOptions);
 });

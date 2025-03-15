@@ -21,6 +21,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
 
+  bool isObscurePass = false;
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
@@ -70,7 +71,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   ),
                   _buildTextField(authController.registerPassController,
                       "Password", "Enter a password",
-                      isPassword: true),
+                      isObscurePass: isObscurePass, isPassword: true),
                   const SizedBox(height: 59),
                   ElevatedButton(
                     onPressed: () => _submitForm(authController),
@@ -93,11 +94,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
       TextEditingController controller, String label, String? errorMessage,
       {bool isRequired = true,
       bool isEmail = false,
+      bool isObscurePass = false,
       bool isPassword = false,
       bool isMobile = false}) {
     return TextFormField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: isPassword && isObscurePass,
       keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
       inputFormatters: isMobile
           ? [
@@ -105,7 +107,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
               LengthLimitingTextInputFormatter(10), // Enforce max length
             ]
           : [],
-      decoration: InputDecoration(labelText: label),
+      decoration: InputDecoration(
+          labelText: label,
+          suffix: isPassword
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isObscurePass = !isObscurePass;
+                    });
+                  },
+                  icon: Icon(
+                      isObscurePass ? Icons.visibility : Icons.visibility_off))
+              : null),
       validator: (value) {
         if (isRequired && (value == null || value.trim().isEmpty)) {
           return errorMessage;

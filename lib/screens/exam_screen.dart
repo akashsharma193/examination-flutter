@@ -37,6 +37,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     questionList = widget.questions.map((e) => e.toJson()).toList();
+    questionList.shuffle();
 
     // Initialize Timer
     remainingSeconds = (int.tryParse(widget.examDurationMinutes) ?? 0) * 60;
@@ -201,53 +202,60 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
                 color: Colors.grey[200],
                 border: const Border(top: BorderSide(color: Colors.black26)),
               ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(questionList.length, (index) {
-                    bool isSelected = index == currentQuestionIndex;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          currentQuestionIndex = index;
-                        });
-                      },
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        margin: const EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.blue : Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.black),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "${index + 1}",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : Colors.black,
-                          ),
+              child: Wrap(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(questionList.length, (index) {
+                  bool isSelected = index == currentQuestionIndex;
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        currentQuestionIndex = index;
+                      });
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.blue : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        "${index + 1}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.black,
                         ),
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  );
+                }),
               ),
             ),
             const SizedBox(
               height: 20,
             ),
-            Text(
-              "Q ${currentQuestionIndex + 1}/${questionList.length}: ${currentQuestion["question"]}",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Text(
+                  "Q ${currentQuestionIndex + 1}/${questionList.length}: ${currentQuestion["question"]}",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                IconButton(
+                    onPressed: () {}, icon: Icon(Icons.bookmark_add_outlined))
+              ],
             ),
             const SizedBox(height: 20),
             Column(
               children:
-                  List<String>.from(currentQuestion["option"]).map((option) {
+                  List<String>.from(currentQuestion['options']).map((option) {
                 return RadioListTile<String>(
                   title: Text(option),
                   value: option,

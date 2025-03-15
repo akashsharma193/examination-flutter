@@ -104,18 +104,29 @@ class HomePage extends StatelessWidget {
                                       Text(
                                         'Start Time : ${singleItem.startTime?.formatTime}',
                                       ),
+                                      Text(
+                                        'End Time : ${singleItem.endTime?.formatTime}',
+                                      ),
                                     ],
                                   ),
-                                  trailing: SizedBox(
-                                    width: 140,
-                                    child: Obx(
-                                      () => Text(
-                                        controller.examTimers[
-                                                singleItem.questionId] ??
-                                            'Calculating...',
+                                  trailing: Column(
+                                    children: [
+                                      Text(
+                                        'Total Duuration : ${singleItem.examDuration} mins',
                                         textAlign: TextAlign.end,
                                       ),
-                                    ),
+                                      SizedBox(
+                                        width: 140,
+                                        child: Obx(
+                                          () => Text(
+                                            controller.examTimers[
+                                                    singleItem.questionId] ??
+                                                'Calculating...',
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
