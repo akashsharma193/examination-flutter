@@ -8,6 +8,7 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
 import 'package:offline_test_app/firebase_options.dart';
 import 'package:offline_test_app/screens/register_screen.dart';
+import 'package:offline_test_app/screens/splash_screen.dart';
 import 'package:offline_test_app/services/app_notification_services.dart';
 import 'package:offline_test_app/services/firebase_services_app.dart';
 
@@ -43,7 +44,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       getPages: AppRoute.routes,
-
+      home: SplashScreen(),
       initialRoute: '/',
       // home: LoginPage(),
     );

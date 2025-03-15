@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/test_result_detail_controller.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
@@ -34,7 +36,12 @@ class _TestResultScreenState extends State<TestResultScreen> {
             child: const Icon(Icons.refresh),
           ),
           appBar: AppBar(
-            title: Text("${widget.model.subjectName}"),
+            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: AppColors.appBar,
+            title: Text(
+              "${widget.model.subjectName}",
+              style: AppTextStyles.heading.copyWith(color: Colors.white),
+            ),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())

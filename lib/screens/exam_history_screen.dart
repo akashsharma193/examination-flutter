@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
+import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/screens/test_result_screen.dart';
-
+import 'package:offline_test_app/core/constants/color_constants.dart';
 import '../controllers/test_result_detail_controller.dart';
 
 class ExamHistoryScreen extends StatelessWidget {
@@ -16,8 +17,11 @@ class ExamHistoryScreen extends StatelessWidget {
       return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text(
+            iconTheme: IconThemeData(color: Colors.white),
+            backgroundColor: AppColors.appBar,
+            title: Text(
               'History',
+              style: AppTextStyles.heading.copyWith(color: Colors.white),
             ),
           ),
           body: examHistoryController.isLoading.value
@@ -28,7 +32,10 @@ class ExamHistoryScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: examHistoryController.allAttemptedExamsList.isEmpty
                       ? const Center(
-                          child: Text("You haven't given any exam yet.."),
+                          child: Text(
+                            "You haven't given any exam yet..",
+                            style: AppTextStyles.body,
+                          ),
                         )
                       : ListView.separated(
                           itemBuilder: (context, index) {
@@ -47,16 +54,23 @@ class ExamHistoryScreen extends StatelessWidget {
                                     Get.to(() =>
                                         TestResultScreen(model: singleItem));
                                   },
-                                  tileColor: Colors.black26,
-                                  title: Text(singleItem.subjectName ?? '-'),
+                                  tileColor: AppColors.cardBackground,
+                                  title: Text(
+                                    singleItem.subjectName ?? '-',
+                                    style: AppTextStyles.subheading,
+                                  ),
                                   subtitle: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                          'by ${singleItem.teacherName ?? '-'}'),
+                                        'by ${singleItem.teacherName ?? '-'}',
+                                        style: AppTextStyles.body,
+                                      ),
                                       Text(
-                                          'started on : ${singleItem.stratTime?.formatTime ?? '-'}'),
+                                        'Started on : ${singleItem.stratTime?.formatTime ?? '-'}',
+                                        style: AppTextStyles.body,
+                                      ),
                                     ],
                                   ),
                                   trailing: SizedBox(
@@ -64,6 +78,7 @@ class ExamHistoryScreen extends StatelessWidget {
                                     child: Text(
                                       'End :${singleItem.endTime?.formatTime}',
                                       textAlign: TextAlign.end,
+                                      style: AppTextStyles.body,
                                     ),
                                   ),
                                 ));

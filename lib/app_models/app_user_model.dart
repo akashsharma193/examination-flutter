@@ -1,4 +1,3 @@
-
 class UserModel {
   String name;
   String mobile;
@@ -8,6 +7,7 @@ class UserModel {
   String orgCode;
   String userId;
   bool isActive;
+  bool isAdmin; // New field
 
   UserModel({
     required this.name,
@@ -18,6 +18,7 @@ class UserModel {
     required this.orgCode,
     required this.userId,
     required this.isActive,
+    required this.isAdmin, // Required in constructor
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -30,6 +31,7 @@ class UserModel {
       orgCode: json['orgCode'] ?? '',
       userId: json['userId'] ?? '',
       isActive: json['isActive'] ?? false,
+      isAdmin: json['isAdmin'] ?? false, // Default to false if missing
     );
   }
 
@@ -43,6 +45,7 @@ class UserModel {
       'orgCode': orgCode,
       'userId': userId,
       'isActive': isActive,
+      'isAdmin': isAdmin, // Added to JSON output
     };
   }
 
@@ -65,11 +68,12 @@ class UserModel {
       orgCode: '',
       userId: '',
       isActive: false,
+      isAdmin: false, // Default empty user is not an admin
     );
   }
 
   @override
   String toString() {
-    return 'UserModel(name: $name, mobile: $mobile, email: $email, batch: $batch, password: $password, orgCode: $orgCode, userId: $userId, isActive: $isActive)';
+    return 'UserModel(name: $name, mobile: $mobile, email: $email, batch: $batch, password: $password, orgCode: $orgCode, userId: $userId, isActive: $isActive, isAdmin: $isAdmin)';
   }
 }

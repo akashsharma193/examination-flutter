@@ -56,25 +56,30 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       warningCount.value++;
       if (warningCount.value >= 4) autoSubmitExam();
-    } else if (state == AppLifecycleState.resumed && warningCount.value > 0 && warningCount.value < 4) {
+    } else if (state == AppLifecycleState.resumed &&
+        warningCount.value > 0 &&
+        warningCount.value < 4) {
       showBackgroundWarning();
     }
   }
 
   @override
   void didChangeMetrics() {
-    final screenWidth = View.of(Get.context!).physicalSize.width / View.of(Get.context!).devicePixelRatio;
+    final screenWidth = View.of(Get.context!).physicalSize.width /
+        View.of(Get.context!).devicePixelRatio;
 
-    if (screenWidth < 600) {
+    if (screenWidth < 350) {
       isAppInSplitScreen.value = true;
       closeOpenDialogs();
       Get.dialog(
         AlertDialog(
           title: Text("Warning!"),
-          content: Text("This app is not accessible in split-screen or floating window mode."),
+          content: Text(
+              "This app is not accessible in split-screen or floating window mode."),
           actions: [
             TextButton(onPressed: () => Get.back(), child: Text("OK")),
           ],
@@ -111,7 +116,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       testId,
     );
     Get.offAll(() => TestCompletedScreen(
-          list: questionList.map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))).toList(),
+          list: questionList
+              .map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
+              .toList(),
           testID: testId,
         ));
   }
@@ -140,7 +147,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
             TextButton(
               onPressed: () {
                 Get.offAll(() => TestCompletedScreen(
-                      list: questionList.map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))).toList(),
+                      list: questionList
+                          .map((e) => QuestionModel.fromJson(
+                              Map<String, dynamic>.from(e)))
+                          .toList(),
                       testID: testId,
                     ));
               },
@@ -158,7 +168,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     Get.dialog(
       AlertDialog(
         title: Text("Warning!"),
-        content: Text("You switched apps or minimized the exam.\nWarning: ${warningCount.value}/3"),
+        content: Text(
+            "You switched apps or minimized the exam.\nWarning: ${warningCount.value}/3"),
         actions: [
           TextButton(onPressed: () => Get.back(), child: Text("OK")),
         ],

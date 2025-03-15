@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/screens/admin_exam_dashboard.dart';
@@ -7,86 +9,102 @@ import 'package:offline_test_app/screens/network_log_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
 
-class AppDrawer extends StatelessWidget {
-  AppDrawer({
-    super.key,
-  });
-  final Map<String, Widget> drawerItems = {
-    'Exam History': const Icon(Icons.history_toggle_off_rounded),
-    'Network Logs': const Icon(Icons.bug_report),
-    'create-exam': const Icon(Icons.add),
-    'Log Out': const Icon(Icons.logout_outlined),
-  };
+class AppDrawer extends StatefulWidget {
+  const AppDrawer({super.key});
+
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
+}
+
+class _AppDrawerState extends State<AppDrawer> {
+  late Map<String, IconData> drawerItems;
+
+  @override
+  void initState() {
+    super.initState();
+    drawerItems = {
+      'Exam History': Icons.history_toggle_off_rounded,
+      'Network Logs': Icons.bug_report,
+      'Log Out': Icons.logout_outlined,
+    };
+    if (AppLocalStorage.instance.user.isAdmin) {
+      drawerItems['Create Exam'] = Icons.add;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: AppColors.dialogBackground,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(
-              height: 50,
-            ),
+            const SizedBox(height: 50),
             Align(
               alignment: Alignment.center,
               child: CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.blueGrey[200],
-                child: Text(AppLocalStorage.instance.user.name.getInitials),
+                backgroundColor: AppColors.primary,
+                child: Text(
+                  AppLocalStorage.instance.user.name.getInitials,
+                  style: AppTextStyles.heading.copyWith(color: Colors.white),
+                ),
               ),
             ),
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Batch : ${AppLocalStorage.instance.user.batch}'),
-                const SizedBox(
-                  width: 20,
-                ),
-                Text('Org Code : ${AppLocalStorage.instance.user.orgCode}'),
+                Text('Batch: ${AppLocalStorage.instance.user.batch}',
+                    style: AppTextStyles.body),
+                const SizedBox(width: 20),
+                Text('Org Code: ${AppLocalStorage.instance.user.orgCode}',
+                    style: AppTextStyles.body),
               ],
             ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text('user ID : ' + AppLocalStorage.instance.user.userId),
-            Text('email : ' + AppLocalStorage.instance.user.email),
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 10),
+            Text('User ID: ${AppLocalStorage.instance.user.userId}',
+                style: AppTextStyles.body),
+            Text('Email: ${AppLocalStorage.instance.user.email}',
+                style: AppTextStyles.body),
+            const SizedBox(height: 20),
             const Divider(),
-            const SizedBox(
-              height: 20,
-            ),
-            ...drawerItems.entries.map((e) => Padding(
-                  padding: const EdgeInsets.all(16.0),
+            const SizedBox(height: 20),
+            ...drawerItems.entries.map((entry) => Padding(
+                  padding: const EdgeInsets.all(12.0),
                   child: InkWell(
                     onTap: () {
-                      if (e.key == 'Exam History') {
-                        Get.toNamed('/exam-history');
-                      } else if (e.key == 'Network Logs') {
-                        Get.to(() => const NetworkLogScreen());
-                      } else if (e.key == 'Log Out') {
-                        final AuthRepo repo = AuthRepo();
-                        repo.logOut(
-                            userId: AppLocalStorage.instance.user.userId);
-                        AppLocalStorage.instance.clearStorage();
-                        Get.offAllNamed('/login');
-                      } else if (e.key == 'create-exam') {
-                        Get.to(() => AdminExamDashboard());
+                      switch (entry.key) {
+                        case 'Exam History':
+                          Get.toNamed('/exam-history');
+                          break;
+                        case 'Network Logs':
+                          Get.to(() => const NetworkLogScreen());
+                          break;
+                        case 'Log Out':
+                          final AuthRepo repo = AuthRepo();
+                          repo.logOut(
+                              userId: AppLocalStorage.instance.user.userId);
+                          AppLocalStorage.instance.clearStorage();
+                          Get.offAllNamed('/login');
+                          break;
+                        case 'Create Exam':
+                          Get.to(() => AdminExamDashboard());
+                          break;
                       }
                     },
                     child: Column(
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [Text(e.key), e.value],
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(entry.key, style: AppTextStyles.subheading),
+                            Icon(entry.value, color: AppColors.primary),
+                          ],
                         ),
-                        const Divider()
+                        const Divider(),
                       ],
                     ),
                   ),
@@ -102,15 +120,15 @@ class AppDrawer extends StatelessWidget {
                   return Center(
                     child: Column(
                       children: [
-                        Text(AppPackageService.instance.appName),
-                        Text(AppPackageService.instance.appVersion),
+                        Text(AppPackageService.instance.appName,
+                            style: AppTextStyles.body),
+                        Text(AppPackageService.instance.appVersion,
+                            style: AppTextStyles.body),
                       ],
                     ),
                   );
                 }),
-            const SizedBox(
-              height: 50,
-            ),
+            const SizedBox(height: 50),
           ],
         ),
       ),

@@ -6,14 +6,14 @@ import 'package:offline_test_app/screens/exam_screen.dart';
 import 'package:offline_test_app/screens/home.dart';
 
 import 'package:offline_test_app/screens/login_page.dart';
+import 'package:offline_test_app/screens/splash_screen.dart';
 
 class AppRoute {
   static final routes = [
     GetPage(
-        name: '/',
-        page: () => LoginPage(),
-        binding: AppBindings(),
-        middlewares: [AuthMiddleWare()]),
+      name: '/',
+      page: () => SplashScreen(),
+    ),
     GetPage(
         name: '/login',
         page: () => LoginPage(),
