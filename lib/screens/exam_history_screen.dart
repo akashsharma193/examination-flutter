@@ -44,8 +44,8 @@ class ExamHistoryScreen extends StatelessWidget {
                                   ),
                                   onTap: () {
                                     Get.put(TestResultDetailController());
-                                    Get.to(() => TestResultScreen(
-                                        qId: singleItem.subjectName ?? ''));
+                                    Get.to(() =>
+                                        TestResultScreen(model: singleItem));
                                   },
                                   tileColor: Colors.black26,
                                   title: Text(singleItem.subjectName ?? '-'),

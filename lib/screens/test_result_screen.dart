@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
+import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/test_result_detail_controller.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 
 class TestResultScreen extends StatefulWidget {
-  final String qId;
+  final SingleExamHistoryModel model;
 
-  const TestResultScreen({super.key, required this.qId});
+  const TestResultScreen({super.key, required this.model});
 
   @override
   State<TestResultScreen> createState() => _TestResultScreenState();
 }
 
 class _TestResultScreenState extends State<TestResultScreen> {
-  final controllerrrr = Get.put(TestResultDetailController());
+  final controller = Get.put(TestResultDetailController());
   @override
   void initState() {
-    controllerrrr.fetchData(widget.qId);
+    controller.fetchData(widget.model.questionId ?? '');
     super.initState();
   }
 
@@ -28,12 +29,12 @@ class _TestResultScreenState extends State<TestResultScreen> {
         return Scaffold(
           floatingActionButton: FloatingActionButton.small(
             onPressed: () {
-              controller.refreshData(widget.qId);
+              controller.refreshData(widget.model.questionId ?? '');
             },
             child: const Icon(Icons.refresh),
           ),
           appBar: AppBar(
-            title: Text("Result of ${widget.qId}"),
+            title: Text("${widget.model.subjectName}"),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())

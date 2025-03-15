@@ -30,7 +30,7 @@ class SingleExamHistoryModel {
         batch: json["batch"] as String? ?? 'N/A',
         userId: json["userId"] as String? ?? 'N/A',
         questionId: json["questionId"] as String? ?? 'N/A',
-        stratTime: DateTime.tryParse(json["stratTime"] ?? ''),
+        stratTime: DateTime.tryParse(json["startTime"] ?? ''),
         endTime: DateTime.tryParse(json['endTime'] ?? ''),
       );
   Map<String, dynamic> toJson() => {
@@ -41,13 +41,13 @@ class SingleExamHistoryModel {
         "batch": batch,
         "userId": userId,
         "questionId": questionId,
-        "stratTime": stratTime,
+        "startTime": stratTime,
         "endTime": endTime,
       };
 
   @override
   String toString() {
-    return 'SingleExamHistoryModel(answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, stratTime: $stratTime, endTime: $endTime)';
+    return 'SingleExamHistoryModel(answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $stratTime, endTime: $endTime)';
   }
 
   bool isEmpty() {

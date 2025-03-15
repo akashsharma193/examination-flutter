@@ -185,6 +185,10 @@ class HomeController extends GetxController {
   }
 
   void showAcknowledgementDialogPopUp() async {
+    while (Get.isDialogOpen ?? false) {
+      Get.back();
+    }
+
     await getCompliances();
     Get.defaultDialog(
       title: "Test Acknowledgement",
@@ -217,6 +221,7 @@ class HomeController extends GetxController {
                             subTitle: 'No internet Allowed in the Examination');
                         return;
                       } else {
+                        Get.back();
                         Get.toNamed('/exam-screen', arguments: {
                           "questions": selectedExam.questionList ?? [],
                           "testId": selectedExam.questionId ?? '',
