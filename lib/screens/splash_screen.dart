@@ -27,7 +27,7 @@ class SplashScreenState extends State<SplashScreen> {
     if (isAuthenticated) {
       Get.offNamed('/home'); // Navigate to HomePage
     } else {
-      Get.offNamed('/home'); // Navigate to LoginPage
+      Get.offNamed('/login'); // Navigate to LoginPage
     }
   }
 
