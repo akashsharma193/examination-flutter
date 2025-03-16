@@ -8,6 +8,52 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def getFlutterAppName() {
+    def pubspec = new File("${project.rootDir}/../pubspec.yaml")
+    def nameLine = pubspec.readLines().find { it.startsWith('name:') }
+    return nameLine ? nameLine.split(": ")[1].trim() : "my_app"
+}
+// Function to read and increment the version in pubspec.yaml
+def updateFlutterVersion() {
+    def pubspec = new File("${project.rootDir}/../pubspec.yaml")
+    if (!pubspec.exists()) return
+
+    def lines = pubspec.readLines()
+    def newLines = []
+    
+    lines.each { line ->
+        if (line.startsWith("version:")) {
+            def versionMatch = (line =~ /version:\s*(\d+\.\d+\.\d+)\+(\d+)/)
+            if (versionMatch) {
+                def versionName = versionMatch[0][1]  // e.g., "1.0.0"
+                def versionCode = versionMatch[0][2].toInteger() + 1  // Increment build number
+                newLines.add("version: ${versionName}+${versionCode}")
+                println "🔄 Updated version in pubspec.yaml: ${versionName}+${versionCode}"
+            } else {
+                newLines.add(line)
+            }
+        } else {
+            newLines.add(line)
+        }
+    }
+
+    pubspec.text = newLines.join("\n")
+}
+
+// Call the function before building the APK
+updateFlutterVersion()
+
+def getFlutterVersionName() {
+    def pubspec = new File("${project.rootDir}/../pubspec.yaml")
+    def versionLine = pubspec.readLines().find { it.startsWith('version:') }
+    return versionLine?.split(": ")[1]?.split("\\+")[0] ?: "1.0.0"
+}
+
+def getFlutterVersionCode() {
+    def pubspec = new File("${project.rootDir}/../pubspec.yaml")
+    def versionLine = pubspec.readLines().find { it.startsWith('version:') }
+    return versionLine?.split("\\+")[1]?.toInteger() ?: 1
+}
 android {
     namespace = "com.example.offline_test_app"
     compileSdk = 35
@@ -29,8 +75,9 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 21
         targetSdk = 31
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode getFlutterVersionCode()
+        versionName getFlutterVersionName()
+
     }
 
     buildTypes {
@@ -38,6 +85,16 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
+        }
+    }
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def appName = getFlutterAppName()
+            def buildType = variant.buildType.name // Use build type instead of flavor
+            def versionName = variant.versionName
+            def versionCode = variant.versionCode
+
+            outputFileName = "${appName}_${buildType}_${versionName}+${versionCode}.apk"
         }
     }
 }
