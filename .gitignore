@@ -18,6 +18,8 @@ migrate_working_dir/
 *.iws
 .idea/
 
+.env
+.env.*
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
@@ -32,7 +34,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-
+# Firebase related
+lib/firebase_options.dart
+web/firebase-config.json  # Prevents Firebase API keys from being exposed
+firebase.json
 # Symbolication related
 app.*.symbols
 
@@ -43,3 +48,33 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.gradle
+/android/local.properties
+/android/key.properties
+/android/app/google-services.json  # Prevent exposing Firebase credentials
+
+# Xcode related
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/engine/
+ios/.generated/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+
+# Web related
+web/firebase-messaging-sw.js
+web/firebase-config.json
+
+# Linux related
+linux/flutter/ephemeral/
+
+# Windows related
+windows/flutter/ephemeral/
+
+# macOS related
+macos/Flutter/ephemeral/
