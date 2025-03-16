@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          Text('Login', style: AppTextStyles.heading),
+                          const Text('Login', style: AppTextStyles.heading),
                           const SizedBox(height: 20),
                           CustomTextField(
                             controller: authController.emailController,

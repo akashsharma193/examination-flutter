@@ -20,7 +20,7 @@ class AdminExamDashboard extends StatelessWidget {
         title: Text("Create Exam",
             style: AppTextStyles.heading.copyWith(color: Colors.white)),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.appBar,
       ),
       body: Padding(

@@ -53,7 +53,7 @@ class RegistrationPageState extends State<RegistrationPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      Text("Register", style: AppTextStyles.heading),
+                      const Text("Register", style: AppTextStyles.heading),
                       const SizedBox(height: 20),
                       CustomTextField(
                         controller: authController.nameController,
@@ -101,7 +101,7 @@ class RegistrationPageState extends State<RegistrationPage> {
                             ),
                             child: authController.isRegisterLoading.value
                                 ? const CircularProgressIndicator.adaptive()
-                                : Text("Submit", style: AppTextStyles.button),
+                                : const Text("Submit", style: AppTextStyles.button),
                           )),
                     ],
                   ),
