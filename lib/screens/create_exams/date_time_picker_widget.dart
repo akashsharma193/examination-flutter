@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class DateTimePickerWidget extends StatelessWidget {
   final String label;
@@ -26,7 +25,7 @@ class DateTimePickerWidget extends StatelessWidget {
           firstDate: DateTime(2020),
           lastDate: DateTime(2100),
         );
-        if (picked != null) {
+        if (picked != null && context.mounted) {
           TimeOfDay? time = await showTimePicker(
               context: context, initialTime: TimeOfDay.now());
           if (time != null) {

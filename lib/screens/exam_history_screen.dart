@@ -17,7 +17,7 @@ class ExamHistoryScreen extends StatelessWidget {
       return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            iconTheme: IconThemeData(color: Colors.white),
+            iconTheme: const IconThemeData(color: Colors.white),
             backgroundColor: AppColors.appBar,
             title: Text(
               'History',

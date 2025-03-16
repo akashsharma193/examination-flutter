@@ -174,14 +174,14 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<HomeController>(builder: (controller) {
       return Scaffold(
-        drawer: AppDrawer(),
+        drawer: const AppDrawer(),
         floatingActionButton: FloatingActionButton.small(
           backgroundColor: AppColors.button,
-          child: const Icon(Icons.refresh, color: Colors.white),
           onPressed: controller.refreshPage,
+          child: const Icon(Icons.refresh, color: Colors.white),
         ),
         appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: Colors.white),
           title: Text('Home',
               style: AppTextStyles.heading.copyWith(color: Colors.white)),
           backgroundColor: AppColors.appBar,
@@ -269,7 +269,7 @@ class HomePage extends StatelessWidget {
                                         style: AppTextStyles.body
                                             .copyWith(fontSize: 12),
                                       ),
-                                      SizedBox(
+                                      const SizedBox(
                                         height: 20,
                                       ),
                                       Obx(

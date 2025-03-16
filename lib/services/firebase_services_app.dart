@@ -1,7 +1,7 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:offline_test_app/firebase_options.dart';
 
 class FirebaseService {
   FirebaseService._();
@@ -20,11 +20,11 @@ class FirebaseService {
 
     // Get and print FCM Token
     String? token = await getFcmToken();
-    print("FCM Token: $token");
+    log("FCM Token: $token");
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("New message received: ${message.notification?.title}");
+      log("New message received: ${message.notification?.title}");
     });
   }
 
@@ -36,7 +36,7 @@ class FirebaseService {
       sound: true,
     );
 
-    print("Notification Permission Status: ${settings.authorizationStatus}");
+    log("Notification Permission Status: ${settings.authorizationStatus}");
   }
 
   /// Get FCM Token for Android, iOS, and Web
@@ -47,10 +47,10 @@ class FirebaseService {
             vapidKey:
                 'BElSUkxBnFsd2zVZZSBoeWZxuJAPHCxvITuFvVlWSN7fEaLvMI4AnlO6m0JQbOAy2QuJyL8Ca_kH8DZaowgU7Ww');
       }
-      print("fetching non web token :");
+      log("fetching non web token :");
       return await _firebaseMessaging.getToken();
     } catch (e) {
-      print("Error getting FCM token: $e");
+      log("Error getting FCM token: $e");
       return null;
     }
   }

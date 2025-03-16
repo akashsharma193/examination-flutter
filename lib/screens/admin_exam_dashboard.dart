@@ -9,6 +9,8 @@ import 'package:offline_test_app/screens/create_exams/text_field_widget.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class AdminExamDashboard extends StatelessWidget {
+  const AdminExamDashboard({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,10 +27,10 @@ class ExamForm extends StatefulWidget {
   const ExamForm({super.key});
 
   @override
-  _ExamFormState createState() => _ExamFormState();
+  ExamFormState createState() => ExamFormState();
 }
 
-class _ExamFormState extends State<ExamForm> {
+class ExamFormState extends State<ExamForm> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _teacherController = TextEditingController();
@@ -36,14 +38,16 @@ class _ExamFormState extends State<ExamForm> {
   final TextEditingController _batchController = TextEditingController();
   DateTime? _startTime;
   DateTime? _endTime;
-  List<Map<String, dynamic>> _questions = [];
+  final List<Map<String, dynamic>> _questions = [];
   int examDuration = 5;
   bool isExamSubmitting = false;
   bool _validateQuestions() {
     for (var question in _questions) {
       if (question["question"].trim().isEmpty) return false;
       if (question["options"].any((opt) => (opt as String).trim().isEmpty) ||
-          question['options'].length < 4) return false;
+          question['options'].length < 4) {
+        return false;
+      }
       if (question["correctAnswer"].trim().isEmpty) return false;
     }
     return true;

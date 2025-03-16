@@ -5,11 +5,13 @@ import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
@@ -17,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
 
     bool isAuthenticated =
         AppLocalStorage.instance.isLoggedIn; // Check login status
@@ -42,13 +44,13 @@ class _SplashScreenState extends State<SplashScreen> {
               'assets/app_logo.png', // Add your logo in assets folder
               width: 150,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             // App Name
             Text(
               "AIREXAM",
               style: AppTextStyles.heading.copyWith(fontSize: 28),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             // Tagline
             Text(
               "Exam without internet, focus without distraction.",
@@ -58,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 fontSize: 16,
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
           ],
         ),
       ),

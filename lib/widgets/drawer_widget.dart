@@ -91,7 +91,7 @@ class _AppDrawerState extends State<AppDrawer> {
                           Get.offAllNamed('/login');
                           break;
                         case 'Create Exam':
-                          Get.to(() => AdminExamDashboard());
+                          Get.to(() => const AdminExamDashboard());
                           break;
                       }
                     },

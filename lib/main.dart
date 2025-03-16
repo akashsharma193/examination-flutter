@@ -1,13 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/route_manager.dart';
-import 'package:offline_test_app/controllers/auth_controller.dart';
 import 'package:offline_test_app/core/routes/app_route.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
 import 'package:offline_test_app/firebase_options.dart';
-import 'package:offline_test_app/screens/register_screen.dart';
 import 'package:offline_test_app/screens/splash_screen.dart';
 import 'package:offline_test_app/services/app_notification_services.dart';
 import 'package:offline_test_app/services/firebase_services_app.dart';
@@ -44,7 +41,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       getPages: AppRoute.routes,
-      home: SplashScreen(),
+      home: const SplashScreen(),
       initialRoute: '/',
       // home: LoginPage(),
     );

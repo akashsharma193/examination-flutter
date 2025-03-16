@@ -1,8 +1,6 @@
 import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:get/route_manager.dart';
-import 'package:get/utils.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';

@@ -13,10 +13,10 @@ class QuestionCardWidget extends StatefulWidget {
   });
 
   @override
-  _QuestionCardWidgetState createState() => _QuestionCardWidgetState();
+  QuestionCardWidgetState createState() => QuestionCardWidgetState();
 }
 
-class _QuestionCardWidgetState extends State<QuestionCardWidget> {
+class QuestionCardWidgetState extends State<QuestionCardWidget> {
   late TextEditingController _questionController;
   List<TextEditingController> _optionControllers = [];
   int? _selectedAnswerIndex;
@@ -65,7 +65,7 @@ class _QuestionCardWidgetState extends State<QuestionCardWidget> {
                     controller: _questionController,
                     decoration: InputDecoration(
                       labelText: "Question ${widget.index + 1}",
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (val) => widget.questionData["question"] = val,
                   ),
@@ -99,7 +99,7 @@ class _QuestionCardWidgetState extends State<QuestionCardWidget> {
                     controller: _optionControllers[optionIndex],
                     decoration: InputDecoration(
                       labelText: "Option ${optionIndex + 1}",
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                     onChanged: (val) {
                       if (widget.questionData["options"].length <=

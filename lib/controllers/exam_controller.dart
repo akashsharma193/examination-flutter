@@ -77,11 +77,11 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       closeOpenDialogs();
       Get.dialog(
         AlertDialog(
-          title: Text("Warning!"),
-          content: Text(
+          title: const Text("Warning!"),
+          content: const Text(
               "This app is not accessible in split-screen or floating window mode."),
           actions: [
-            TextButton(onPressed: () => Get.back(), child: Text("OK")),
+            TextButton(onPressed: () => Get.back(), child: const Text("OK")),
           ],
         ),
         barrierDismissible: false,
@@ -92,7 +92,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds.value > 0) {
         remainingSeconds.value--;
       } else {
@@ -140,7 +140,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     } else {
       Get.dialog(
         AlertDialog(
-          title: Text("Test Completed"),
+          title: const Text("Test Completed"),
           content: Text(
               'Turn on Internet\nDo you want to submit TEST?\nAttempted ${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}'),
           actions: [
@@ -154,7 +154,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
                       testID: testId,
                     ));
               },
-              child: Text("OK"),
+              child: const Text("OK"),
             ),
           ],
         ),
@@ -167,11 +167,11 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     closeOpenDialogs();
     Get.dialog(
       AlertDialog(
-        title: Text("Warning!"),
+        title: const Text("Warning!"),
         content: Text(
             "You switched apps or minimized the exam.\nWarning: ${warningCount.value}/3"),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: Text("OK")),
+          TextButton(onPressed: () => Get.back(), child: const Text("OK")),
         ],
       ),
       barrierDismissible: false,
@@ -182,10 +182,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     closeOpenDialogs();
     Get.dialog(
       AlertDialog(
-        title: Text("Warning!"),
-        content: Text("You cannot use the internet while attempting the exam."),
+        title: const Text("Warning!"),
+        content: const Text("You cannot use the internet while attempting the exam."),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: Text("OK")),
+          TextButton(onPressed: () => Get.back(), child: const Text("OK")),
         ],
       ),
       barrierDismissible: false,

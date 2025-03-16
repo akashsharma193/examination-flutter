@@ -12,7 +12,7 @@ class CustomTextField extends StatefulWidget {
   final int? maxLength;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     this.errorMessage,
@@ -21,13 +21,13 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.isMobile = false,
     this.maxLength,
-  }) : super(key: key);
+  });
 
   @override
-  _CustomTextFieldState createState() => _CustomTextFieldState();
+  CustomTextFieldState createState() => CustomTextFieldState();
 }
 
-class _CustomTextFieldState extends State<CustomTextField> {
+class CustomTextFieldState extends State<CustomTextField> {
   bool isObscurePass = true; // Password visibility state
 
   @override

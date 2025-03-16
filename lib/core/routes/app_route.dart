@@ -12,11 +12,11 @@ class AppRoute {
   static final routes = [
     GetPage(
       name: '/',
-      page: () => SplashScreen(),
+      page: () => const SplashScreen(),
     ),
     GetPage(
         name: '/login',
-        page: () => LoginPage(),
+        page: () => const LoginPage(),
         binding: AppBindings(),
         middlewares: [AuthMiddleWare()]),
     GetPage(

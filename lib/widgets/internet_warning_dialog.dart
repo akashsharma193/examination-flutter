@@ -10,7 +10,7 @@ void showInternetWarningDialog(BuildContext context) {
           borderRadius: BorderRadius.circular(15),
         ),
         backgroundColor: Colors.white,
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.wifi_off, color: Colors.red, size: 30),
             SizedBox(width: 10),
@@ -18,7 +18,7 @@ void showInternetWarningDialog(BuildContext context) {
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
-        content: Text(
+        content: const Text(
           "You cannot attempt the exam while the internet is on.\nPlease disconnect and try again.",
           style: TextStyle(fontSize: 16),
         ),
@@ -28,8 +28,8 @@ void showInternetWarningDialog(BuildContext context) {
               // Perform any action needed, like redirecting or closing the app
               Navigator.of(context).pop();
             },
-            icon: Icon(Icons.close),
-            label: Text("OK"),
+            icon: const Icon(Icons.close),
+            label: const Text("OK"),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,

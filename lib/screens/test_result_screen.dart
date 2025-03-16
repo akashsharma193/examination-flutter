@@ -36,7 +36,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
             child: const Icon(Icons.refresh),
           ),
           appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.white),
+            iconTheme: const IconThemeData(color: Colors.white),
             backgroundColor: AppColors.appBar,
             title: Text(
               "${widget.model.subjectName}",

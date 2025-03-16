@@ -7,10 +7,10 @@ class QuestionListWidget extends StatefulWidget {
   const QuestionListWidget({super.key, required this.questions});
 
   @override
-  _QuestionListWidgetState createState() => _QuestionListWidgetState();
+  QuestionListWidgetState createState() => QuestionListWidgetState();
 }
 
-class _QuestionListWidgetState extends State<QuestionListWidget> {
+class QuestionListWidgetState extends State<QuestionListWidget> {
   void _addQuestion() {
     setState(() {
       widget.questions
@@ -34,7 +34,7 @@ class _QuestionListWidgetState extends State<QuestionListWidget> {
             questionData: entry.value,
             onDelete: () => _removeQuestion(entry.key),
           );
-        }).toList(),
+        }),
         const SizedBox(height: 10),
         ElevatedButton(
           onPressed: _addQuestion,
