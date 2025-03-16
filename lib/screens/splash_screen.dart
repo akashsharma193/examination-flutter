@@ -47,7 +47,7 @@ class SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 20),
             // App Name
             Text(
-              "AIREXAM",
+              "OFFLINE EXAM APP",
               style: AppTextStyles.heading.copyWith(fontSize: 28),
             ),
             const SizedBox(height: 10),

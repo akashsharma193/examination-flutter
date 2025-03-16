@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/screens/create_exams/date_time_picker_widget.dart';
@@ -14,11 +16,23 @@ class AdminExamDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Create Exam"), centerTitle: true),
-      body: const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: ExamForm(), // Extracted widget
+      appBar: AppBar(
+        title: Text("Create Exam",
+            style: AppTextStyles.heading.copyWith(color: Colors.white)),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: AppColors.appBar,
       ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: const ExamForm(),
+          ),
+        ),
+      ),
+      backgroundColor: AppColors.cardBackground,
     );
   }
 }
@@ -41,6 +55,7 @@ class ExamFormState extends State<ExamForm> {
   final List<Map<String, dynamic>> _questions = [];
   int examDuration = 5;
   bool isExamSubmitting = false;
+
   bool _validateQuestions() {
     for (var question in _questions) {
       if (question["question"].trim().isEmpty) return false;
@@ -100,50 +115,67 @@ class ExamFormState extends State<ExamForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFieldWidget(
-                label: "Subject Name", controller: _subjectController),
-            TextFieldWidget(
-                label: "Teacher Name", controller: _teacherController),
-            TextFieldWidget(
-                label: "Organization Code", controller: _orgCodeController),
-            TextFieldWidget(label: "Batch", controller: _batchController),
-            DropdownButtonFormField<int>(
-              decoration:
-                  const InputDecoration(labelText: "Exam Duration (minutes)"),
-              value: examDuration,
-              items: List.generate(36, (index) => (index + 1) * 5)
-                  .map((e) =>
-                      DropdownMenuItem(value: e, child: Text("$e minutes")))
-                  .toList(),
-              onChanged: (value) => setState(() => examDuration = value!),
+    return Card(
+      color: AppColors.dialogBackground,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFieldWidget(
+                    label: "Subject Name", controller: _subjectController),
+                TextFieldWidget(
+                    label: "Teacher Name", controller: _teacherController),
+                TextFieldWidget(
+                    label: "Organization Code", controller: _orgCodeController),
+                TextFieldWidget(label: "Batch", controller: _batchController),
+                DropdownButtonFormField<int>(
+                  decoration: const InputDecoration(
+                      labelText: "Exam Duration (minutes)"),
+                  value: examDuration,
+                  items: List.generate(36, (index) => (index + 1) * 5)
+                      .map((e) =>
+                          DropdownMenuItem(value: e, child: Text("$e minutes")))
+                      .toList(),
+                  onChanged: (value) => setState(() => examDuration = value!),
+                ),
+                DateTimePickerWidget(
+                    label: "Start Time",
+                    dateTime:
+                        _startTime == null ? '' : _startTime?.formatTime ?? '',
+                    onPicked: (date) => setState(() => _startTime = date)),
+                DateTimePickerWidget(
+                    label: "End Time",
+                    dateTime:
+                        _endTime == null ? '' : _endTime?.formatTime ?? '',
+                    onPicked: (date) => setState(() => _endTime = date)),
+                const SizedBox(height: 20),
+                QuestionListWidget(questions: _questions),
+                const SizedBox(height: 20),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.button,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: isExamSubmitting
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Text("Submit Exam",
+                            style: AppTextStyles.button),
+                  ),
+                ),
+              ],
             ),
-            DateTimePickerWidget(
-                label: "Start Time",
-                dateTime:
-                    _startTime == null ? '' : _startTime?.formatTime ?? '',
-                onPicked: (date) => setState(() => _startTime = date)),
-            DateTimePickerWidget(
-                label: "End Time",
-                dateTime: _endTime == null ? '' : _endTime?.formatTime ?? '',
-                onPicked: (date) => setState(() => _endTime = date)),
-            const SizedBox(height: 20),
-            QuestionListWidget(questions: _questions),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: _submitForm,
-                child: isExamSubmitting
-                    ? const CircularProgressIndicator.adaptive()
-                    : const Text("Submit Exam", style: TextStyle(fontSize: 18)),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

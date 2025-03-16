@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
@@ -51,9 +53,28 @@ class CustomTextFieldState extends State<CustomTextField> {
               : widget.maxLength != null
                   ? [LengthLimitingTextInputFormatter(widget.maxLength)]
                   : [],
+          style: AppTextStyles.body,
           decoration: InputDecoration(
             labelText: widget.label,
-            border: const OutlineInputBorder(),
+            labelStyle: AppTextStyles.subheading,
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(color: AppColors.error, width: 2),
+            ),
             suffixIcon: widget.isPassword
                 ? IconButton(
                     onPressed: () {
@@ -72,14 +93,14 @@ class CustomTextFieldState extends State<CustomTextField> {
               return widget.errorMessage ?? "This field is required";
             }
             if (widget.isEmail &&
-                !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
+                !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}\$')
                     .hasMatch(value ?? "")) {
               return "Enter a valid email";
             }
             if (widget.isPassword &&
-                !RegExp(r'^(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$')
+                !RegExp(r'^(?=.*[!@#\$%^&*(),.?":{}|<>]).{6,}\$')
                     .hasMatch(value ?? '')) {
-              return "Password must contain one special symbol and 6 char long";
+              return "Password must contain one special symbol and be 6+ chars long";
             }
             return null;
           },

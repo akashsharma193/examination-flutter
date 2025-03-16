@@ -9,5 +9,9 @@ class AppColors {
   static const Color cardBackground = Color(0xFFFFF8F1); // Very Light Beige
   static const Color textPrimary = Color(0xFF3D2E1E); // Deep Brown
   static const Color success = Color(0xFF4CAF50); // Green
-  static const Color error = Color(0xFFD32F2F); // Red
+  static const Color error = Color(0xFFD32F2F);
+
+  static const Color border = Colors.grey;
+
+  static Color? inputBackground = Colors.grey[200]; // Red
 }
