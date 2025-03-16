@@ -6,7 +6,6 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/data/remote/app_dio_service.dart';
 import 'package:offline_test_app/firebase_options.dart';
 import 'package:offline_test_app/screens/splash_screen.dart';
-import 'package:offline_test_app/services/app_notification_services.dart';
 import 'package:offline_test_app/services/firebase_services_app.dart';
 
 void main() async {
@@ -15,12 +14,8 @@ void main() async {
 
   await AppLocalStorage.instance.initAppLocalStorage();
 
-  // AppLocalStorage.instance.clearStorage();
-
-  NotificationService notificationService = NotificationService();
-
-  await FirebaseService.instance.initialize();
-  await notificationService.initialize();
+  await AppFirebaseService.instance.initialize();
+  await AppNotificationService.instance.initialize();
   await AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
   runApp(const MyApp());

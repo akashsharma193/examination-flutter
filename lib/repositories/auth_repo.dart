@@ -73,7 +73,7 @@ class AuthRepo {
   /// call  FCM api
   Future<AppResult<dynamic>> saveFCMToken({required String userId}) async {
     try {
-      final token = await FirebaseService().getFcmToken();
+      final token = await AppFirebaseService.instance.getFcmToken();
       if (token == null || token.isEmpty) {
         return AppResult.success(null);
       }
