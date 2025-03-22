@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:offline_test_app/screens/create_exams/question_card_widget.dart';
+import 'package:offline_test_app/screens/admin_screen/create_exams/question_card_widget.dart';
 
 class QuestionListWidget extends StatefulWidget {
   final List<Map<String, dynamic>> questions;

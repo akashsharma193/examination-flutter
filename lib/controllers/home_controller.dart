@@ -17,9 +17,9 @@ class HomeController extends GetxController {
   RxBool isCompliencesLoading = false.obs;
   RxBool isChecked = false.obs;
 
-  RxList<GetExamModel> allExams = <GetExamModel>[].obs;
+  RxList<ExamModel> allExams = <ExamModel>[].obs;
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
-  GetExamModel selectedExam = GetExamModel.toEmpty();
+  ExamModel selectedExam = ExamModel.toEmpty();
 
   // Stores remaining time for each exam (key: examId, value: remaining time)
   RxMap<String, String> examTimers = <String, String>{}.obs;

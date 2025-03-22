@@ -13,7 +13,7 @@ class ExamRepo {
   final dioService = AppDioService.instance;
 
   /// call  login api
-  Future<AppResult<List<GetExamModel>>> getAllExams(
+  Future<AppResult<List<ExamModel>>> getAllExams(
       {required String orgCode, required String batchId}) async {
     try {
       final response =
@@ -25,7 +25,7 @@ class ExamRepo {
       switch (response) {
         case AppSuccess():
           return AppSuccess((response.value['data'] as List<dynamic>)
-              .map((e) => GetExamModel.fromJson(e))
+              .map((e) => ExamModel.fromJson(e))
               .toList());
         case AppFailure():
           return AppResult.failure(response);

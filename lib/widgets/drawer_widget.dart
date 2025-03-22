@@ -4,7 +4,7 @@ import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/screens/admin_exam_dashboard.dart';
+import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:offline_test_app/screens/network_log_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
@@ -17,19 +17,22 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  late Map<String, IconData> drawerItems;
+  Map<String, IconData> drawerItems = {};
 
   @override
   void initState() {
     super.initState();
-    drawerItems = {
-      'Exam History': Icons.history_toggle_off_rounded,
-      'Network Logs': Icons.bug_report,
-      'Log Out': Icons.logout_outlined,
-    };
+
+    if (!AppLocalStorage.instance.user.isAdmin) {
+      drawerItems['Exam History'] = Icons.history_toggle_off_rounded;
+    }
     if (AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Create Exam'] = Icons.add;
     }
+    drawerItems.addAll({
+      'Network Logs': Icons.bug_report,
+      'Log Out': Icons.logout_outlined,
+    });
   }
 
   @override

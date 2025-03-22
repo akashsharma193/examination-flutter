@@ -5,9 +5,9 @@ import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/screens/create_exams/date_time_picker_widget.dart';
-import 'package:offline_test_app/screens/create_exams/question_list_widget.dart';
-import 'package:offline_test_app/screens/create_exams/text_field_widget.dart';
+import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
+import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
+import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class AdminExamDashboard extends StatelessWidget {

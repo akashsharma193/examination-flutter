@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 
@@ -92,13 +93,11 @@ class CustomTextFieldState extends State<CustomTextField> {
             if (widget.isRequired && (value == null || value.trim().isEmpty)) {
               return widget.errorMessage ?? "This field is required";
             }
-            if (widget.isEmail &&
-                !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}\$')
-                    .hasMatch(value ?? "")) {
+            if (widget.isEmail && !value!.isEmail) {
               return "Enter a valid email";
             }
             if (widget.isPassword &&
-                !RegExp(r'^(?=.*[!@#\$%^&*(),.?":{}|<>]).{6,}\$')
+                !RegExp(r'^(?=.*[!@#\$%^&*(),.?":{}|<>]).{6,}')
                     .hasMatch(value ?? '')) {
               return "Password must contain one special symbol and be 6+ chars long";
             }

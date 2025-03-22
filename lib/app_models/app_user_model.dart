@@ -1,79 +1,95 @@
+import 'dart:convert';
+
 class UserModel {
-  String name;
-  String mobile;
-  String email;
-  String batch;
-  String? password;
-  String orgCode;
-  String userId;
-  bool isActive;
-  bool isAdmin; // New field
+  final String id;
+  final String name;
+  final String mobile;
+  final String email;
+  final String batch;
+  final String password;
+  final String orgCode;
+  final String userId;
+  final String fcmToken;
+  final bool isActive;
+  final bool isAdmin;
 
   UserModel({
+    required this.id,
     required this.name,
     required this.mobile,
     required this.email,
     required this.batch,
-    this.password,
+    required this.password,
     required this.orgCode,
     required this.userId,
+    required this.fcmToken,
     required this.isActive,
-    required this.isAdmin, // Required in constructor
+    required this.isAdmin,
   });
 
-  factory UserModel.fromJson(Map<String, dynamic> json) {
-    return UserModel(
-      name: json['name'] ?? '',
-      mobile: json['mobile'] ?? '',
-      email: json['email'] ?? '',
-      batch: json['batch'] ?? '',
-      password: json['password'],
-      orgCode: json['orgCode'] ?? '',
-      userId: json['userId'] ?? '',
-      isActive: json['isActive'] ?? false,
-      isAdmin: json['isAdmin'] ?? false, // Default to false if missing
-    );
-  }
+  factory UserModel.fromRawJson(String str) =>
+      UserModel.fromJson(json.decode(str));
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'mobile': mobile,
-      'email': email,
-      'batch': batch,
-      'password': password,
-      'orgCode': orgCode,
-      'userId': userId,
-      'isActive': isActive,
-      'isAdmin': isAdmin, // Added to JSON output
-    };
-  }
+  String toRawJson() => json.encode(toJson());
 
-  bool isEmpty() {
-    return name.isEmpty &&
-        mobile.isEmpty &&
-        email.isEmpty &&
-        batch.isEmpty &&
-        orgCode.isEmpty &&
-        userId.isEmpty;
-  }
+  factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
+        id: json["id"] ?? "",
+        name: json["name"] ?? "",
+        mobile: json["mobile"] ?? "",
+        email: json["email"] ?? "",
+        batch: json["batch"] ?? "",
+        password: json["password"] ?? "",
+        orgCode: json["orgCode"] ?? "",
+        userId: json["userId"] ?? "",
+        fcmToken: json["fcmToken"] ?? "",
+        isActive: json["isActive"] ?? false,
+        isAdmin: json["isAdmin"] ?? false,
+      );
 
-  static UserModel toEmpty() {
-    return UserModel(
-      name: '',
-      mobile: '',
-      email: '',
-      batch: '',
-      password: null,
-      orgCode: '',
-      userId: '',
-      isActive: false,
-      isAdmin: false, // Default empty user is not an admin
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        "id": id ?? "",
+        "name": name ?? "",
+        "mobile": mobile ?? "",
+        "email": email ?? "",
+        "batch": batch ?? "",
+        "password": password ?? "",
+        "orgCode": orgCode ?? "",
+        "userId": userId ?? "",
+        "fcmToken": fcmToken ?? "",
+        "isActive": isActive ?? false,
+        "isAdmin": isAdmin ?? false,
+      };
+
+  factory UserModel.toEmpty() => UserModel(
+        id: "",
+        name: "",
+        mobile: "",
+        email: "",
+        batch: "",
+        password: "",
+        orgCode: "",
+        userId: "",
+        fcmToken: "",
+        isActive: false,
+        isAdmin: false,
+      );
+
+  bool get isEmpty =>
+      id == "" &&
+      name == "" &&
+      mobile == "" &&
+      email == "" &&
+      batch == "" &&
+      password == "" &&
+      orgCode == "" &&
+      userId == "" &&
+      fcmToken == "" &&
+      isActive == false &&
+      isAdmin == false;
 
   @override
   String toString() {
-    return 'UserModel(name: $name, mobile: $mobile, email: $email, batch: $batch, password: $password, orgCode: $orgCode, userId: $userId, isActive: $isActive, isAdmin: $isAdmin)';
+    return 'UserModel(id: $id, name: $name, mobile: $mobile, email: $email, batch: $batch, '
+        'password: $password, orgCode: $orgCode, userId: $userId, fcmToken: $fcmToken, isActive: $isActive, isAdmin: $isAdmin)';
   }
 }
