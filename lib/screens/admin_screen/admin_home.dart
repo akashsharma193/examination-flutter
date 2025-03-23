@@ -5,6 +5,7 @@ import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:offline_test_app/screens/network_log_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -77,6 +78,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
           _buildSidebarItem(Icons.people, "Students"),
           _buildSidebarItem(Icons.assignment, "Exams"),
           _buildSidebarItem(Icons.settings, "Settings"),
+          _buildSidebarItem(Icons.settings, "Network Log", onTap: () {
+            Get.to(() => const NetworkLogScreen());
+          }),
           Spacer(),
           _buildSidebarItem(Icons.logout, "Logout", onTap: () {
             try {
@@ -94,16 +98,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildSidebarItem(IconData icon, String title, {VoidCallback? onTap}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white),
-          if (isSidebarExpanded) ...[
-            SizedBox(width: 10),
-            Text(title, style: TextStyle(color: Colors.white, fontSize: 18)),
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            if (isSidebarExpanded) ...[
+              SizedBox(width: 10),
+              Text(title, style: TextStyle(color: Colors.white, fontSize: 18)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
