@@ -6,7 +6,7 @@ class SingleExamHistoryModel {
   final String? batch;
   final String? userId;
   final String? questionId;
-  final DateTime? stratTime;
+  final DateTime? startTime;
   final DateTime? endTime;
 
   SingleExamHistoryModel({
@@ -17,7 +17,7 @@ class SingleExamHistoryModel {
     this.batch,
     this.userId,
     this.questionId,
-    this.stratTime,
+    this.startTime,
     this.endTime,
   });
 
@@ -30,7 +30,7 @@ class SingleExamHistoryModel {
         batch: json["batch"] as String? ?? 'N/A',
         userId: json["userId"] as String? ?? 'N/A',
         questionId: json["questionId"] as String? ?? 'N/A',
-        stratTime: DateTime.tryParse(json["startTime"] ?? ''),
+        startTime: DateTime.tryParse(json["startTime"] ?? ''),
         endTime: DateTime.tryParse(json['endTime'] ?? ''),
       );
   Map<String, dynamic> toJson() => {
@@ -41,13 +41,13 @@ class SingleExamHistoryModel {
         "batch": batch,
         "userId": userId,
         "questionId": questionId,
-        "startTime": stratTime,
+        "startTime": startTime,
         "endTime": endTime,
       };
 
   @override
   String toString() {
-    return 'SingleExamHistoryModel(answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $stratTime, endTime: $endTime)';
+    return 'SingleExamHistoryModel(answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $startTime, endTime: $endTime)';
   }
 
   bool isEmpty() {
@@ -58,7 +58,7 @@ class SingleExamHistoryModel {
         batch == null &&
         userId == null &&
         questionId == null &&
-        stratTime == null &&
+        startTime == null &&
         endTime == null;
   }
 
@@ -71,7 +71,7 @@ class SingleExamHistoryModel {
       batch: null,
       userId: null,
       questionId: null,
-      stratTime: null,
+      startTime: null,
       endTime: null,
     );
   }

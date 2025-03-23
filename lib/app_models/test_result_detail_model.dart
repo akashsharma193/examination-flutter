@@ -16,7 +16,7 @@ class TestResultDetailModel {
 
   factory TestResultDetailModel.fromJson(Map<String, dynamic> json) {
     return TestResultDetailModel(
-      finalResult: (json['finalResult'] as List)
+      finalResult: ((json['finalResult'] ?? []) as List)
           .map((e) => FinalResult.fromJson(e))
           .toList(),
       totalQuestion: json['totalQuestion'] ?? 0,

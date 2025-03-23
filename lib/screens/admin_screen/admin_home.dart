@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
@@ -140,7 +141,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       Get.toNamed(AppRoutesNames.userList);
                     }),
                     _buildCard("Total Exams", "15", Icons.assignment,
-                        onTap: () {}),
+                        onTap: () {
+                      Get.delete<ExamHistoryController>();
+                      Get.toNamed(AppRoutesNames.examHistory);
+                    }),
                     _buildCard("Active Exams", "5", Icons.timer, onTap: () {}),
                   ],
                 );

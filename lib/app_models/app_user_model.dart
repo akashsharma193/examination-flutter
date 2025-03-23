@@ -9,7 +9,7 @@ class UserModel {
   final String password;
   final String orgCode;
   final String userId;
-  final String fcmToken;
+  final String? fcmToken;
   final bool isActive;
   final bool isAdmin;
 
@@ -22,7 +22,7 @@ class UserModel {
     required this.password,
     required this.orgCode,
     required this.userId,
-    required this.fcmToken,
+    this.fcmToken,
     required this.isActive,
     required this.isAdmin,
   });

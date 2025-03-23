@@ -89,9 +89,9 @@ class ExamRepo {
   Future<AppResult<List<SingleExamHistoryModel>>> getExamHistory(
       {required String userId}) async {
     try {
-      final response =
-          await dioService.postDio(endpoint: 'answerPaper/getAllTest', body: {
-        "userId": AppLocalStorage.instance.user.userId,
+      final response = await dioService
+          .postDio(endpoint: 'report/getAllExamByUserId', body: {
+        "userId": userId,
       });
       switch (response) {
         case AppSuccess():
