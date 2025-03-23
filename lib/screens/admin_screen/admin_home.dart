@@ -4,6 +4,7 @@ import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/repositories/auth_repo.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -77,13 +78,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
           _buildSidebarItem(Icons.assignment, "Exams"),
           _buildSidebarItem(Icons.settings, "Settings"),
           Spacer(),
-          _buildSidebarItem(Icons.logout, "Logout"),
+          _buildSidebarItem(Icons.logout, "Logout", onTap: () {
+            try {
+              final AuthRepo repo = AuthRepo();
+              repo.logOut(userId: AppLocalStorage.instance.user.userId);
+              AppLocalStorage.instance.clearStorage();
+              Get.offAllNamed('/login');
+            } catch (e) {
+              debugPrint("error in logout admin home : $e");
+            }
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildSidebarItem(IconData icon, String title) {
+  Widget _buildSidebarItem(IconData icon, String title, {VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
