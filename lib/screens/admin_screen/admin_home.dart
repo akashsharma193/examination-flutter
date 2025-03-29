@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
+import 'package:offline_test_app/controllers/user_list_controller.dart';
 import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/helper.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:offline_test_app/screens/network_log_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -14,6 +18,10 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   bool isSidebarExpanded = true;
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +83,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ),
           SizedBox(height: 20),
           _buildSidebarItem(Icons.dashboard, "Dashboard"),
-          _buildSidebarItem(Icons.people, "Students"),
-          _buildSidebarItem(Icons.assignment, "Exams"),
+          _buildSidebarItem(Icons.people, "Students", onTap: () {
+            Get.toNamed(AppRoutesNames.userList);
+          }),
+          _buildSidebarItem(Icons.assignment, "Exams", onTap: () {
+            Get.toNamed(AppRoutesNames.examHistory);
+          }),
+          _buildSidebarItem(Icons.assignment, "Create Exam", onTap: () {
+            Get.to(() => const AdminExamDashboard());
+          }),
           _buildSidebarItem(Icons.settings, "Settings"),
           _buildSidebarItem(Icons.settings, "Network Log", onTap: () {
             Get.to(() => const NetworkLogScreen());
@@ -153,16 +168,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   crossAxisSpacing: 20,
                   mainAxisSpacing: 20,
                   children: [
-                    _buildCard("Total Students", "120", Icons.people,
-                        onTap: () {
+                    _buildCard("Total Students", "", Icons.people, onTap: () {
                       Get.toNamed(AppRoutesNames.userList);
                     }),
-                    _buildCard("Total Exams", "15", Icons.assignment,
-                        onTap: () {
+                    _buildCard("Total Exams", "", Icons.assignment, onTap: () {
                       Get.delete<ExamHistoryController>();
                       Get.toNamed(AppRoutesNames.examHistory);
                     }),
-                    _buildCard("Active Exams", "5", Icons.timer, onTap: () {}),
+                    _buildCard("Active Exams", "", Icons.timer, onTap: () {
+                      Get.delete<ExamHistoryController>();
+                      Get.toNamed(AppRoutesNames.examHistory, arguments: {
+                        'activeExam': true,
+                        'title': 'Active Exams'
+                      });
+                    }),
                   ],
                 );
               },
@@ -206,5 +225,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
       ),
     );
+  }
+
+  int getActiveExamsLength(List<SingleExamHistoryModel> allAttemptedExamsList) {
+    debugPrint("calculating active exams : ${allAttemptedExamsList}");
+    return allAttemptedExamsList
+        .where((e) => e.endTime?.isAfter(DateTime.now()) ?? false)
+        .toList()
+        .length;
   }
 }

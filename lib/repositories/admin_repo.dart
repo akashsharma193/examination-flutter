@@ -47,20 +47,19 @@ class AdminRepo {
     }
   }
 
-  Future<AppResult<bool>> updateUserDetails(UserModel updatedUser,
-      {required String userId}) async {
+  Future<AppResult<UserModel>> updateUserDetails(
+      Map<String, dynamic> body) async {
     try {
-      final response = await dioService.postDio(
-          endpoint: ApiEndpoints.getAllUsersList,
-          body: {"userData": updatedUser.toJson(), "userId": userId});
+      final response =
+          await dioService.postDio(endpoint: 'user/registration', body: body);
       switch (response) {
         case AppSuccess():
-          return const AppSuccess(true);
+          return AppSuccess(UserModel.fromJson(response.value['data']));
         case AppFailure():
-          return AppResult.failure(response);
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      log("error caught in Admin repo updateUserDetails func : $e");
       return AppResult.failure(const AppFailure());
     }
   }

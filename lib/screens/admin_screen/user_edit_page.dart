@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:offline_test_app/app_models/app_user_model.dart';
 import 'package:offline_test_app/controllers/edit_user_detail_controller.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart'; // Import the color constants
 
 class EditUserScreen extends StatelessWidget {
-  final EditUserDetailController controller =
-      Get.put(EditUserDetailController());
-
-  EditUserScreen({super.key});
+  const EditUserScreen({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class EditUserScreen extends StatelessWidget {
         backgroundColor: AppColors.appBar, // Dark Brown
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Obx(() {
+      body: GetBuilder<EditUserDetailController>(builder: (controller) {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -47,13 +47,13 @@ class EditUserScreen extends StatelessWidget {
   Widget _buildMobileForm(EditUserDetailController controller) {
     return Column(
       children: [
-        _buildTextField('Name', controller.nameController),
-        _buildTextField('Mobile', controller.mobileController),
-        _buildTextField('Email', controller.emailController),
-        _buildTextField('Batch', controller.batchController),
-        _buildTextField('Password', controller.passwordController,
-            isPassword: true),
-        _buildTextField('Org Code', controller.orgCodeController),
+        _buildTextField('Name', controller.nameController, controller),
+        _buildTextField('Mobile', controller.mobileController, controller),
+        _buildTextField('Email', controller.emailController, controller),
+        _buildTextField('Batch', controller.batchController, controller),
+        // _buildTextField('Password', controller.passwordController, controller,
+        //     isPassword: true),
+        // _buildTextField('Org Code', controller.orgCodeController, controller),
         _buildSwitch('Is Active', controller.isActive),
         _buildSwitch('Is Admin', controller.isAdmin),
         const SizedBox(height: 20),
@@ -68,20 +68,13 @@ class EditUserScreen extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: _buildTextField('Name', controller.nameController)),
+            Expanded(
+                child: _buildTextField(
+                    'Name', controller.nameController, controller)),
             const SizedBox(width: 16),
             Expanded(
-                child: _buildTextField('Mobile', controller.mobileController)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-                child: _buildTextField('Email', controller.emailController)),
-            const SizedBox(width: 16),
-            Expanded(
-                child: _buildTextField('Batch', controller.batchController)),
+                child: _buildTextField(
+                    'Mobile', controller.mobileController, controller)),
           ],
         ),
         const SizedBox(height: 16),
@@ -89,14 +82,26 @@ class EditUserScreen extends StatelessWidget {
           children: [
             Expanded(
                 child: _buildTextField(
-                    'Password', controller.passwordController,
-                    isPassword: true)),
+                    'Email', controller.emailController, controller)),
             const SizedBox(width: 16),
             Expanded(
-                child:
-                    _buildTextField('Org Code', controller.orgCodeController)),
+                child: _buildTextField(
+                    'Batch', controller.batchController, controller)),
           ],
         ),
+        const SizedBox(height: 16),
+        // Row(
+        //   children: [
+        //     // Expanded(
+        //     //     child: _buildTextField(
+        //     //         'Password', controller.passwordController, controller,
+        //     //         isPassword: true)),
+        //     // const SizedBox(width: 16),
+        //     Expanded(
+        //         child: _buildTextField(
+        //             'Org Code', controller.orgCodeController, controller)),
+        //   ],
+        // ),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -112,14 +117,24 @@ class EditUserScreen extends StatelessWidget {
   }
 
   // Reusable TextField Widget
-  Widget _buildTextField(String label, TextEditingController controller,
+  Widget _buildTextField(String label, TextEditingController textController,
+      EditUserDetailController controller,
       {bool isPassword = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
+        controller: textController,
+        // obscureText: controller.isObscureText && isPassword,
         decoration: InputDecoration(
+          // suffix: isPassword
+          //     ? IconButton(
+          //         onPressed: controller.togglePasswordVisibilityy,
+          //         icon: Icon(
+          //           controller.isObscureText
+          //               ? Icons.visibility_off
+          //               : Icons.visibility,
+          //         ))
+          //     : const SizedBox.shrink(),
           labelText: label,
           labelStyle: TextStyle(color: AppColors.textPrimary), // Deep Brown
           border: OutlineInputBorder(

@@ -4,14 +4,22 @@ import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
+import 'package:offline_test_app/helper.dart';
+import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
+import 'package:offline_test_app/screens/admin_screen/view_exam_details.dart';
 import 'package:offline_test_app/screens/test_result_screen.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 import '../controllers/test_result_detail_controller.dart';
 
-class ExamHistoryScreen extends StatelessWidget {
-  const ExamHistoryScreen({super.key});
+class ExamHistoryScreen extends StatefulWidget {
+  ExamHistoryScreen({super.key});
 
+  @override
+  State<ExamHistoryScreen> createState() => _ExamHistoryScreenState();
+}
+
+class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
@@ -21,7 +29,7 @@ class ExamHistoryScreen extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
           backgroundColor: AppColors.appBar,
           title: Text(
-            'Exam History',
+            Get.arguments?['title'] ?? 'Exam History',
             style: AppTextStyles.heading.copyWith(color: Colors.white),
           ),
         ),
@@ -30,9 +38,11 @@ class ExamHistoryScreen extends StatelessWidget {
                 child: CircularProgressIndicator.adaptive(),
               )
             : examHistoryController.allAttemptedExamsList.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      "User hasn't given any exam yet.",
+                      Get.arguments?['title'] == 'Active Exams'
+                          ? 'No Active Exam '
+                          : "User hasn't given any exam yet.",
                       style: AppTextStyles.body,
                     ),
                   )
@@ -97,8 +107,9 @@ class ExamHistoryScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         onTap: controller.isFromGetAllExamTab
             ? () {
-                AppSnackbarWidget.showSnackBar(
-                    isSuccess: false, subTitle: 'Feature coming soon...');
+                Get.to(() => ViewExamDetails(
+                      examHistoryModel: singleItem,
+                    ));
               }
             : () {
                 Get.put(TestResultDetailController());
@@ -131,13 +142,24 @@ class ExamHistoryScreen extends StatelessWidget {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 8),
-              Text(
-                'Total Marks: ${singleItem.batch ?? '-'}',
-                style: AppTextStyles.body.copyWith(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              controller.isFromGetAllExamTab
+                  ? Align(
+                      alignment: Alignment.bottomRight,
+                      child: IconButton(
+                          onPressed: () {
+                            Get.to(() => AdminExamDashboard(
+                                  isEdit: true,
+                                  examHistoryModel: singleItem,
+                                ));
+                          },
+                          icon: const Icon(Icons.edit)))
+                  : Text(
+                      'Total Marks: ${singleItem.batch ?? '-'}',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ],
           ),
         ),

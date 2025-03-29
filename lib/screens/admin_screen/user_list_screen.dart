@@ -11,6 +11,7 @@ class UserListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         title: const Text('User List', style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.appBar,
       ),
@@ -94,17 +95,7 @@ class UserListScreen extends StatelessWidget {
                         ),
                     ],
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit, color: AppColors.textPrimary),
-                      const SizedBox(width: 10),
-                      Icon(
-                        Icons.info_outline,
-                        color: AppColors.textPrimary,
-                      ),
-                    ],
-                  ),
+                  trailing: Icon(Icons.edit, color: AppColors.textPrimary),
                 ),
               );
             },
@@ -184,25 +175,14 @@ class UserListScreen extends StatelessWidget {
                     SizedBox(
                       height: 10,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                            onPressed: () {
-                              Get.toNamed(AppRoutesNames.editUserScreen,
-                                  arguments: {"userId": user.userId});
-                            },
-                            icon:
-                                Icon(Icons.edit, color: AppColors.textPrimary)),
-                        const SizedBox(width: 10),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.info_outline,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ],
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: IconButton(
+                          onPressed: () {
+                            Get.toNamed(AppRoutesNames.editUserScreen,
+                                arguments: {"user": user});
+                          },
+                          icon: Icon(Icons.edit, color: AppColors.textPrimary)),
                     ),
                   ],
                 ),

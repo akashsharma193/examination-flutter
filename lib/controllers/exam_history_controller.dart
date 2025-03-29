@@ -12,19 +12,31 @@ class ExamHistoryController extends GetxController {
   bool isFromGetAllExamTab = false;
   final ExamRepo examRepo = ExamRepo();
   final AdminRepo adminRepo = AdminRepo();
-
+  bool showOnlyActiveExams = false;
   @override
   void onInit() {
     super.onInit();
     final String? userId =
         Get.arguments == null ? null : Get.arguments['userId'];
     isFromGetAllExamTab = userId == null;
+
     getHistory(userId);
+  }
+
+  _filterActiveExam() {
+    debugPrint(
+        "filtering exams, cureent exam : ${allAttemptedExamsList.length}");
+    allAttemptedExamsList =
+        List<SingleExamHistoryModel>.from(allAttemptedExamsList)
+            .where((e) => e.endTime?.isAfter(DateTime.now()) ?? false)
+            .toList();
   }
 
   void getHistory(String? userId) async {
     try {
       isLoading.value = true;
+      showOnlyActiveExams = Get.arguments?['activeExam'] ?? false;
+
       update();
       AppResult<List<SingleExamHistoryModel>>? resp;
 
@@ -36,9 +48,13 @@ class ExamHistoryController extends GetxController {
             userId: userId ?? AppLocalStorage.instance.user.userId);
       }
 
-      switch (resp!) {
+      switch (resp) {
         case AppSuccess(value: List<SingleExamHistoryModel> v):
           allAttemptedExamsList = v;
+
+          if (showOnlyActiveExams) {
+            _filterActiveExam();
+          }
           update();
           break;
         case AppFailure():

@@ -11,16 +11,14 @@ import 'package:offline_test_app/screens/admin_screen/create_exams/question_list
 import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
-class AdminExamDashboard extends StatelessWidget {
-  const AdminExamDashboard(
-      {super.key, this.isEdit = false, this.examHistoryModel});
-  final bool isEdit;
+class ViewExamDetails extends StatelessWidget {
+  const ViewExamDetails({super.key, this.examHistoryModel});
   final SingleExamHistoryModel? examHistoryModel;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Exam' : "Create Exam",
+        title: Text('Exam Details',
             style: AppTextStyles.heading.copyWith(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -29,7 +27,6 @@ class AdminExamDashboard extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ExamForm(
-          isEdit: isEdit,
           examHistoryModel: examHistoryModel,
         ),
       ),
@@ -39,8 +36,8 @@ class AdminExamDashboard extends StatelessWidget {
 }
 
 class ExamForm extends StatefulWidget {
-  const ExamForm({super.key, required this.isEdit, this.examHistoryModel});
-  final bool isEdit;
+  const ExamForm({super.key, this.examHistoryModel});
+
   final SingleExamHistoryModel? examHistoryModel;
 
   @override
@@ -57,70 +54,6 @@ class ExamFormState extends State<ExamForm> {
   DateTime? _endTime;
   List<Map<String, dynamic>> _questions = [];
   int examDuration = 5;
-  bool isExamSubmitting = false;
-
-  bool _validateQuestions() {
-    for (var question in _questions) {
-      if (question["question"].trim().isEmpty) return false;
-      if (question["options"].any((opt) => (opt as String).trim().isEmpty) ||
-          question['options'].length < 4) {
-        return false;
-      }
-      if (question["correctAnswer"].trim().isEmpty) return false;
-    }
-    return true;
-  }
-
-  void _submitForm() async {
-    if (_formKey.currentState!.validate() &&
-        _startTime != null &&
-        _endTime != null &&
-        _validateQuestions()) {
-      if (_questions.isEmpty) {
-        AppSnackbarWidget.showSnackBar(
-            isSuccess: false,
-            subTitle: "At least 1 question should be entered.");
-        return;
-      }
-
-      Map<String, dynamic> examData = {
-        "questionList": _questions,
-        "examDuration": examDuration.toString(),
-        "subjectName": _subjectController.text,
-        "teacherName": _teacherController.text,
-        "orgCode": _orgCodeController.text,
-        "batch": _batchController.text,
-        "startTime": _startTime!.toIso8601String(),
-        "endTime": _endTime!.toIso8601String(),
-      };
-
-      if (widget.isEdit) {
-        var data = widget.examHistoryModel?.toJson() ?? {};
-        data.addAll(examData);
-        examData = data;
-      }
-
-      setState(() => isExamSubmitting = true);
-      final result = await ExamRepo().createExam(examData);
-      setState(() => isExamSubmitting = false);
-      switch (result) {
-        case AppSuccess<bool>():
-          await AppSnackbarWidget.showSnackBar(
-              isSuccess: true, subTitle: "Exam created successfully");
-          Get.until((e) => Get.currentRoute == '/home');
-          break;
-        case AppFailure():
-          AppSnackbarWidget.showSnackBar(
-              isSuccess: false, subTitle: result.errorMessage);
-          break;
-      }
-    } else {
-      AppSnackbarWidget.showSnackBar(
-          isSuccess: false,
-          subTitle:
-              'Exam paper is invalid, kindly cross-check your question and options');
-    }
-  }
 
   @override
   void initState() {
@@ -191,28 +124,15 @@ class ExamFormState extends State<ExamForm> {
                           _endTime == null ? '' : _endTime?.formatTime ?? '',
                       onPicked: (date) => setState(() => _endTime = date)),
                   const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.button,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: isExamSubmitting
-                          ? const CircularProgressIndicator.adaptive()
-                          : const Text("Submit Exam",
-                              style: AppTextStyles.button),
-                    ),
-                  ),
                 ],
               ),
             ),
             SizedBox(
                 width: Get.width / 2 - 100,
-                child: QuestionListWidget(questions: _questions)),
+                child: QuestionListWidget(
+                  questions: _questions,
+                  isEditable: false,
+                )),
           ],
         ),
       ),

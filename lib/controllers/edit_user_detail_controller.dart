@@ -18,51 +18,32 @@ class EditUserDetailController extends GetxController {
   final orgCodeController = TextEditingController();
   final isActive = false.obs;
   final isAdmin = false.obs;
-
+  bool isObscureText = false;
   final AdminRepo repo = AdminRepo();
 
   @override
   void onInit() {
     super.onInit();
     // Fetch user details when the controller is initialized
-    fetchUserDetails();
+    initData();
   }
 
-  // Fetch user details using userId from Get.arguments
-  void fetchUserDetails() async {
-    try {
-      isLoading(true);
-      final userId = Get.arguments['userId']; // Get userId from arguments
-      if (userId == null) {
-        throw 'User ID not provided';
-      }
+  void initData() {
+    user.value = Get.arguments['user'] as UserModel;
+    nameController.value = TextEditingValue(text: user.value.name);
+    mobileController.value = TextEditingValue(text: user.value.mobile);
+    emailController.value = TextEditingValue(text: user.value.email);
+    batchController.value = TextEditingValue(text: user.value.batch);
+    passwordController.value = TextEditingValue(text: user.value.password);
+    orgCodeController.value = TextEditingValue(text: user.value.orgCode);
 
-      // Call API to fetch user details
-      final response = await repo.fetchUserDetails(userId, orgCode: '');
-      switch (response) {
-        case AppSuccess():
-          user.value = response.value;
-          break;
-        case AppFailure():
-          AppSnackbarWidget.showSnackBar(
-              isSuccess: false, subTitle: response.errorMessage);
-          break;
-      }
+    isActive.value = user.value.isActive;
+    isAdmin.value = user.value.isAdmin;
+  }
 
-      // Populate form fields with fetched data
-      nameController.text = user.value.name;
-      mobileController.text = user.value.mobile;
-      emailController.text = user.value.email;
-      batchController.text = user.value.batch;
-      passwordController.text = user.value.password;
-      orgCodeController.text = user.value.orgCode;
-      isActive.value = user.value.isActive;
-      isAdmin.value = user.value.isAdmin;
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    } finally {
-      isLoading(false);
-    }
+  void togglePasswordVisibilityy() {
+    isObscureText = !isObscureText;
+    update();
   }
 
   // Update user details
@@ -82,20 +63,20 @@ class EditUserDetailController extends GetxController {
 
       // Prepare updated user data
       final updatedUser = UserModel(
-        id: user.value.id,
-        userId: user.value.userId,
-        name: nameController.text,
-        mobile: mobileController.text,
-        email: emailController.text,
-        batch: batchController.text,
-        password: passwordController.text,
-        orgCode: orgCodeController.text,
-        isActive: isActive.value,
-        isAdmin: isAdmin.value,
-      );
+          id: user.value.id,
+          userId: user.value.userId,
+          name: nameController.text,
+          mobile: mobileController.text,
+          email: emailController.text,
+          batch: batchController.text,
+          password: passwordController.text,
+          orgCode: orgCodeController.text,
+          isActive: isActive.value,
+          isAdmin: isAdmin.value,
+          fcmToken: user.value.fcmToken);
 
       // Call API to update user details
-      await repo.updateUserDetails(updatedUser, userId: user.value.userId);
+      await repo.updateUserDetails(updatedUser.toJson());
 
       Get.snackbar('Success', 'User details updated successfully');
     } catch (e) {
