@@ -118,7 +118,7 @@ class ExamRepo {
     try {
       final response =
           await dioService.postDio(endpoint: 'answerPaper/getResult', body: {
-        "userId": AppLocalStorage.instance.user.userId,
+        "userId": userId,
         "questionId": qID,
       });
       log("response of getresult: $response");
@@ -176,6 +176,29 @@ class ExamRepo {
       }
     } catch (e) {
       log("error caught in Exam repo forgotPassword func : $e");
+    }
+  }
+
+  Future<AppResult<List<Map<String, dynamic>>>> getStudentListByQuestionId(
+      String questionId) async {
+    try {
+      final response = await dioService
+          .postDio(endpoint: 'report/getAllUserByExamId', body: {
+        "id": questionId,
+      });
+
+      switch (response) {
+        case AppSuccess():
+          return AppResult.success(
+              List<Map<String, dynamic>>.from(response.value['data']));
+        case AppFailure():
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: false, subTitle: response.errorMessage);
+          return const AppFailure();
+      }
+    } catch (e) {
+      log("error caught in Exam repo getStudentListByQuestionId func : $e");
+      return AppResult.failure(const AppFailure());
     }
   }
 }

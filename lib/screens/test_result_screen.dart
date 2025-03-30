@@ -10,8 +10,9 @@ import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
 
-  const TestResultScreen({super.key, required this.model});
-
+  const TestResultScreen(
+      {super.key, required this.model, required this.userId});
+  final String userId;
   @override
   State<TestResultScreen> createState() => _TestResultScreenState();
 }
@@ -20,7 +21,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
   final controller = Get.put(TestResultDetailController());
   @override
   void initState() {
-    controller.fetchData(widget.model.questionId ?? '');
+    controller.fetchData(widget.model.questionId ?? '', widget.userId);
     super.initState();
   }
 
@@ -31,7 +32,8 @@ class _TestResultScreenState extends State<TestResultScreen> {
         return Scaffold(
           floatingActionButton: FloatingActionButton.small(
             onPressed: () {
-              controller.refreshData(widget.model.questionId ?? '');
+              controller.refreshData(
+                  widget.model.questionId ?? '', widget.userId);
             },
             child: const Icon(Icons.refresh),
           ),

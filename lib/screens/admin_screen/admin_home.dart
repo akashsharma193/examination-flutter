@@ -168,10 +168,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   crossAxisSpacing: 20,
                   mainAxisSpacing: 20,
                   children: [
-                    _buildCard("Total Students", "", Icons.people, onTap: () {
+                    _buildCard("All Students", "", Icons.people, onTap: () {
                       Get.toNamed(AppRoutesNames.userList);
                     }),
-                    _buildCard("Total Exams", "", Icons.assignment, onTap: () {
+                    _buildCard("Past Exams", "", Icons.assignment, onTap: () {
                       Get.delete<ExamHistoryController>();
                       Get.toNamed(AppRoutesNames.examHistory);
                     }),

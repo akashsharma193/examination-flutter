@@ -61,12 +61,22 @@ class ExamFormState extends State<ExamForm> {
 
   bool _validateQuestions() {
     for (var question in _questions) {
-      if (question["question"].trim().isEmpty) return false;
-      if (question["options"].any((opt) => (opt as String).trim().isEmpty) ||
-          question['options'].length < 4) {
+      debugPrint("verify this question : $question");
+      if (question["question"].trim().isEmpty) {
+        debugPrint("question is emptyy....");
         return false;
       }
-      if (question["correctAnswer"].trim().isEmpty) return false;
+      if (question["options"].any((opt) => (opt as String).trim().isEmpty) ||
+          question['options'].length < 4) {
+        debugPrint("Options are emptyy....");
+
+        return false;
+      }
+      if (question["correctAnswer"].trim().isEmpty) {
+        debugPrint("correct ans is emptyy....");
+
+        return false;
+      }
     }
     return true;
   }

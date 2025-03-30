@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
+import 'package:offline_test_app/controllers/past_exam_detail_controller.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
@@ -9,13 +10,34 @@ import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
+import 'package:offline_test_app/screens/test_result_screen.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
-class ViewExamDetails extends StatelessWidget {
-  const ViewExamDetails({super.key, this.examHistoryModel});
-  final SingleExamHistoryModel? examHistoryModel;
+class ViewExamDetails extends StatefulWidget {
+  ViewExamDetails({super.key, required this.examHistoryModel});
+  final SingleExamHistoryModel examHistoryModel;
+
+  @override
+  State<ViewExamDetails> createState() => _ViewExamDetailsState();
+}
+
+class _ViewExamDetailsState extends State<ViewExamDetails> {
+  List<Widget> _children = [];
+  @override
+  void initState() {
+    super.initState();
+    _children = [
+      examBasicDetails(examHistoryModel: widget.examHistoryModel),
+      AttemptedStudentList(
+        qId: widget.examHistoryModel.questionId ?? '-',
+        model: widget.examHistoryModel,
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isTablet = Get.width > 400;
     return Scaffold(
       appBar: AppBar(
         title: Text('Exam Details',
@@ -25,116 +47,118 @@ class ViewExamDetails extends StatelessWidget {
         backgroundColor: AppColors.appBar,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ExamForm(
-          examHistoryModel: examHistoryModel,
-        ),
-      ),
+          padding: const EdgeInsets.all(16.0),
+          child: isTablet
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: _children,
+                )
+              : Column(
+                  children: _children,
+                )),
       backgroundColor: AppColors.cardBackground,
     );
   }
 }
 
-class ExamForm extends StatefulWidget {
-  const ExamForm({super.key, this.examHistoryModel});
-
-  final SingleExamHistoryModel? examHistoryModel;
+class AttemptedStudentList extends StatefulWidget {
+  final String qId;
+  final SingleExamHistoryModel model;
+  const AttemptedStudentList(
+      {super.key, required this.qId, required this.model});
 
   @override
-  ExamFormState createState() => ExamFormState();
+  State<AttemptedStudentList> createState() => _AttemptedStudentListState();
 }
 
-class ExamFormState extends State<ExamForm> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _teacherController = TextEditingController();
-  final TextEditingController _orgCodeController = TextEditingController();
-  final TextEditingController _batchController = TextEditingController();
-  DateTime? _startTime;
-  DateTime? _endTime;
-  List<Map<String, dynamic>> _questions = [];
-  int examDuration = 5;
-
+class _AttemptedStudentListState extends State<AttemptedStudentList> {
+  final PastExamDetailController pastExamDetailController =
+      Get.put(PastExamDetailController());
   @override
   void initState() {
     super.initState();
-    _subjectController.value =
-        TextEditingValue(text: widget.examHistoryModel?.subjectName ?? '');
-    _teacherController.value =
-        TextEditingValue(text: widget.examHistoryModel?.teacherName ?? '');
-    _orgCodeController.value =
-        TextEditingValue(text: widget.examHistoryModel?.orgCode ?? '');
-    _batchController.value =
-        TextEditingValue(text: widget.examHistoryModel?.batch ?? '');
-
-    _startTime = widget.examHistoryModel?.startTime;
-    _endTime = widget.examHistoryModel?.endTime;
-    examDuration = widget.examHistoryModel?.examDuration ?? 5;
-    _questions =
-        widget.examHistoryModel?.questionList.map((e) => e.toJson()).toList() ??
-            [];
-
-    for (var e in _questions) {
-      e['correctAnswerIndex'] =
-          (e['options'] as List).indexWhere((x) => e['correctAnswer'] == x);
-    }
+    pastExamDetailController.fetchStudentDetails(widget.qId);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(
-              width: Get.width / 2 - 100,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFieldWidget(
-                      label: "Subject Name", controller: _subjectController),
-                  TextFieldWidget(
-                      label: "Teacher Name", controller: _teacherController),
-                  TextFieldWidget(
-                      label: "Organization Code",
-                      controller: _orgCodeController),
-                  TextFieldWidget(label: "Batch", controller: _batchController),
-                  DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                        labelText: "Exam Duration (minutes)"),
-                    value: examDuration,
-                    items: List.generate(36, (index) => (index + 1) * 5)
-                        .map((e) => DropdownMenuItem(
-                            value: e, child: Text("$e minutes")))
-                        .toList(),
-                    onChanged: (value) => setState(() => examDuration = value!),
-                  ),
-                  DateTimePickerWidget(
-                      label: "Start Time",
-                      dateTime: _startTime == null
-                          ? ''
-                          : _startTime?.formatTime ?? '',
-                      onPicked: (date) => setState(() => _startTime = date)),
-                  DateTimePickerWidget(
-                      label: "End Time",
-                      dateTime:
-                          _endTime == null ? '' : _endTime?.formatTime ?? '',
-                      onPicked: (date) => setState(() => _endTime = date)),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-            SizedBox(
-                width: Get.width / 2 - 100,
-                child: QuestionListWidget(
-                  questions: _questions,
-                  isEditable: false,
-                )),
-          ],
-        ),
+    return SizedBox(
+      width: Get.width / 3,
+      child: GetBuilder<PastExamDetailController>(builder: (controller) {
+        return ListView.builder(
+          itemCount: controller.studentList.length,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            final student = controller.studentList[index];
+            return ListTile(
+              onTap: () {
+                Get.to(TestResultScreen(
+                    model: widget.model, userId: student['userId'] ?? '-'));
+              },
+              tileColor: AppColors.button,
+              title: Text(student['name'] ?? '-'),
+              subtitle: Text('Total Marks : ${student['marks'] ?? '0'}'),
+              trailing: Icon(Icons.arrow_forward_ios),
+            );
+          },
+        );
+      }),
+    );
+  }
+}
+
+class examBasicDetails extends StatelessWidget {
+  const examBasicDetails({
+    super.key,
+    required this.examHistoryModel,
+  });
+
+  final SingleExamHistoryModel examHistoryModel;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: Get.width / 3,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextFieldWidget(
+            label: "Subject Name",
+            text: examHistoryModel.subjectName ?? '-',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "Teacher Name",
+            text: examHistoryModel.teacherName ?? '-',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "Organization Code",
+            text: examHistoryModel.orgCode ?? '-',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "Batch",
+            text: examHistoryModel.batch ?? '-',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "Exam Duration",
+            text: '${examHistoryModel.examDuration ?? '-'}',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "Start Time",
+            text: examHistoryModel.startTime?.formatTime ?? '-',
+            readOnly: true,
+          ),
+          TextFieldWidget(
+            label: "End Time",
+            text: examHistoryModel.endTime?.formatTime ?? '-',
+            readOnly: true,
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

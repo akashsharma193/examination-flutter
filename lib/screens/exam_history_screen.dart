@@ -23,6 +23,7 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
+      final isPastExamsScreen = Get.arguments?['title'] == null;
       return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -51,10 +52,12 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
                       // Check screen width to determine layout
                       if (constraints.maxWidth < 600) {
                         // Mobile layout
-                        return _buildMobileLayout(examHistoryController);
+                        return _buildMobileLayout(
+                            examHistoryController, isPastExamsScreen);
                       } else {
                         // Web layout
-                        return _buildWebLayout(examHistoryController);
+                        return _buildWebLayout(
+                            examHistoryController, isPastExamsScreen);
                       }
                     },
                   ),
@@ -63,7 +66,8 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
   }
 
   // Mobile Layout
-  Widget _buildMobileLayout(ExamHistoryController controller) {
+  Widget _buildMobileLayout(
+      ExamHistoryController controller, bool isPastExamsScreen) {
     return ListView.separated(
       padding: const EdgeInsets.all(16),
       itemCount: controller.allAttemptedExamsList.length,
@@ -71,13 +75,14 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
       itemBuilder: (context, index) {
         final SingleExamHistoryModel singleItem =
             controller.allAttemptedExamsList[index];
-        return _buildExamCard(singleItem, controller);
+        return _buildExamCard(singleItem, controller, isPastExamsScreen);
       },
     );
   }
 
   // Web Layout
-  Widget _buildWebLayout(ExamHistoryController controller) {
+  Widget _buildWebLayout(
+      ExamHistoryController controller, bool isPastExamsScreen) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -90,14 +95,14 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
       itemBuilder: (context, index) {
         final SingleExamHistoryModel singleItem =
             controller.allAttemptedExamsList[index];
-        return _buildExamCard(singleItem, controller);
+        return _buildExamCard(singleItem, controller, isPastExamsScreen);
       },
     );
   }
 
   // Reusable Exam Card Widget
-  Widget _buildExamCard(
-      SingleExamHistoryModel singleItem, ExamHistoryController controller) {
+  Widget _buildExamCard(SingleExamHistoryModel singleItem,
+      ExamHistoryController controller, bool isPastExamsScreen) {
     return Card(
       elevation: 5,
       shape: RoundedRectangleBorder(
@@ -113,7 +118,11 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
               }
             : () {
                 Get.put(TestResultDetailController());
-                Get.to(() => TestResultScreen(model: singleItem));
+
+                Get.to(() => TestResultScreen(
+                      model: singleItem,
+                      userId: singleItem.userId ?? '',
+                    ));
               },
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -142,7 +151,7 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 8),
-              controller.isFromGetAllExamTab
+              controller.isFromGetAllExamTab && !isPastExamsScreen
                   ? Align(
                       alignment: Alignment.bottomRight,
                       child: IconButton(
@@ -153,13 +162,15 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
                                 ));
                           },
                           icon: const Icon(Icons.edit)))
-                  : Text(
-                      'Total Marks: ${singleItem.batch ?? '-'}',
-                      style: AppTextStyles.body.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  : isPastExamsScreen
+                      ? SizedBox.shrink()
+                      : Text(
+                          'Total Marks: ${singleItem.totalMarks}',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
             ],
           ),
         ),

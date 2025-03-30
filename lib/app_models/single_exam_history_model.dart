@@ -12,6 +12,7 @@ class SingleExamHistoryModel {
   final DateTime? startTime;
   final DateTime? endTime;
   final int? examDuration;
+  final int totalMarks;
   final List<QuestionModel> questionList;
 
   SingleExamHistoryModel(
@@ -25,6 +26,7 @@ class SingleExamHistoryModel {
       this.questionId,
       this.startTime,
       this.endTime,
+      required this.totalMarks,
       required this.questionList,
       this.examDuration});
 
@@ -40,6 +42,7 @@ class SingleExamHistoryModel {
         questionId: json["questionId"] as String? ?? 'N/A',
         startTime: DateTime.tryParse(json["startTime"] ?? ''),
         endTime: DateTime.tryParse(json['endTime'] ?? ''),
+        totalMarks: json['totalMarks'] ?? 0,
         questionList: json['questionList'] == null
             ? []
             : (json['questionList'] as List)
@@ -64,6 +67,7 @@ class SingleExamHistoryModel {
         "endTime": endTime,
         "questionList": questionList,
         'examDuration': examDuration,
+        'totalMarks': totalMarks,
         'id': id,
       };
 
@@ -100,6 +104,7 @@ class SingleExamHistoryModel {
       startTime: null,
       endTime: null,
       examDuration: null,
+      totalMarks: 0,
       questionList: [],
     );
   }

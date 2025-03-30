@@ -122,8 +122,10 @@ class UserListScreen extends StatelessWidget {
           final user = controller.users[index];
           return InkWell(
             onTap: () {
-              Get.toNamed(AppRoutesNames.examHistory,
-                  arguments: {'userId': user.userId});
+              Get.toNamed(AppRoutesNames.examHistory, arguments: {
+                'userId': user.userId,
+                'title': "${user.name}'s Exam History "
+              });
             },
             child: Card(
               color: AppColors.cardBackground,

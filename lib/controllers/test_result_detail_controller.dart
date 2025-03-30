@@ -9,11 +9,8 @@ class TestResultDetailController extends GetxController {
   bool isLoading = false;
   TestResultDetailModel testResultDetailModel = TestResultDetailModel.toEmpty();
   ExamRepo repo = ExamRepo();
-  void fetchData(String qId) async {
-    repo
-        .getTestResultDetails(
-            userId: AppLocalStorage.instance.user.userId, qID: qId)
-        .then((v) {
+  void fetchData(String qId, String userId) async {
+    repo.getTestResultDetails(userId: userId, qID: qId).then((v) {
       switch (v) {
         case AppSuccess():
           testResultDetailModel = v.value;
@@ -32,7 +29,7 @@ class TestResultDetailController extends GetxController {
     update();
   }
 
-  void refreshData(String qId) {
-    fetchData(qId);
+  void refreshData(String qId, String userId) {
+    fetchData(qId, userId);
   }
 }
