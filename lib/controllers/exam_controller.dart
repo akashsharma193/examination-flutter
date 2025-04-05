@@ -95,9 +95,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (remainingSeconds.value > 0) {
         remainingSeconds.value--;
+        double minuteRemaining = (remainingSeconds.value / 60);
+        if (minuteRemaining == 1 ||
+            (minuteRemaining < 11 && minuteRemaining % 5 == 0)) {
+          showTimerWarning(minute: minuteRemaining.toInt());
+        }
       } else {
         timer.cancel();
-        submitExam();
+        showExamSubumitConfirmationDialog(
+            isDismissable: false,
+            message: 'Time Up,\n click OK to continue Submitting...');
       }
     });
   }
@@ -128,6 +135,11 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     questionList.refresh();
   }
 
+  void clearAnswer() {
+    questionList[currentQuestionIndex.value]["userAnswer"] = '';
+    questionList.refresh();
+  }
+
   void previousQuestion() {
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
@@ -138,10 +150,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     if (currentQuestionIndex.value < questionList.length - 1) {
       currentQuestionIndex.value++;
     } else {
-      Get.dialog(
+      showExamSubumitConfirmationDialog();
+    }
+  }
+
+  void showExamSubumitConfirmationDialog(
+      {String? message, bool isDismissable = true}) {
+    Get.dialog(
         AlertDialog(
           title: const Text("Test Completed"),
-          content: Text(
+          content: Text(message ??
               'Turn on Internet\nDo you want to submit TEST?\nAttempted ${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}'),
           actions: [
             TextButton(
@@ -158,9 +176,24 @@ class ExamController extends GetxController with WidgetsBindingObserver {
             ),
           ],
         ),
-        barrierDismissible: false,
-      );
-    }
+        barrierDismissible: isDismissable);
+  }
+
+  void showTimerWarning({required int minute}) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Alert !"),
+        content: Text('$minute Minute Remaining...'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   void showBackgroundWarning() {
@@ -183,7 +216,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     Get.dialog(
       AlertDialog(
         title: const Text("Warning!"),
-        content: const Text("You cannot use the internet while attempting the exam."),
+        content: const Text(
+            "You cannot use the internet while attempting the exam."),
         actions: [
           TextButton(onPressed: () => Get.back(), child: const Text("OK")),
         ],

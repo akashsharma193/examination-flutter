@@ -68,7 +68,7 @@ class StudentHomePage extends StatelessWidget {
                 style: AppTextStyles.heading,
               ),
               const SizedBox(height: 20),
-              getExamListWidget(controller)
+              Expanded(child: getExamListWidget(controller))
             ],
           ),
         ),
@@ -92,6 +92,7 @@ class StudentHomePage extends StatelessWidget {
           )
         : ListView.builder(
             shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
             itemCount: controller.allExams.length,
             itemBuilder: (context, index) {
               final singleItem = controller.allExams[index];
