@@ -123,6 +123,10 @@ class ExamScreen extends StatelessWidget {
             final isSelected = index == controller.currentQuestionIndex.value;
             final isMarked =
                 controller.questionList[index]['isMarked'] ?? false;
+            final answered =
+                (controller.questionList[index]['userAnswer'] as String?)
+                        ?.isNotEmpty ??
+                    false;
             return InkWell(
               onTap: () => controller.currentQuestionIndex.value = index,
               borderRadius: BorderRadius.circular(12),
@@ -131,10 +135,12 @@ class ExamScreen extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: isMarked
-                      ? Colors.yellow.shade200
-                      : isSelected
-                          ? Theme.of(context).primaryColor
-                          : Colors.grey.shade100,
+                      ? Colors.purple
+                      : answered
+                          ? Colors.green
+                          : isSelected
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
@@ -143,12 +149,16 @@ class ExamScreen extends StatelessWidget {
                   "${index + 1}",
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected || isMarked || answered
+                                ? Colors.white
+                                : Colors.black87,
                           ) ??
                       TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : Colors.black87,
+                        color: isSelected || isMarked || answered
+                            ? Colors.white
+                            : Colors.black87,
                       ),
                 ),
               ),
