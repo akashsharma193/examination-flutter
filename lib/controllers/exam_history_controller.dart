@@ -13,13 +13,11 @@ class ExamHistoryController extends GetxController {
   final ExamRepo examRepo = ExamRepo();
   final AdminRepo adminRepo = AdminRepo();
   bool showOnlyActiveExams = false;
-  @override
-  void onInit() {
-    super.onInit();
-    final String? userId =
-        Get.arguments == null ? null : Get.arguments['userId'];
-    isFromGetAllExamTab = userId == null;
 
+  void setup({required String? userId, bool showActiveExam = false}) {
+    isFromGetAllExamTab = userId == null;
+    showOnlyActiveExams = showActiveExam;
+    print("is active exam : $showOnlyActiveExams");
     getHistory(userId);
   }
 
@@ -35,7 +33,6 @@ class ExamHistoryController extends GetxController {
   void getHistory(String? userId) async {
     try {
       isLoading.value = true;
-      showOnlyActiveExams = Get.arguments?['activeExam'] ?? false;
 
       update();
       AppResult<List<SingleExamHistoryModel>>? resp;
@@ -53,6 +50,7 @@ class ExamHistoryController extends GetxController {
           allAttemptedExamsList = v;
 
           if (showOnlyActiveExams) {
+            print("filter active exam:");
             _filterActiveExam();
           }
           update();

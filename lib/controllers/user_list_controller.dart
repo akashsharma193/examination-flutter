@@ -12,12 +12,38 @@ class UserListController extends GetxController {
   var isLoading = false.obs;
   var errorMessage = ''.obs;
 
+  RxString searchQuery = ''.obs;
+
+  RxString selectedBatch = ''.obs;
+
+  RxString selectedOrganization = ''.obs;
+  List<String> get batches =>
+      users.map((e) => e.batch).toSet().where((e) => e.isNotEmpty).toList();
+
+  List<String> get organizationCodes =>
+      users.map((e) => e.orgCode).toSet().where((e) => e.isNotEmpty).toList();
+
   @override
   void onInit() {
     fetchUsers(AppLocalStorage.instance.user.orgCode);
     super.onInit();
   }
 
+  List<UserModel> get filteredUsers {
+    return users.where((user) {
+      final matchesSearch = user.name
+              .toLowerCase()
+              .contains(searchQuery.value.toLowerCase()) ||
+          user.email.toLowerCase().contains(searchQuery.value.toLowerCase());
+      final matchesBatch =
+          selectedBatch.value.isEmpty || user.batch == selectedBatch.value;
+      final matchesOrg = selectedOrganization.value.isEmpty ||
+          user.orgCode == selectedOrganization.value;
+      return matchesSearch && matchesBatch && matchesOrg;
+    }).toList();
+  }
+
+  
   void fetchUsers(String orgCode) async {
     try {
       isLoading.value = true;

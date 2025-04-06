@@ -50,6 +50,7 @@ class _ViewExamDetailsState extends State<ViewExamDetails> {
           padding: const EdgeInsets.all(16.0),
           child: isTablet
               ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: _children,
                 )
@@ -85,23 +86,28 @@ class _AttemptedStudentListState extends State<AttemptedStudentList> {
     return SizedBox(
       width: Get.width / 3,
       child: GetBuilder<PastExamDetailController>(builder: (controller) {
-        return ListView.builder(
-          itemCount: controller.studentList.length,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            final student = controller.studentList[index];
-            return ListTile(
-              onTap: () {
-                Get.to(TestResultScreen(
-                    model: widget.model, userId: student['userId'] ?? '-'));
-              },
-              tileColor: AppColors.button,
-              title: Text(student['name'] ?? '-'),
-              subtitle: Text('Total Marks : ${student['marks'] ?? '0'}'),
-              trailing: Icon(Icons.arrow_forward_ios),
-            );
-          },
-        );
+        return controller.studentList.isEmpty
+            ? const Center(
+                child: Text('No Student Given Exam yet!'),
+              )
+            : ListView.builder(
+                itemCount: controller.studentList.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  final student = controller.studentList[index];
+                  return ListTile(
+                    onTap: () {
+                      Get.to(TestResultScreen(
+                          model: widget.model,
+                          userId: student['userId'] ?? '-'));
+                    },
+                    tileColor: AppColors.secondary,
+                    title: Text(student['name'] ?? '-'),
+                    subtitle: Text('Total Marks : ${student['marks'] ?? '0'}'),
+                    trailing: Icon(Icons.arrow_forward_ios),
+                  );
+                },
+              );
       }),
     );
   }

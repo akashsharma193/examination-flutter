@@ -13,41 +13,50 @@ import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 import '../controllers/test_result_detail_controller.dart';
 
 class ExamHistoryScreen extends StatefulWidget {
-  ExamHistoryScreen({super.key});
-
+  ExamHistoryScreen({super.key, this.isEdit = false, this.userId = ''});
+  final bool isEdit;
+  final String userId;
   @override
   State<ExamHistoryScreen> createState() => _ExamHistoryScreenState();
 }
 
 class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
+  final controller = Get.put(ExamHistoryController());
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("is editable : ${widget.isEdit}");
+      controller.setup(
+          showActiveExam: widget.isEdit,
+          userId: widget.userId.isEmpty ? null : widget.userId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
-      final isPastExamsScreen = Get.arguments?['title'] == null;
-      return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.appBar,
-          title: Text(
-            Get.arguments?['title'] ?? 'Exam History',
-            style: AppTextStyles.heading.copyWith(color: Colors.white),
-          ),
-        ),
-        body: examHistoryController.isLoading.value
-            ? const Center(
-                child: CircularProgressIndicator.adaptive(),
-              )
-            : examHistoryController.allAttemptedExamsList.isEmpty
-                ? Center(
-                    child: Text(
-                      Get.arguments?['title'] == 'Active Exams'
-                          ? 'No Active Exam '
-                          : "User hasn't given any exam yet.",
-                      style: AppTextStyles.body,
-                    ),
-                  )
-                : LayoutBuilder(
+      final isPastExamsScreen = !widget.isEdit;
+      return examHistoryController.isLoading.value
+          ? const Center(
+              child: CircularProgressIndicator.adaptive(),
+            )
+          : examHistoryController.allAttemptedExamsList.isEmpty
+              ? Center(
+                  child: Text(
+                    widget.isEdit
+                        ? 'No Active Exam '
+                        : "User hasn't given any exam yet.",
+                    style: AppTextStyles.body,
+                  ),
+                )
+              : Scaffold(
+                  appBar: widget.userId.isEmpty
+                      ? null
+                      : AppBar(
+                          title: const Text('Exam History'),
+                        ),
+                  body: LayoutBuilder(
                     builder: (context, constraints) {
                       // Check screen width to determine layout
                       if (constraints.maxWidth < 600) {
@@ -61,7 +70,7 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
                       }
                     },
                   ),
-      );
+                );
     });
   }
 
@@ -89,7 +98,7 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
         crossAxisCount: 3, // 3 cards per row
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 2, // Card aspect ratio
+        childAspectRatio: 3 / 2, // Card aspect ratio
       ),
       itemCount: controller.allAttemptedExamsList.length,
       itemBuilder: (context, index) {
@@ -151,7 +160,7 @@ class _ExamHistoryScreenState extends State<ExamHistoryScreen> {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: 8),
-              controller.isFromGetAllExamTab && !isPastExamsScreen
+              widget.isEdit
                   ? Align(
                       alignment: Alignment.bottomRight,
                       child: IconButton(

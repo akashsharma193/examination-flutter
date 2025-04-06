@@ -62,11 +62,13 @@ class QuestionListWidgetState extends State<QuestionListWidget> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
                     onPressed: _addQuestion,
                     child: const Text("Add Question"),
+                  ),
+                  SizedBox(
+                    width: 20,
                   ),
                   ElevatedButton(
                     onPressed: importQuestion,

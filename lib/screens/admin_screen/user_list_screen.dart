@@ -3,48 +3,62 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/user_list_controller.dart';
 import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/screens/exam_history_screen.dart';
 
-class UserListScreen extends StatelessWidget {
+class UserListScreen extends StatefulWidget {
   const UserListScreen({Key? key}) : super(key: key);
 
   @override
+  State<UserListScreen> createState() => _UserListScreenState();
+}
+
+class _UserListScreenState extends State<UserListScreen> {
+  final controller = Get.put(UserListController());
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        title: const Text('User List', style: TextStyle(color: Colors.white)),
-        backgroundColor: AppColors.appBar,
-      ),
-      body: GetBuilder<UserListController>(
-        builder: (controller) {
-          if (controller.isLoading.value) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (controller.errorMessage.isNotEmpty) {
-            return Center(
-              child: Text(
-                controller.errorMessage.value,
-                style: TextStyle(color: AppColors.error),
-              ),
-            );
-          }
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Check screen width to determine layout
-                if (constraints.maxWidth < 600) {
-                  // Mobile layout
-                  return _buildMobileUserList(controller);
-                } else {
-                  // Web layout
-                  return _buildWebUserList(controller);
-                }
-              },
+    return GetBuilder<UserListController>(
+      builder: (controller) {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (controller.errorMessage.isNotEmpty) {
+          return Center(
+            child: Text(
+              controller.errorMessage.value,
+              style: TextStyle(color: AppColors.error),
             ),
           );
-        },
-      ),
+        }
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Check screen width to determine layout
+              if (constraints.maxWidth < 600) {
+                return Column(
+                  children: [
+                    _buildSearchAndFilterBar(controller),
+                    const SizedBox(height: 10),
+                    Expanded(
+                        child: Obx(() => _buildMobileUserList(controller))),
+                  ],
+                );
+              } else {
+                // Web layout
+                return Column(
+                  children: [
+                    _buildSearchAndFilterBar(controller),
+                    const SizedBox(height: 10),
+                    Expanded(child: Obx(() => _buildWebUserList(controller))),
+                  ],
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -55,9 +69,9 @@ class UserListScreen extends StatelessWidget {
         padding: const EdgeInsets.all(10),
         child: Column(
           children: List.generate(
-            controller.users.length,
+            controller.filteredUsers.length,
             (index) {
-              final user = controller.users[index];
+              final user = controller.filteredUsers[index];
               return Card(
                 color: AppColors.cardBackground,
                 shape: RoundedRectangleBorder(
@@ -111,21 +125,20 @@ class UserListScreen extends StatelessWidget {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 400, // Maximum card width
           crossAxisSpacing: 20,
           mainAxisSpacing: 20,
           childAspectRatio: 1.8, // Card aspect ratio
         ),
-        itemCount: controller.users.length,
+        itemCount: controller.filteredUsers.length,
         itemBuilder: (context, index) {
-          final user = controller.users[index];
+          final user = controller.filteredUsers[index];
           return InkWell(
             onTap: () {
-              Get.toNamed(AppRoutesNames.examHistory, arguments: {
-                'userId': user.userId,
-                'title': "${user.name}'s Exam History "
-              });
+              Get.to(() => ExamHistoryScreen(
+                    userId: user.userId,
+                  ));
             },
             child: Card(
               color: AppColors.cardBackground,
@@ -193,6 +206,107 @@ class UserListScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildSearchAndFilterBar(UserListController controller) {
+    final textController = TextEditingController();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            // 🔍 Search bar
+            Expanded(
+              flex: 3,
+              child: TextField(
+                controller: textController,
+                onChanged: (value) => controller.searchQuery.value = value,
+                decoration: InputDecoration(
+                  hintText: 'Search by name or email...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // 🔎 Batch Filter
+            Expanded(
+              flex: 2,
+              child: Obx(() {
+                return DropdownButtonFormField<String>(
+                  value: controller.selectedBatch.value.isEmpty
+                      ? null
+                      : controller.selectedBatch.value,
+                  onChanged: (value) =>
+                      controller.selectedBatch.value = value ?? '',
+                  decoration: InputDecoration(
+                    hintText: 'Batch',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                  ),
+                  items: controller.batches
+                      .map((batch) =>
+                          DropdownMenuItem(value: batch, child: Text(batch)))
+                      .toList(),
+                );
+              }),
+            ),
+            const SizedBox(width: 10),
+
+            // 🏢 Organization Filter
+            Expanded(
+              flex: 2,
+              child: Obx(() {
+                return DropdownButtonFormField<String>(
+                  value: controller.selectedOrganization.value.isEmpty
+                      ? null
+                      : controller.selectedOrganization.value,
+                  onChanged: (value) =>
+                      controller.selectedOrganization.value = value ?? '',
+                  decoration: InputDecoration(
+                    hintText: 'Organization',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                  ),
+                  items: controller.organizationCodes
+                      .map((org) =>
+                          DropdownMenuItem(value: org, child: Text(org)))
+                      .toList(),
+                );
+              }),
+            ),
+            const SizedBox(width: 10),
+
+            // ❌ Clear Filters
+            ElevatedButton.icon(
+              onPressed: () {
+                controller.searchQuery.value = '';
+                controller.selectedBatch.value = '';
+                controller.selectedOrganization.value = '';
+                textController.clear();
+              },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade300,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

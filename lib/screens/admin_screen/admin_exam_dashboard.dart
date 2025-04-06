@@ -9,6 +9,7 @@ import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
+import 'package:offline_test_app/screens/admin_screen/function_helper.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class AdminExamDashboard extends StatelessWidget {
@@ -19,13 +20,6 @@ class AdminExamDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isEdit ? 'Edit Exam' : "Create Exam",
-            style: AppTextStyles.heading.copyWith(color: Colors.white)),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.appBar,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ExamForm(
@@ -33,7 +27,6 @@ class AdminExamDashboard extends StatelessWidget {
           examHistoryModel: examHistoryModel,
         ),
       ),
-      backgroundColor: AppColors.cardBackground,
     );
   }
 }
@@ -164,6 +157,7 @@ class ExamFormState extends State<ExamForm> {
       child: Form(
         key: _formKey,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(
@@ -201,27 +195,56 @@ class ExamFormState extends State<ExamForm> {
                           _endTime == null ? '' : _endTime?.formatTime ?? '',
                       onPicked: (date) => setState(() => _endTime = date)),
                   const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _submitForm,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.button,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.button,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: isExamSubmitting
+                            ? const CircularProgressIndicator.adaptive()
+                            : const Text("Submit Exam",
+                                style: AppTextStyles.button),
                       ),
-                      child: isExamSubmitting
-                          ? const CircularProgressIndicator.adaptive()
-                          : const Text("Submit Exam",
-                              style: AppTextStyles.button),
-                    ),
+                      InkWell(
+                        onTap: () => downloadSampleExcelFromAssets(
+                            'assets/sample_questions.xlsx', 'sample_question'),
+                        child: Card(
+                          elevation: 3,
+                          color: Colors.blue,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.download,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                Text("Sample Excel",
+                                    style: AppTextStyles.button)
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            SizedBox(
-                width: Get.width / 2 - 100,
+            Container(
+                constraints: BoxConstraints(maxWidth: Get.width / 2 - 100),
+                // width: Get.width / 2 - 100,
                 child: QuestionListWidget(questions: _questions)),
           ],
         ),
