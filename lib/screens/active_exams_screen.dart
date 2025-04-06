@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
@@ -26,7 +27,9 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
     });
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
+        backgroundColor: AppColors.cardBackground,
         appBar: AppBar(
+            backgroundColor: Colors.transparent,
             automaticallyImplyLeading: false,
             title: const Text('Active Exams')),
         body: examHistoryController.isLoading.value
@@ -84,6 +87,7 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
       SingleExamHistoryModel singleItem, ExamHistoryController controller) {
     return Card(
       elevation: 5,
+      color: AppColors.cardBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -107,13 +111,13 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
               Text('End: ${singleItem.endTime?.formatTime ?? '-'}',
                   style: AppTextStyles.body),
               const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: IconButton(
-                    onPressed: () => Get.to(() => AdminExamDashboard(
-                        isEdit: true, examHistoryModel: singleItem)),
-                    icon: const Icon(Icons.edit)),
-              ),
+              // Align(
+              //   alignment: Alignment.bottomRight,
+              //   child: IconButton(
+              //       onPressed: () => Get.to(() => AdminExamDashboard(
+              //           isEdit: true, examHistoryModel: singleItem)),
+              //       icon: const Icon(Icons.edit)),
+              // ),
             ],
           ),
         ),

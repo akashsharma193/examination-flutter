@@ -22,6 +22,7 @@ class AdminExamDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.cardBackground,
       appBar: isEdit
           ? AppBar(
               iconTheme: IconThemeData(color: Colors.white),
@@ -31,7 +32,14 @@ class AdminExamDashboard extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
             )
-          : null,
+          :  AppBar(
+              iconTheme: IconThemeData(color: Colors.white),
+              backgroundColor: AppColors.appBar,
+              title: Text(
+                'Active Exam Details',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ExamForm(

@@ -14,6 +14,7 @@ class SingleExamHistoryModel {
   final int? examDuration;
   final int totalMarks;
   final List<QuestionModel> questionList;
+  final int totalQuestion;
 
   SingleExamHistoryModel(
       {required this.id,
@@ -28,6 +29,7 @@ class SingleExamHistoryModel {
       this.endTime,
       required this.totalMarks,
       required this.questionList,
+      required this.totalQuestion,
       this.examDuration});
 
   factory SingleExamHistoryModel.fromJson(Map<String, dynamic> json) =>
@@ -43,6 +45,7 @@ class SingleExamHistoryModel {
         startTime: DateTime.tryParse(json["startTime"] ?? ''),
         endTime: DateTime.tryParse(json['endTime'] ?? ''),
         totalMarks: json['totalMarks'] ?? 0,
+        totalQuestion: json['totalQuestion'] ?? 0,
         questionList: json['questionList'] == null
             ? []
             : (json['questionList'] as List)
@@ -68,12 +71,13 @@ class SingleExamHistoryModel {
         "questionList": questionList,
         'examDuration': examDuration,
         'totalMarks': totalMarks,
+        "totalQuestion": totalQuestion,
         'id': id,
       };
 
   @override
   String toString() {
-    return 'SingleExamHistoryModel(id:$id, answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $startTime, endTime: $endTime, examDuration: $examDuration, questionList : $questionList)';
+    return 'SingleExamHistoryModel(id:$id, answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $startTime, endTime: $endTime, totalquestion : $totalQuestion,examDuration: $examDuration, questionList : $questionList)';
   }
 
   bool isEmpty() {
@@ -87,6 +91,7 @@ class SingleExamHistoryModel {
         questionId == null &&
         startTime == null &&
         examDuration != null &&
+        totalQuestion == 0 &&
         questionList.isNotEmpty &&
         endTime == null;
   }
@@ -104,6 +109,7 @@ class SingleExamHistoryModel {
       startTime: null,
       endTime: null,
       examDuration: null,
+      totalQuestion: 0,
       totalMarks: 0,
       questionList: [],
     );

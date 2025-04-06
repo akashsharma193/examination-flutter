@@ -106,7 +106,7 @@ class _AttemptedStudentListState extends State<AttemptedStudentList> {
                       tileColor: AppColors.secondary,
                       title: Text(student['name'] ?? '-'),
                       subtitle:
-                          Text('Total Marks : ${student['marks'] ?? '0'}'),
+                          Text('Total Marks : ${student['marks'] ?? '0'}/${student['totalMarks'] ?? '0'}'),
                       trailing: Icon(Icons.arrow_forward_ios),
                     ),
                   );

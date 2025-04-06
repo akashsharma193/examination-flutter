@@ -33,6 +33,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
     });
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
+        backgroundColor: AppColors.cardBackground,
         appBar: widget.userId.isEmpty
             ? null
             : AppBar(
@@ -96,7 +97,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
         crossAxisCount: 3,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 3 / 2,
+        childAspectRatio: 1.9,
       ),
       itemCount: controller.filteredExams.length,
       itemBuilder: (context, index) {
@@ -110,6 +111,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
   Widget _buildExamCard(SingleExamHistoryModel singleItem,
       ExamHistoryController controller, bool isPastExamsScreen) {
     return Card(
+      color: AppColors.cardBackground,
       elevation: 5,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
@@ -142,7 +144,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
               Text(
                   widget.userId.isEmpty
                       ? ""
-                      : 'Total Marks: ${singleItem.totalMarks}',
+                      : 'Total Marks: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
                   style: AppTextStyles.body.copyWith(
                       color: AppColors.success, fontWeight: FontWeight.bold)),
             ],

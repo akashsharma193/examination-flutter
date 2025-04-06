@@ -134,7 +134,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                         overflow: TextOverflow.fade),
                   ),
                   Text(
-                    'Scored: ${singleItem.totalMarks ?? '0'}',
+                    'Scored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
                     style: AppTextStyles.subheading.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/controllers/user_list_controller.dart';
+import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:offline_test_app/repositories/admin_repo.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
 import 'package:offline_test_app/screens/active_exams_screen.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
@@ -42,6 +44,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
       getController<UserListController>(() => UserListController());
   final examHistoryController =
       getController<ExamHistoryController>(() => ExamHistoryController());
+  RxMap<String, dynamic> basicData = RxMap();
+  AdminRepo repo = AdminRepo();
+
+  @override
+  void initState() {
+    super.initState();
+    repo.getReportCount(AppLocalStorage.instance.user.orgCode).then((v) {
+      switch (v) {
+        case AppSuccess(value: Map<String, dynamic> v):
+          basicData.value = v;
+          break;
+        case AppFailure():
+          basicData.value = {};
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +110,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
               ),
               Text(
-                'Batch : ' + AppLocalStorage.instance.user.batch,
+                'Organization : ' + AppLocalStorage.instance.user.orgCode,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
@@ -244,24 +264,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
             child: LayoutBuilder(
               builder: (context, constraints) {
                 int crossAxisCount = constraints.maxWidth > 600 ? 3 : 1;
-                return GridView.count(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  children: [
-                    _buildCard("All Students", "", Icons.people, onTap: () {
-                      setState(() => selectedIndex = 1);
-                    }),
-                    _buildCard("Past Exams", "", Icons.assignment, onTap: () {
-                      setState(() => selectedIndex = 2);
-                    }),
-                    _buildCard("Active Exam", "", Icons.timer, onTap: () {
-                      setState(() => selectedIndex = 5);
-                    }),
-                    _buildCard("E Resource", "", Icons.timer, onTap: () {
-                      setState(() => selectedIndex = 6);
-                    }),
-                  ],
+                return Obx(
+                  () => GridView.count(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                    children: [
+                      _buildCard("All Students", "${basicData['userCount']}",
+                          Icons.people, onTap: () {
+                        setState(() => selectedIndex = 1);
+                      }),
+                      _buildCard("Past Exams", "${basicData['pastExamCount']}",
+                          Icons.assignment, onTap: () {
+                        setState(() => selectedIndex = 2);
+                      }),
+                      _buildCard(
+                          "Active Exam",
+                          "${basicData['activeExamCount']}",
+                          Icons.timer, onTap: () {
+                        setState(() => selectedIndex = 5);
+                      }),
+                      _buildCard("E Resource", "", Icons.timer, onTap: () {
+                        setState(() => selectedIndex = 6);
+                      }),
+                    ],
+                  ),
                 );
               },
             ),
@@ -308,271 +335,3 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 }
-
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:offline_test_app/core/constants/color_constants.dart';
-// import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-// import 'package:offline_test_app/repositories/auth_repo.dart';
-// import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
-// import 'package:offline_test_app/screens/admin_screen/user_list_screen.dart';
-// import 'package:offline_test_app/screens/exam_history_screen.dart';
-// import 'package:offline_test_app/screens/network_log_screen.dart';
-
-// class AdminDashboard extends StatefulWidget {
-//   @override
-//   _AdminDashboardState createState() => _AdminDashboardState();
-// }
-
-// class _AdminDashboardState extends State<AdminDashboard> {
-//   int selectedIndex = 0;
-//   final AuthRepo authRepo = AuthRepo();
-
-//   final List<AdminMenuItem> menuItems = [
-//     AdminMenuItem(
-//         icon: Icons.dashboard,
-//         title: "Dashboard",
-//         widget: _buildDashboardView()),
-//     AdminMenuItem(
-//         icon: Icons.people, title: "Students", widget: UserListScreen()),
-//     AdminMenuItem(
-//         icon: Icons.assignment,
-//         title: "Past Exams",
-//         widget: ExamHistoryScreen()),
-//     AdminMenuItem(
-//         icon: Icons.add_circle_outline,
-//         title: "Create Exam",
-//         widget: AdminExamDashboard()),
-//     AdminMenuItem(
-//         icon: Icons.bug_report,
-//         title: "Network Log",
-//         widget: const NetworkLogScreen()),
-//     AdminMenuItem(
-//         icon: Icons.timer,
-//         title: "Active Exam",
-//         widget: ExamHistoryScreen(isEdit: true)),
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.cardBackground,
-//       body: Row(
-//         children: [
-//           _buildSidebar(context),
-//           Expanded(
-//             child: Column(
-//               children: [
-//                 _buildAppBar(context),
-//                 Expanded(child: menuItems[selectedIndex].widget),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildSidebar(BuildContext context) {
-//     return Container(
-//       width: 250,
-//       color: AppColors.appBar,
-//       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           _buildUserInfo(context),
-//           const Divider(),
-//           ...menuItems.map((item) => _buildSidebarItem(context, item)),
-//           const SizedBox(height: 20),
-//           _buildLogoutButton(context),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildUserInfo(BuildContext context) {
-//     final user = AppLocalStorage.instance.user;
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(user.email,
-//             style: Theme.of(context)
-//                 .textTheme
-//                 .bodyMedium
-//                 ?.copyWith(color: Colors.white)),
-//         Text(user.name,
-//             style: Theme.of(context)
-//                 .textTheme
-//                 .bodyMedium
-//                 ?.copyWith(color: Colors.white)),
-//         Text('Batch: ${user.batch}',
-//             style: Theme.of(context)
-//                 .textTheme
-//                 .bodyMedium
-//                 ?.copyWith(color: Colors.white)),
-//         Text('Organization: ${user.orgCode}',
-//             style: Theme.of(context)
-//                 .textTheme
-//                 .bodyMedium
-//                 ?.copyWith(color: Colors.white)),
-//       ],
-//     );
-//   }
-
-//   Widget _buildSidebarItem(BuildContext context, AdminMenuItem item) {
-//     final selected = selectedIndex == menuItems.indexOf(item);
-//     return InkWell(
-//       onTap: () => setState(() => selectedIndex = menuItems.indexOf(item)),
-//       child: Container(
-//         padding: const EdgeInsets.symmetric(vertical: 12),
-//         decoration: selected
-//             ? BoxDecoration(
-//                 color: Colors.white.withOpacity(0.1),
-//                 borderRadius: BorderRadius.circular(8))
-//             : null,
-//         child: Row(
-//           children: [
-//             Icon(item.icon, color: Colors.white),
-//             const SizedBox(width: 10),
-//             Text(item.title,
-//                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-//                     color: Colors.white,
-//                     fontWeight:
-//                         selected ? FontWeight.bold : FontWeight.normal)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _buildLogoutButton(BuildContext context) {
-//     return InkWell(
-//       onTap: () async {
-//         try {
-//           await authRepo.logOut(userId: AppLocalStorage.instance.user.userId);
-//           AppLocalStorage.instance.clearStorage();
-//           Get.offAllNamed('/login');
-//         } catch (e) {
-//           debugPrint("Logout error: $e");
-//         }
-//       },
-//       child: Row(
-//         children: [
-//           const Icon(Icons.logout, color: Colors.white),
-//           const SizedBox(width: 10),
-//           Text("Logout",
-//               style: Theme.of(context)
-//                   .textTheme
-//                   .bodyMedium
-//                   ?.copyWith(color: Colors.white)),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildAppBar(BuildContext context) {
-//     return AppBar(
-//       backgroundColor: AppColors.appBar,
-//       elevation: 0,
-//       automaticallyImplyLeading: false,
-//       title: Text("Admin Panel",
-//           style: Theme.of(context)
-//               .textTheme
-//               .titleLarge
-//               ?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-//     );
-//   }
-
-//   static Widget _buildDashboardView() {
-//     return Padding(
-//       padding: const EdgeInsets.all(16),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Text("Overview",
-//               style: TextStyle(
-//                   color: AppColors.textPrimary,
-//                   fontSize: 22,
-//                   fontWeight: FontWeight.bold)),
-//           const SizedBox(height: 20),
-//           Expanded(
-//             child: LayoutBuilder(
-//               builder: (context, constraints) {
-//                 int crossAxisCount = constraints.maxWidth > 600 ? 3 : 1;
-//                 return GridView.count(
-//                   crossAxisCount: crossAxisCount,
-//                   crossAxisSpacing: 20,
-//                   mainAxisSpacing: 20,
-//                   children: [
-//                     _buildDashboardCard(
-//                         context,
-//                         "All Students",
-//                         Icons.people,
-//                         () => Get.find<_AdminDashboardState>().setState(() =>
-//                             Get.find<_AdminDashboardState>().selectedIndex =
-//                                 1)),
-//                     _buildDashboardCard(
-//                         context,
-//                         "Past Exams",
-//                         Icons.assignment,
-//                         () => Get.find<_AdminDashboardState>().setState(() =>
-//                             Get.find<_AdminDashboardState>().selectedIndex =
-//                                 2)),
-//                     _buildDashboardCard(
-//                         context,
-//                         "Active Exam",
-//                         Icons.timer,
-//                         () => Get.find<_AdminDashboardState>().setState(() =>
-//                             Get.find<_AdminDashboardState>().selectedIndex =
-//                                 5)),
-//                   ],
-//                 );
-//               },
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   static Widget _buildDashboardCard(
-//       BuildContext context, String title, IconData icon, VoidCallback onTap) {
-//     return InkWell(
-//       onTap: onTap,
-//       child: Container(
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: AppColors.dialogBackground,
-//           borderRadius: BorderRadius.circular(10),
-//           boxShadow: const [
-//             BoxShadow(color: Colors.black12, blurRadius: 6, spreadRadius: 2)
-//           ],
-//         ),
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Icon(icon, size: 40, color: AppColors.textPrimary),
-//             const SizedBox(height: 10),
-//             Text(title,
-//                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-//                     fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-//             const SizedBox(height: 5),
-//             Text("",
-//                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-//                     fontWeight: FontWeight.bold, color: AppColors.primary)),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class AdminMenuItem {
-//   final IconData icon;
-//   final String title;
-//   final Widget widget;
-
-//   AdminMenuItem(
-//       {required this.icon, required this.title, required this.widget});
-// }

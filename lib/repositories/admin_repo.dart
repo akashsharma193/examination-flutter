@@ -82,4 +82,22 @@ class AdminRepo {
       return AppResult.failure(const AppFailure());
     }
   }
+
+  Future<AppResult<Map<String,dynamic>>> getReportCount(String orgCode) async {
+    try {
+      final response = await dioService.postDio(
+        endpoint: 'report/getCount',
+        body: {"id": orgCode},
+      );
+      switch (response) {
+        case AppSuccess():
+          return AppSuccess(response.value['data']);
+        case AppFailure():
+          return AppResult.failure(response);
+      }
+    } catch (e) {
+      log("Error caught in getReportCount: $e");
+      return AppResult.failure(const AppFailure());
+    }
+  }
 }
