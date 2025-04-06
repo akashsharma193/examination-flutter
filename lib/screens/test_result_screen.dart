@@ -92,7 +92,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(
-                width: Get.width * 0.3,
+                width: Get.width * 0.2,
                 child: Column(
                   children: [
                     Row(

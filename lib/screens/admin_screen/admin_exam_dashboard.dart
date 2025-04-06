@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
+import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
+import 'package:offline_test_app/helper.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
@@ -20,6 +22,16 @@ class AdminExamDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: isEdit
+          ? AppBar(
+              iconTheme: IconThemeData(color: Colors.white),
+              backgroundColor: AppColors.appBar,
+              title: Text(
+                'Edit Exam',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ExamForm(
@@ -110,6 +122,9 @@ class ExamFormState extends State<ExamForm> {
         case AppSuccess<bool>():
           await AppSnackbarWidget.showSnackBar(
               isSuccess: true, subTitle: "Exam created successfully");
+          final controller = getController<ExamHistoryController>(
+              () => ExamHistoryController());
+          controller.getHistory(null);
           Get.until((e) => Get.currentRoute == '/home');
           break;
         case AppFailure():
@@ -158,92 +173,99 @@ class ExamFormState extends State<ExamForm> {
         key: _formKey,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SizedBox(
-              width: Get.width / 2 - 100,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFieldWidget(
-                      label: "Subject Name", controller: _subjectController),
-                  TextFieldWidget(
-                      label: "Teacher Name", controller: _teacherController),
-                  TextFieldWidget(
-                      label: "Organization Code",
-                      controller: _orgCodeController),
-                  TextFieldWidget(label: "Batch", controller: _batchController),
-                  DropdownButtonFormField<int>(
-                    decoration: const InputDecoration(
-                        labelText: "Exam Duration (minutes)"),
-                    value: examDuration,
-                    items: List.generate(36, (index) => (index + 1) * 5)
-                        .map((e) => DropdownMenuItem(
-                            value: e, child: Text("$e minutes")))
-                        .toList(),
-                    onChanged: (value) => setState(() => examDuration = value!),
-                  ),
-                  DateTimePickerWidget(
-                      label: "Start Time",
-                      dateTime: _startTime == null
-                          ? ''
-                          : _startTime?.formatTime ?? '',
-                      onPicked: (date) => setState(() => _startTime = date)),
-                  DateTimePickerWidget(
-                      label: "End Time",
-                      dateTime:
-                          _endTime == null ? '' : _endTime?.formatTime ?? '',
-                      onPicked: (date) => setState(() => _endTime = date)),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton(
-                        onPressed: _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.button,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+              width: Get.width / 3,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFieldWidget(
+                        label: "Subject Name", controller: _subjectController),
+                    TextFieldWidget(
+                        label: "Teacher Name", controller: _teacherController),
+                    TextFieldWidget(
+                        label: "Organization Code",
+                        controller: _orgCodeController),
+                    TextFieldWidget(
+                        label: "Batch", controller: _batchController),
+                    DropdownButtonFormField<int>(
+                      decoration: const InputDecoration(
+                          labelText: "Exam Duration (minutes)"),
+                      value: examDuration,
+                      items: List.generate(36, (index) => (index + 1) * 5)
+                          .map((e) => DropdownMenuItem(
+                              value: e, child: Text("$e minutes")))
+                          .toList(),
+                      onChanged: (value) =>
+                          setState(() => examDuration = value!),
+                    ),
+                    DateTimePickerWidget(
+                        label: "Start Time",
+                        dateTime: _startTime == null
+                            ? ''
+                            : _startTime?.formatTime ?? '',
+                        onPicked: (date) => setState(() => _startTime = date)),
+                    DateTimePickerWidget(
+                        label: "End Time",
+                        dateTime:
+                            _endTime == null ? '' : _endTime?.formatTime ?? '',
+                        onPicked: (date) => setState(() => _endTime = date)),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.button,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                          child: isExamSubmitting
+                              ? const CircularProgressIndicator.adaptive()
+                              : const Text("Submit Exam",
+                                  style: AppTextStyles.button),
                         ),
-                        child: isExamSubmitting
-                            ? const CircularProgressIndicator.adaptive()
-                            : const Text("Submit Exam",
-                                style: AppTextStyles.button),
-                      ),
-                      InkWell(
-                        onTap: () => downloadSampleExcelFromAssets(
-                            'assets/sample_questions.xlsx', 'sample_question'),
-                        child: Card(
-                          elevation: 3,
-                          color: Colors.blue,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.download,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Text("Sample Excel",
-                                    style: AppTextStyles.button)
-                              ],
+                        InkWell(
+                          onTap: () => downloadSampleExcelFromAssets(
+                              'assets/sample_questions.xlsx',
+                              'sample_question.xlsx'),
+                          child: Card(
+                            elevation: 3,
+                            color: Colors.blue,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.download,
+                                    color: Colors.white,
+                                  ),
+                                  SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text("Sample Excel",
+                                      style: AppTextStyles.button)
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
+            SizedBox(
+              width: 20,
+            ),
             Container(
-                constraints: BoxConstraints(maxWidth: Get.width / 2 - 100),
+                constraints: BoxConstraints(maxWidth: Get.width / 2.5),
                 // width: Get.width / 2 - 100,
                 child: QuestionListWidget(questions: _questions)),
           ],

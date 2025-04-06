@@ -5,6 +5,7 @@ import 'package:offline_test_app/controllers/user_list_controller.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:offline_test_app/screens/active_exams_screen.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:offline_test_app/screens/admin_screen/e_resource_screen.dart';
 import 'package:offline_test_app/screens/admin_screen/user_list_screen.dart';
@@ -73,7 +74,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                AppLocalStorage.instance.user.email,
+                'Email :' + AppLocalStorage.instance.user.email,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
@@ -81,7 +82,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ),
               ),
               Text(
-                AppLocalStorage.instance.user.name,
+                'Name :' + AppLocalStorage.instance.user.name,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
@@ -90,14 +91,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
               Text(
                 'Batch : ' + AppLocalStorage.instance.user.batch,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                'Orgnatization : ' + AppLocalStorage.instance.user.orgCode,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
@@ -117,7 +110,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   userListController
                       .fetchUsers(AppLocalStorage.instance.user.orgCode);
                 } else if (index == 2) {
-                  examHistoryController.getHistory(null);
+                  examHistoryController.setup(
+                      userId: null, showActiveExam: false);
                 }
                 setState(() {
                   selectedIndex = index;
@@ -219,15 +213,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 1:
         return UserListScreen(); // Replace with actual widget
       case 2:
-        return ExamHistoryScreen(); // Replace with actual widget
+        return PastExamScreen(); // Replace with actual widget
       case 3:
         return AdminExamDashboard();
       case 4:
         return const NetworkLogScreen();
       case 5:
-        return ExamHistoryScreen(
-          isEdit: true,
-        );
+        return ActiveExamScreen();
       case 6:
         return EResourceScreen();
       default:

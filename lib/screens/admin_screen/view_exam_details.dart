@@ -95,16 +95,20 @@ class _AttemptedStudentListState extends State<AttemptedStudentList> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   final student = controller.studentList[index];
-                  return ListTile(
-                    onTap: () {
-                      Get.to(TestResultScreen(
-                          model: widget.model,
-                          userId: student['userId'] ?? '-'));
-                    },
-                    tileColor: AppColors.secondary,
-                    title: Text(student['name'] ?? '-'),
-                    subtitle: Text('Total Marks : ${student['marks'] ?? '0'}'),
-                    trailing: Icon(Icons.arrow_forward_ios),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListTile(
+                      onTap: () {
+                        Get.to(TestResultScreen(
+                            model: widget.model,
+                            userId: student['userId'] ?? '-'));
+                      },
+                      tileColor: AppColors.secondary,
+                      title: Text(student['name'] ?? '-'),
+                      subtitle:
+                          Text('Total Marks : ${student['marks'] ?? '0'}'),
+                      trailing: Icon(Icons.arrow_forward_ios),
+                    ),
                   );
                 },
               );

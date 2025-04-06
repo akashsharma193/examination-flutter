@@ -5,6 +5,7 @@ import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/screens/exam_history_screen.dart';
+import 'package:offline_test_app/widgets/custom_dropdown_widget.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({Key? key}) : super(key: key);
@@ -136,7 +137,7 @@ class _UserListScreenState extends State<UserListScreen> {
           final user = controller.filteredUsers[index];
           return InkWell(
             onTap: () {
-              Get.to(() => ExamHistoryScreen(
+              Get.to(() => PastExamScreen(
                     userId: user.userId,
                   ));
             },
@@ -237,53 +238,35 @@ class _UserListScreenState extends State<UserListScreen> {
             // 🔎 Batch Filter
             Expanded(
               flex: 2,
-              child: Obx(() {
-                return DropdownButtonFormField<String>(
-                  value: controller.selectedBatch.value.isEmpty
-                      ? null
-                      : controller.selectedBatch.value,
-                  onChanged: (value) =>
-                      controller.selectedBatch.value = value ?? '',
-                  decoration: InputDecoration(
-                    hintText: 'Batch',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                  ),
-                  items: controller.batches
-                      .map((batch) =>
-                          DropdownMenuItem(value: batch, child: Text(batch)))
-                      .toList(),
-                );
-              }),
+              child: MyDropdownMenuStateful(batches: controller.batches, onSelect: (s)=>controller.selectedBatch.value=s??'')
             ),
             const SizedBox(width: 10),
 
             // 🏢 Organization Filter
-            Expanded(
-              flex: 2,
-              child: Obx(() {
-                return DropdownButtonFormField<String>(
-                  value: controller.selectedOrganization.value.isEmpty
-                      ? null
-                      : controller.selectedOrganization.value,
-                  onChanged: (value) =>
-                      controller.selectedOrganization.value = value ?? '',
-                  decoration: InputDecoration(
-                    hintText: 'Organization',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                  ),
-                  items: controller.organizationCodes
-                      .map((org) =>
-                          DropdownMenuItem(value: org, child: Text(org)))
-                      .toList(),
-                );
-              }),
-            ),
+            // Expanded(
+            //   flex: 2,
+            //   child: Obx(() {
+            //     return DropdownButtonFormField<String>(
+            //       value: controller.selectedOrganization.value.isEmpty
+            //           ? null
+            //           : controller.selectedOrganization.value,
+            //       onChanged: (value) =>
+            //           controller.selectedOrganization.value = value ?? '',
+            //       decoration: InputDecoration(
+            //         hintText: 'Organization',
+            //         border: OutlineInputBorder(
+            //             borderRadius: BorderRadius.circular(10)),
+            //         contentPadding: const EdgeInsets.symmetric(
+            //             horizontal: 16, vertical: 12),
+            //       ),
+            //       items: controller.organizationCodes
+            //           .map((org) =>
+            //               DropdownMenuItem(value: org, child: Text(org)))
+            //           .toList(),
+            //     );
+            //   }),
+            // ),
+           
             const SizedBox(width: 10),
 
             // ❌ Clear Filters

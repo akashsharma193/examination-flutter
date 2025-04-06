@@ -25,11 +25,6 @@ class AppRoute {
       HomeBinding(),
     ]),
     GetPage(
-      name: AppRoutesNames.examHistory,
-      page: () => ExamHistoryScreen(),
-      binding: ExamHistoryBinding(),
-    ),
-    GetPage(
         name: AppRoutesNames.userList,
         page: () => const UserListScreen(),
         binding: UserListBinding()),

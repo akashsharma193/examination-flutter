@@ -7,12 +7,43 @@ import 'package:offline_test_app/repositories/admin_repo.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 
 class ExamHistoryController extends GetxController {
-  List allAttemptedExamsList = [];
+  List<SingleExamHistoryModel> allAttemptedExamsList =
+      <SingleExamHistoryModel>[];
   RxBool isLoading = false.obs;
   bool isFromGetAllExamTab = false;
   final ExamRepo examRepo = ExamRepo();
   final AdminRepo adminRepo = AdminRepo();
   bool showOnlyActiveExams = false;
+
+  RxString searchQuery = ''.obs;
+
+  RxString selectedBatch = ''.obs;
+
+  RxString selectedOrganization = ''.obs;
+
+  List<String> get batches => allAttemptedExamsList
+      .map((e) => (e.batch ?? '').trim())
+      .toSet()
+      .where((e) => e.isNotEmpty)
+      .toList()
+      .toSet()
+      .toList();
+
+  List<SingleExamHistoryModel> get filteredExams {
+    return allAttemptedExamsList.where((user) {
+      final matchesSearch = (user.subjectName ?? '')
+              .toLowerCase()
+              .contains(searchQuery.value.toLowerCase()) ||
+          (user.teacherName ?? '')
+              .toLowerCase()
+              .contains(searchQuery.value.toLowerCase());
+      final matchesBatch =
+          selectedBatch.value.isEmpty || user.batch == selectedBatch.value;
+      final matchesOrg = selectedOrganization.value.isEmpty ||
+          user.orgCode == selectedOrganization.value;
+      return matchesSearch && matchesBatch && matchesOrg;
+    }).toList();
+  }
 
   void setup({required String? userId, bool showActiveExam = false}) {
     isFromGetAllExamTab = userId == null;
