@@ -7,6 +7,7 @@ import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:offline_test_app/screens/network_log_screen.dart';
 import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:offline_test_app/screens/student_exam_history.dart';
 import 'package:offline_test_app/services/app_package_service.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -81,7 +82,9 @@ class _AppDrawerState extends State<AppDrawer> {
                     onTap: () {
                       switch (entry.key) {
                         case 'Exam History':
-                          Get.toNamed('/exam-history');
+                          Get.to(() => StudentExamHistory(
+                                userId: AppLocalStorage.instance.user.userId,
+                              ));
                           break;
                         case 'Network Logs':
                           Get.to(() => const NetworkLogScreen());

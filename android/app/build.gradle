@@ -14,7 +14,11 @@ def getFlutterAppName() {
     return nameLine ? nameLine.split(": ")[1].trim() : "my_app"
 }
 // Function to read and increment the version in pubspec.yaml
-def updateFlutterVersion() {
+def updateFlutterVersion(boolean isReleaseBuild) {
+    if (!isReleaseBuild) {
+        println "Skipping version update for non-release build."
+        return;
+    }
     def pubspec = new File("${project.rootDir}/../pubspec.yaml")
     if (!pubspec.exists()) return
 
@@ -40,8 +44,6 @@ def updateFlutterVersion() {
     pubspec.text = newLines.join("\n")
 }
 
-// Call the function before building the APK
-updateFlutterVersion()
 
 def getFlutterVersionName() {
     def pubspec = new File("${project.rootDir}/../pubspec.yaml")
@@ -88,6 +90,8 @@ android {
         }
     }
     applicationVariants.all { variant ->
+     updateFlutterVersion(variant.buildType.name.equals("release"));
+
         variant.outputs.all { output ->
             def appName = getFlutterAppName()
             def buildType = variant.buildType.name // Use build type instead of flavor

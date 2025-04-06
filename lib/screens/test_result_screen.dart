@@ -83,9 +83,61 @@ class _TestResultScreenState extends State<TestResultScreen> {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          Text(
-            "Total Score: ${model.correctAnswer} / ${model.totalQuestion}",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                "Total Score: ${model.correctAnswer} / ${model.totalQuestion}",
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                width: Get.width * 0.3,
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          height: 10,
+                          width: 10,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text('Wrong Answer')
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          height: 10,
+                          width: 10,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text('Correct Answer')
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          height: 10,
+                          width: 10,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Text('Not Attempted')
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
           const SizedBox(height: 10),
           SizedBox(
