@@ -32,14 +32,7 @@ class AdminExamDashboard extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
             )
-          :  AppBar(
-              iconTheme: IconThemeData(color: Colors.white),
-              backgroundColor: AppColors.appBar,
-              title: Text(
-                'Active Exam Details',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ExamForm(

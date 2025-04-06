@@ -30,6 +30,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
     return GetBuilder<TestResultDetailController>(
       builder: (controller) {
         return Scaffold(
+          backgroundColor: AppColors.cardBackground,
           floatingActionButton: FloatingActionButton.small(
             onPressed: () {
               controller.refreshData(
