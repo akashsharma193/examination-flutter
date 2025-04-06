@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:get/state_manager.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 import 'package:offline_test_app/services/device_service.dart';
@@ -34,10 +34,11 @@ class AppDioService {
           return code != null && code >= 200 && code <= 503;
         },
         contentType: 'application/json');
-    _serviceDio.interceptors.addAll(interceptors ??
-        [
-          PrettyDioLogger(request: true, requestBody: true, responseBody: true)
-        ]);
+    if (kDebugMode) {
+      _serviceDio.interceptors.add(PrettyDioLogger(
+          request: true, requestBody: true, responseBody: true));
+    }
+    _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
 
     _serviceDio.interceptors.add(NetworkLogInterceptor());
   }
