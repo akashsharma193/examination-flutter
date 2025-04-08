@@ -97,4 +97,54 @@ class AuthRepo {
       return AppResult.failure(const AppFailure());
     }
   }
+
+  Future<AppResult<bool>> sendTempPassword(String email) async {
+    try {
+      final response = await dioService.postDio(
+        endpoint: 'user/sendTempPassword',
+        body: {'id': email},
+      );
+      switch (response) {
+        case AppSuccess():
+          return const AppSuccess(true); // Assuming no specific data returned
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
+      }
+    } catch (e) {
+      log("Error in sendTempPassword: $e");
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<bool>> resetPassword({
+    required String email,
+    required String tempPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await dioService.postDio(
+        endpoint: 'user/resetPassword',
+        body: {
+          'email': email,
+          'tempPassword': tempPassword,
+          'password': newPassword,
+        },
+      );
+      switch (response) {
+        case AppSuccess():
+          return const AppSuccess(true);
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
+      }
+    } catch (e) {
+      log("Error in resetPassword: $e");
+      return AppResult.failure(const AppFailure());
+    }
+  }
 }

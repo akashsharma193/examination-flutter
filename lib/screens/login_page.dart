@@ -118,6 +118,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/auth_controller.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
+import 'package:offline_test_app/screens/forgot_password.dart';
 import 'package:offline_test_app/screens/register_screen.dart';
 import 'package:offline_test_app/widgets/custom_text_field.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
@@ -236,7 +237,7 @@ class _LoginPageState extends State<LoginPage> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  authController.forgotPassword();
+                  Get.to(() => ForgotPasswordScreen());
                 },
                 child: const Text('Forgot Password?'),
               ),
