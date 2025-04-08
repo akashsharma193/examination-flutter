@@ -10,7 +10,8 @@ sealed class AppResult<T> {
   String toString() {
     return switch (this) {
       AppSuccess<T> s => 'AppResult.success(${s.value})',
-      AppFailure f => 'AppResult.failure(error: ${f.errorMessage}, code: ${f.code})',
+      AppFailure f =>
+        'AppResult.failure(error: ${f.errorMessage}, code: ${f.code})',
     };
   }
 }
@@ -38,7 +39,9 @@ class AppFailure extends AppResult<Never> {
 /// Generic class for API failures with default messages
 class AppFailureWithMessage extends AppFailure {
   const AppFailureWithMessage({String? errorMessage, super.code})
-      : super(errorMessage: errorMessage ?? AppStringConstants.somethingWentWrong);
+      : super(
+            errorMessage:
+                errorMessage ?? AppStringConstants.somethingWentWrong);
 }
 
 /// Internet & Timeout Related Errors
@@ -49,7 +52,8 @@ class AppNoInternetFailure extends AppFailureWithMessage {
 
 class AppConnectionTimeOutFailure extends AppFailureWithMessage {
   const AppConnectionTimeOutFailure({String? errorMessage})
-      : super(errorMessage: errorMessage ?? AppStringConstants.connectionTimeOut);
+      : super(
+            errorMessage: errorMessage ?? AppStringConstants.connectionTimeOut);
 }
 
 class AppRequestTimeOutFailure extends AppFailureWithMessage {
@@ -112,7 +116,9 @@ class AppServerSideError extends AppFailureWithMessage {
 
 class AppUnableToProcessRequest extends AppFailureWithMessage {
   const AppUnableToProcessRequest({String? errorMessage})
-      : super(errorMessage: errorMessage ?? AppStringConstants.serverUnableToProccessRequest);
+      : super(
+            errorMessage: errorMessage ??
+                AppStringConstants.serverUnableToProccessRequest);
 }
 
 class AppBadGatewayError extends AppFailureWithMessage {
@@ -122,12 +128,15 @@ class AppBadGatewayError extends AppFailureWithMessage {
 
 class AppServerNotAvailable extends AppFailureWithMessage {
   const AppServerNotAvailable({String? errorMessage})
-      : super(errorMessage: errorMessage ?? AppStringConstants.serverNotAvailbale);
+      : super(
+            errorMessage:
+                errorMessage ?? AppStringConstants.serverNotAvailbale);
 }
 
 /// Specific API Success Response with additional data
 class AppClientSuccessStatus<T> extends AppFailure {
   final T data;
-  const AppClientSuccessStatus({String? errorMessage, required this.data, super.code})
+  const AppClientSuccessStatus(
+      {String? errorMessage, required this.data, super.code})
       : super(errorMessage: errorMessage ?? AppStringConstants.clientSideError);
 }

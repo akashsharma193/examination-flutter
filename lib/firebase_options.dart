@@ -72,5 +72,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'offline-14ce6.firebasestorage.app',
     iosBundleId: 'com.example.offlineTestApp',
   );
-
 }

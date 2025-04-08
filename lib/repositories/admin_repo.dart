@@ -83,7 +83,7 @@ class AdminRepo {
     }
   }
 
-  Future<AppResult<Map<String,dynamic>>> getReportCount(String orgCode) async {
+  Future<AppResult<Map<String, dynamic>>> getReportCount(String orgCode) async {
     try {
       final response = await dioService.postDio(
         endpoint: 'report/getCount',

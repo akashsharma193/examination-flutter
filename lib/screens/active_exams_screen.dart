@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
@@ -6,6 +8,7 @@ import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
+import 'package:offline_test_app/widgets/custom_dropdown_widget.dart';
 
 class ActiveExamScreen extends StatefulWidget {
   const ActiveExamScreen({super.key});
@@ -43,9 +46,22 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
                   )
                 : LayoutBuilder(
                     builder: (context, constraints) {
-                      return constraints.maxWidth < 600
-                          ? _buildMobileLayout(examHistoryController)
-                          : _buildWebLayout(examHistoryController);
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child:
+                                _buildSearchAndFilterBar(examHistoryController),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Expanded(
+                              child: constraints.maxWidth < 600
+                                  ? _buildMobileLayout(examHistoryController)
+                                  : _buildWebLayout(examHistoryController)),
+                        ],
+                      );
                     },
                   ),
       );
@@ -66,20 +82,22 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
   }
 
   Widget _buildWebLayout(ExamHistoryController controller) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 3 / 2,
+    return Obx(
+      () => GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 3 / 2,
+        ),
+        itemCount: controller.filteredExams.length,
+        itemBuilder: (context, index) {
+          final SingleExamHistoryModel singleItem =
+              controller.filteredExams[index];
+          return _buildExamCard(singleItem, controller);
+        },
       ),
-      itemCount: controller.filteredExams.length,
-      itemBuilder: (context, index) {
-        final SingleExamHistoryModel singleItem =
-            controller.filteredExams[index];
-        return _buildExamCard(singleItem, controller);
-      },
     );
   }
 
@@ -122,6 +140,64 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSearchAndFilterBar(ExamHistoryController controller) {
+    final textController = TextEditingController();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            // 🔍 Search bar
+            Expanded(
+              flex: 3,
+              child: TextField(
+                controller: textController,
+                onChanged: (value) => controller.searchQuery.value = value,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+
+            // 🔎 Batch Filter
+            Expanded(
+              flex: 2,
+              child: MyDropdownMenuStateful(
+                  batches: controller.batches,
+                  onSelect: (s) => controller.selectedBatch.value = s ?? ''),
+            ),
+            const SizedBox(width: 10),
+
+            // ❌ Clear Filters
+            ElevatedButton.icon(
+              onPressed: () {
+                controller.searchQuery.value = '';
+                controller.selectedBatch.value = '';
+                controller.selectedOrganization.value = '';
+                textController.clear();
+              },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade300,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

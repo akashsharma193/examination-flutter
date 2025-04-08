@@ -237,9 +237,10 @@ class _UserListScreenState extends State<UserListScreen> {
 
             // 🔎 Batch Filter
             Expanded(
-              flex: 2,
-              child: MyDropdownMenuStateful(batches: controller.batches, onSelect: (s)=>controller.selectedBatch.value=s??'')
-            ),
+                flex: 2,
+                child: MyDropdownMenuStateful(
+                    batches: controller.batches,
+                    onSelect: (s) => controller.selectedBatch.value = s ?? '')),
             const SizedBox(width: 10),
 
             // 🏢 Organization Filter
@@ -266,7 +267,7 @@ class _UserListScreenState extends State<UserListScreen> {
             //     );
             //   }),
             // ),
-           
+
             const SizedBox(width: 10),
 
             // ❌ Clear Filters

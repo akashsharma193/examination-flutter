@@ -101,7 +101,8 @@ class RegistrationPageState extends State<RegistrationPage> {
                             ),
                             child: authController.isRegisterLoading.value
                                 ? const CircularProgressIndicator.adaptive()
-                                : const Text("Submit", style: AppTextStyles.button),
+                                : const Text("Submit",
+                                    style: AppTextStyles.button),
                           )),
                     ],
                   ),

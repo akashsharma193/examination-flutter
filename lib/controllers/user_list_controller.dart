@@ -43,7 +43,6 @@ class UserListController extends GetxController {
     }).toList();
   }
 
-  
   void fetchUsers(String orgCode) async {
     try {
       isLoading.value = true;

@@ -80,7 +80,7 @@ class _AppDrawerState extends State<AppDrawer> {
                               ));
                           break;
                         case 'Network Logs':
-                          Get.to(() => const NetworkLogScreen());
+                          Get.to(() => ScaffoldNetworkScreen());
                           break;
                         case 'Log Out':
                           final AuthRepo repo = AuthRepo();

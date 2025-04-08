@@ -47,9 +47,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   RxMap<String, dynamic> basicData = RxMap();
   AdminRepo repo = AdminRepo();
 
-  @override
-  void initState() {
-    super.initState();
+  getHomeBasicData() {
     repo.getReportCount(AppLocalStorage.instance.user.orgCode).then((v) {
       switch (v) {
         case AppSuccess(value: Map<String, dynamic> v):
@@ -60,6 +58,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
           break;
       }
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getHomeBasicData();
   }
 
   @override
@@ -126,6 +130,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
               title: sidebarItems[index],
               selected: selectedIndex == index,
               onTap: () {
+                if (index == 0) {
+                  getHomeBasicData();
+                }
                 if (index == 1) {
                   userListController
                       .fetchUsers(AppLocalStorage.instance.user.orgCode);

@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
+
+class ScaffoldNetworkScreen extends StatelessWidget {
+  const ScaffoldNetworkScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: AppColors.cardBackground,
+      body: NetworkLogScreen(),
+    );
+  }
+}
 
 class NetworkLogScreen extends StatelessWidget {
   const NetworkLogScreen({super.key});
