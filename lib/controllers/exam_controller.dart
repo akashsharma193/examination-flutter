@@ -164,13 +164,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
           actions: [
             TextButton(
               onPressed: () {
-                Get.offAll(() => TestCompletedScreen(
-                      list: questionList
-                          .map((e) => QuestionModel.fromJson(
-                              Map<String, dynamic>.from(e)))
-                          .toList(),
-                      testID: testId,
-                    ));
+                autoSubmitExam();
               },
               child: const Text("OK"),
             ),

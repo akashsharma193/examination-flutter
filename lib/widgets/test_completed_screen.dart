@@ -19,16 +19,7 @@ class TestCompletedScreen extends StatelessWidget {
   }
 
   void _goToHome() async {
-    bool hasInternet = await _checkInternet();
-    if (hasInternet) {
-      ExamRepo repo = ExamRepo();
-      repo.submitExam(list, testID);
-      Get.offAllNamed('/home'); // Navigate to home page
-    } else {
-      AppSnackbarWidget.showSnackBar(
-          isSuccess: false,
-          subTitle: "Please connect to the internet to proceed.");
-    }
+    Get.offAllNamed('/home'); // Navigate to home page
   }
 
   @override
