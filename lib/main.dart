@@ -20,7 +20,6 @@ void main() async {
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
