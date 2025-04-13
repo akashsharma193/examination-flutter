@@ -1,0 +1,2 @@
+/Users/abhishek/Documents/freelance/offline-test/android/app/.cxx/Debug/6e671mf3/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/abhishek/Documents/freelance/offline-test/android/app/.cxx/Debug/6e671mf3/arm64-v8a/CMakeFiles/rebuild_cache.dir
