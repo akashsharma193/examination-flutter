@@ -1,4 +1,3 @@
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -16,18 +15,15 @@ class AuthMiddleWare extends GetMiddleware {
 class InternetCheckMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    
     return null; // No automatic redirection, handling manually
   }
 
   @override
   Future<GetNavConfig?> redirectDelegate(GetNavConfig route) async {
-    
     var connectivityResult = await Connectivity().checkConnectivity();
     final results =
         connectivityResult.where((e) => ConnectivityResult.none != e);
 
-    
     if (results.isNotEmpty) {
       _showAlertDialog();
       return null; // Prevent navigation

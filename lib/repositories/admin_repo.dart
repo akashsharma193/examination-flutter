@@ -23,7 +23,6 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -41,7 +40,6 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -77,7 +75,6 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -95,7 +92,6 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }

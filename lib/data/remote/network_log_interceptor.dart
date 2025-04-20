@@ -40,7 +40,6 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "request", logEntry);
-    
 
     super.onRequest(options, handler);
   }
@@ -59,7 +58,6 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "response", logEntry);
-    
 
     super.onResponse(response, handler);
   }
@@ -80,7 +78,6 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "error", logEntry);
-    
 
     super.onError(err, handler);
   }

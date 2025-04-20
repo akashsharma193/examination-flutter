@@ -134,16 +134,19 @@ class EditUserScreen extends StatelessWidget {
           //         ))
           //     : const SizedBox.shrink(),
           labelText: label,
-          labelStyle: const TextStyle(color: AppColors.textPrimary), // Deep Brown
+          labelStyle:
+              const TextStyle(color: AppColors.textPrimary), // Deep Brown
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.border), // Grey border
+            borderSide:
+                const BorderSide(color: AppColors.border), // Grey border
           ),
           filled: true,
           fillColor: AppColors.inputBackground, // Light Grey
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.primary), // Brown border
+            borderSide:
+                const BorderSide(color: AppColors.primary), // Brown border
           ),
         ),
       ),

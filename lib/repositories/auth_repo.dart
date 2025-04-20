@@ -1,4 +1,3 @@
-
 import 'package:crackitx/app_models/app_user_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
@@ -14,17 +13,15 @@ class AuthRepo {
     try {
       final response = await dioService.postDio(
           endpoint: 'user/login', body: {'email': user, 'password': pass});
-      
+
       switch (response) {
         case AppSuccess():
-          
           return AppSuccess(UserModel.fromJson(response.value['data']));
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -34,17 +31,15 @@ class AuthRepo {
     try {
       final response = await dioService
           .postDio(endpoint: 'user/logOut', body: {"userId": userId});
-      
+
       switch (response) {
         case AppSuccess():
-          
           return const AppSuccess(null);
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -53,17 +48,15 @@ class AuthRepo {
     try {
       final response =
           await dioService.postDio(endpoint: 'user/registration', body: body);
-      
+
       switch (response) {
         case AppSuccess():
-          
           return AppSuccess(UserModel.fromJson(response.value['data']));
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -81,17 +74,15 @@ class AuthRepo {
             "fcmToken": token,
             "userId": AppLocalStorage.instance.user.userId
           });
-      
+
       switch (response) {
         case AppSuccess():
-          
           return const AppSuccess(null);
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -112,7 +103,6 @@ class AuthRepo {
           );
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -141,7 +131,6 @@ class AuthRepo {
           );
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }

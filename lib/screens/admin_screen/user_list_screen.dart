@@ -109,7 +109,8 @@ class _UserListScreenState extends State<UserListScreen> {
                         ),
                     ],
                   ),
-                  trailing: const Icon(Icons.edit, color: AppColors.textPrimary),
+                  trailing:
+                      const Icon(Icons.edit, color: AppColors.textPrimary),
                 ),
               );
             },
@@ -197,7 +198,8 @@ class _UserListScreenState extends State<UserListScreen> {
                             Get.toNamed(AppRoutesNames.editUserScreen,
                                 arguments: {"user": user});
                           },
-                          icon: const Icon(Icons.edit, color: AppColors.textPrimary)),
+                          icon: const Icon(Icons.edit,
+                              color: AppColors.textPrimary)),
                     ),
                   ],
                 ),

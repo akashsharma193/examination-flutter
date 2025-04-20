@@ -35,7 +35,9 @@ class RegistrationPageState extends State<RegistrationPage> {
     final authController = Get.find<AppAuthController>();
 
     return Scaffold(
-      appBar: AppBar(backgroundColor: AppColors.cardBackground,),
+      appBar: AppBar(
+        backgroundColor: AppColors.cardBackground,
+      ),
       backgroundColor: AppColors.cardBackground,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

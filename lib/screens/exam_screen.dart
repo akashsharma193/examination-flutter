@@ -268,13 +268,13 @@ class ExamScreen extends StatelessWidget {
           child: FilledButton(
               onPressed: () {
                 controller.showExamSubumitConfirmationDialog();
-                   Get.offAll(() => TestCompletedScreen(
-                        list: controller.questionList
-                            .map((e) => QuestionModel.fromJson(
-                                Map<String, dynamic>.from(e)))
-                            .toList(),
-                        testID: testId,
-                      ));
+                Get.offAll(() => TestCompletedScreen(
+                      list: controller.questionList
+                          .map((e) => QuestionModel.fromJson(
+                              Map<String, dynamic>.from(e)))
+                          .toList(),
+                      testID: testId,
+                    ));
               },
               child: const Text('Submit')),
         ),

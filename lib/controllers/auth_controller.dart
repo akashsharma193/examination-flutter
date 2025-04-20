@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/core/constants/app_result.dart';
@@ -60,12 +59,12 @@ class AppAuthController extends GetxController {
       }
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
-      
+
       switch (response) {
         case AppSuccess():
           isUserAuthenticated.value = true;
           localStorage.setIsUserLoggedIn(true);
-          
+
           localStorage.setUserData(response.value);
           repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
           break;
@@ -94,11 +93,8 @@ class AppAuthController extends GetxController {
         "orgCode": orgCodeController.text.trim()
       });
 
-      
-
       switch (response) {
         case AppSuccess():
-          
           AppSnackbarWidget.showSnackBar(
             isSuccess: true,
             subTitle: "Registration Successful",
@@ -106,7 +102,6 @@ class AppAuthController extends GetxController {
           Get.toNamed('/login');
           break;
         case AppFailure():
-          
           AppSnackbarWidget.showSnackBar(
               isSuccess: false, subTitle: response.errorMessage);
           isUserAuthenticated.value = false;
@@ -114,7 +109,6 @@ class AppAuthController extends GetxController {
           break;
       }
     } catch (e) {
-      
       AppSnackbarWidget.showSnackBar(
           isSuccess: false,
           subTitle: 'Error occured in registeration, try again');

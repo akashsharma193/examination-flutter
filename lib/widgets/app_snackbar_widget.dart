@@ -1,11 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class AppSnackbarWidget {
   static Future<void> showSnackBar(
       {bool isSuccess = false, String subTitle = ''}) async {
-    
     Get.snackbar(
       isSuccess ? 'Success' : 'Failed',
       subTitle,

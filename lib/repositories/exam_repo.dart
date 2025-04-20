@@ -1,4 +1,3 @@
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
@@ -30,7 +29,6 @@ class ExamRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -48,7 +46,6 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -56,7 +53,6 @@ class ExamRepo {
   Future<AppResult<bool>> submitExam(
       List<QuestionModel> paper, String testID) async {
     try {
-      
       bool isOnline = await _checkInternet();
       Map<String, dynamic> examData = {
         "answerPaper": paper.map((e) => e.toJson()).toList(),
@@ -80,7 +76,6 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -102,7 +97,6 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -120,7 +114,6 @@ class ExamRepo {
         "userId": userId,
         "questionId": qID,
       });
-      
 
       switch (response) {
         case AppSuccess():
@@ -131,7 +124,6 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -140,7 +132,6 @@ class ExamRepo {
     try {
       final response = await dioService.postDio(
           endpoint: 'questionPaper/createQuestionPaper', body: examData);
-      
 
       switch (response) {
         case AppSuccess():
@@ -150,7 +141,6 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code));
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -162,7 +152,6 @@ class ExamRepo {
         "email": text,
       });
 
-      
       switch (response) {
         case AppSuccess():
           AppSnackbarWidget.showSnackBar(
@@ -173,9 +162,7 @@ class ExamRepo {
           AppSnackbarWidget.showSnackBar(
               isSuccess: false, subTitle: response.errorMessage);
       }
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   Future<AppResult<List<Map<String, dynamic>>>> getStudentListByQuestionId(
@@ -196,7 +183,6 @@ class ExamRepo {
           return const AppFailure();
       }
     } catch (e) {
-      
       return AppResult.failure(const AppFailure());
     }
   }

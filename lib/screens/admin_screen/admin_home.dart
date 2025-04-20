@@ -12,7 +12,6 @@ import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/screens/admin_screen/e_resource_screen.dart';
 import 'package:crackitx/screens/admin_screen/user_list_screen.dart';
 import 'package:crackitx/screens/exam_history_screen.dart';
-import 'package:crackitx/screens/network_log_screen.dart';
 
 T getController<T>(T Function() f) {
   if (Get.isRegistered<T>()) {
@@ -158,9 +157,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     userId: AppLocalStorage.instance.user.userId);
                 AppLocalStorage.instance.clearStorage();
                 Get.offAllNamed('/login');
-              } catch (e) {
-                
-              }
+              } catch (e) {}
             },
           ),
         ],

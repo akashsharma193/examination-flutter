@@ -47,7 +47,6 @@ class HomeController extends GetxController {
         AppLocalStorage.instance.getOfflineUnSubmittedExams();
 
     for (Map<String, dynamic> item in unSubmitedExams) {
-      
       List<QuestionModel> questionList = List<QuestionModel>.from(
           item['answerPaper'].map(
               (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
@@ -55,10 +54,8 @@ class HomeController extends GetxController {
 
       switch (res) {
         case AppSuccess():
-          
           break;
         case AppFailure():
-          
       }
       await Future.delayed(const Duration(seconds: 1));
     }
@@ -95,7 +92,7 @@ class HomeController extends GetxController {
   void _initializeTimers() {
     for (var exam in allExams) {
       _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime);
-        }
+    }
   }
 
   void _startCountdown(String examId, DateTime startTime) {

@@ -1,4 +1,3 @@
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -19,7 +18,6 @@ class AppFirebaseService {
 
     // Get FCM Token
     String? token = await getFcmToken();
-    
   }
 
   /// Request notification permissions (iOS & Web)
@@ -31,10 +29,7 @@ class AppFirebaseService {
         badge: true,
         sound: true,
       );
-      
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 
   /// Get FCM Token for Android, iOS, and Web
@@ -48,12 +43,9 @@ class AppFirebaseService {
           : await _firebaseMessaging.getToken();
     } catch (e) {
       if (maxRetries > 0) {
-        
         await Future.delayed(const Duration(seconds: 5));
         return getFcmToken(maxRetries: maxRetries - 1);
       } else {
-        
-
         return null;
       }
     }
@@ -62,25 +54,20 @@ class AppFirebaseService {
   /// Handle foreground messages
   Future<void> _setupForegroundNotificationHandler() async {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      
       AppNotificationService.instance.showLocalNotification(message);
     });
   }
 
   /// Handle background and terminated state messages
   Future<void> _setupBackgroundMessageHandler() async {
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      
-    });
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {});
 
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   }
 }
 
 /// Background message handler
-Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  
-}
+Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {}
 
 class AppNotificationService {
   AppNotificationService._();
@@ -121,8 +108,6 @@ class AppNotificationService {
         message.notification?.body ?? "You have a new message",
         details,
       );
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
 }
