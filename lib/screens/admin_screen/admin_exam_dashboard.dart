@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/controllers/exam_history_controller.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/helper.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
-import 'package:offline_test_app/screens/admin_screen/function_helper.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/controllers/exam_history_controller.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/extensions/datetime_extension.dart';
+import 'package:crackitx/helper.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
+import 'package:crackitx/screens/admin_screen/create_exams/date_time_picker_widget.dart';
+import 'package:crackitx/screens/admin_screen/create_exams/question_list_widget.dart';
+import 'package:crackitx/screens/admin_screen/create_exams/text_field_widget.dart';
+import 'package:crackitx/screens/admin_screen/function_helper.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 
 class AdminExamDashboard extends StatelessWidget {
   const AdminExamDashboard(

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/controllers/exam_history_controller.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/screens/admin_screen/view_exam_details.dart';
-import 'package:offline_test_app/screens/test_result_screen.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/widgets/custom_dropdown_widget.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/controllers/exam_history_controller.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/extensions/datetime_extension.dart';
+import 'package:crackitx/screens/admin_screen/view_exam_details.dart';
+import 'package:crackitx/screens/test_result_screen.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/widgets/custom_dropdown_widget.dart';
 import '../controllers/test_result_detail_controller.dart';
 
 class PastExamScreen extends StatefulWidget {

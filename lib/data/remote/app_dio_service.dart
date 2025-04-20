@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:get/state_manager.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
-import 'package:offline_test_app/services/device_service.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/remote/network_log_interceptor.dart';
+import 'package:crackitx/services/device_service.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();

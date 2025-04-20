@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/controllers/auth_controller.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/widgets/custom_text_field.dart';
+import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/widgets/custom_text_field.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
 
 class PastExamDetailController extends GetxController {
   List<Map<String, dynamic>> studentList = [];

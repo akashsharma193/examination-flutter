@@ -1,9 +1,9 @@
 
-import 'package:offline_test_app/app_models/app_user_model.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/data/remote/app_dio_service.dart';
-import 'package:offline_test_app/services/firebase_services_app.dart';
+import 'package:crackitx/app_models/app_user_model.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/data/remote/app_dio_service.dart';
+import 'package:crackitx/services/firebase_services_app.dart';
 
 class AuthRepo {
   final dioService = AppDioService.instance;

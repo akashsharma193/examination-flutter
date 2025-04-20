@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io' as i_o;
-import 'package:offline_test_app/app_models/exam_model.dart';
+import 'package:crackitx/app_models/exam_model.dart';
 
 T getController<T extends GetxController>(T Function() controller) {
   return Get.isRegistered<T>() ? Get.find<T>() : Get.put<T>(controller());

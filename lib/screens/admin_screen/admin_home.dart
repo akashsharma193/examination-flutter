@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/controllers/exam_history_controller.dart';
-import 'package:offline_test_app/controllers/user_list_controller.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/repositories/admin_repo.dart';
-import 'package:offline_test_app/repositories/auth_repo.dart';
-import 'package:offline_test_app/screens/active_exams_screen.dart';
-import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
-import 'package:offline_test_app/screens/admin_screen/e_resource_screen.dart';
-import 'package:offline_test_app/screens/admin_screen/user_list_screen.dart';
-import 'package:offline_test_app/screens/exam_history_screen.dart';
-import 'package:offline_test_app/screens/network_log_screen.dart';
+import 'package:crackitx/controllers/exam_history_controller.dart';
+import 'package:crackitx/controllers/user_list_controller.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/repositories/admin_repo.dart';
+import 'package:crackitx/repositories/auth_repo.dart';
+import 'package:crackitx/screens/active_exams_screen.dart';
+import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
+import 'package:crackitx/screens/admin_screen/e_resource_screen.dart';
+import 'package:crackitx/screens/admin_screen/user_list_screen.dart';
+import 'package:crackitx/screens/exam_history_screen.dart';
+import 'package:crackitx/screens/network_log_screen.dart';
 
 T getController<T>(T Function() f) {
   if (Get.isRegistered<T>()) {

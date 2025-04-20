@@ -1,9 +1,9 @@
 import 'package:get/instance_manager.dart';
-import 'package:offline_test_app/controllers/auth_controller.dart';
-import 'package:offline_test_app/controllers/edit_user_detail_controller.dart';
-import 'package:offline_test_app/controllers/exam_history_controller.dart';
-import 'package:offline_test_app/controllers/home_controller.dart';
-import 'package:offline_test_app/controllers/user_list_controller.dart';
+import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/controllers/edit_user_detail_controller.dart';
+import 'package:crackitx/controllers/exam_history_controller.dart';
+import 'package:crackitx/controllers/home_controller.dart';
+import 'package:crackitx/controllers/user_list_controller.dart';
 
 class AppBindings extends Bindings {
   @override

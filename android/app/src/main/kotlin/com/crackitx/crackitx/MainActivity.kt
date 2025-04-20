@@ -1,4 +1,4 @@
-package com.example.offline_test_app
+package com.crackitx.crackitx
 
 import io.flutter.embedding.android.FlutterActivity
 

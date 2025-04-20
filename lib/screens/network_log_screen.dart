@@ -1,6 +1,6 @@
 // import 'package:flutter/material.dart';
-// import 'package:offline_test_app/core/constants/color_constants.dart';
-// import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
+// import 'package:crackitx/core/constants/color_constants.dart';
+// import 'package:crackitx/data/remote/network_log_interceptor.dart';
 
 // class ScaffoldNetworkScreen extends StatelessWidget {
 //   const ScaffoldNetworkScreen({super.key});

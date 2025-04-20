@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/app_user_model.dart';
-import 'package:offline_test_app/repositories/admin_repo.dart';
+import 'package:crackitx/app_models/app_user_model.dart';
+import 'package:crackitx/repositories/admin_repo.dart';
 
 class EditUserDetailController extends GetxController {
   final RxBool isLoading = false.obs;

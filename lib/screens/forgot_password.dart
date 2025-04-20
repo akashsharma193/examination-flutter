@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
-// import 'package:offline_test_app/controllers/forgot_password_controller.dart';
-// import 'package:offline_test_app/core/constants/color_constants.dart';
+// import 'package:crackitx/controllers/forgot_password_controller.dart';
+// import 'package:crackitx/core/constants/color_constants.dart';
 
 // class ForgotPasswordScreen extends StatelessWidget {
 //   ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -111,8 +111,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
-import 'package:offline_test_app/controllers/forgot_password_controller.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:crackitx/controllers/forgot_password_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   ForgotPasswordScreen({super.key});

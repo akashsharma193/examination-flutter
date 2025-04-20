@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/controllers/user_list_controller.dart';
-import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/screens/exam_history_screen.dart';
-import 'package:offline_test_app/widgets/custom_dropdown_widget.dart';
+import 'package:crackitx/controllers/user_list_controller.dart';
+import 'package:crackitx/core/constants/app_route_name_constants.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/screens/exam_history_screen.dart';
+import 'package:crackitx/widgets/custom_dropdown_widget.dart';
 
 class UserListScreen extends StatefulWidget {
   const UserListScreen({super.key});

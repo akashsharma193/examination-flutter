@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:offline_test_app/app_models/app_user_model.dart';
+import 'package:crackitx/app_models/app_user_model.dart';
 
 class AppLocalStorage {
   static final AppLocalStorage instance = AppLocalStorage._();

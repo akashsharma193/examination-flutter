@@ -2,7 +2,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
 
 class AuthMiddleWare extends GetMiddleware {
   @override

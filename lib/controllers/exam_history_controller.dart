@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/repositories/admin_repo.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/repositories/admin_repo.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
 
 class ExamHistoryController extends GetxController {
   List<SingleExamHistoryModel> allAttemptedExamsList =

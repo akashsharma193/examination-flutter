@@ -1,12 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
-import 'package:offline_test_app/core/routes/app_route.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/data/remote/app_dio_service.dart';
-import 'package:offline_test_app/firebase_options.dart';
-import 'package:offline_test_app/screens/splash_screen.dart';
-import 'package:offline_test_app/services/firebase_services_app.dart';
+import 'package:crackitx/core/routes/app_route.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/data/remote/app_dio_service.dart';
+import 'package:crackitx/firebase_options.dart';
+import 'package:crackitx/screens/splash_screen.dart';
+import 'package:crackitx/services/firebase_services_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

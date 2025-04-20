@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/services/internet_service_checker.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
+import 'package:crackitx/services/internet_service_checker.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 
 class TestCompletedScreen extends StatelessWidget {
   final List<QuestionModel> list;

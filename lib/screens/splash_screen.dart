@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

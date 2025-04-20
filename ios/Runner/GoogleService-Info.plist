@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.offlineTestApp</string>
+	<string>com.crackitx.crackitx</string>
 	<key>PROJECT_ID</key>
 	<string>offline-14ce6</string>
 	<key>STORAGE_BUCKET</key>

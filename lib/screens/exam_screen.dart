@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/controllers/exam_controller.dart';
-import 'package:offline_test_app/widgets/test_completed_screen.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/controllers/exam_controller.dart';
+import 'package:crackitx/widgets/test_completed_screen.dart';
 
 class ExamScreen extends StatelessWidget {
   final List<QuestionModel> questions;

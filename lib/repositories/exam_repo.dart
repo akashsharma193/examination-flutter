@@ -1,12 +1,12 @@
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/app_models/test_result_detail_model.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/data/remote/app_dio_service.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/app_models/test_result_detail_model.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/data/remote/app_dio_service.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 
 class ExamRepo {
   final dioService = AppDioService.instance;

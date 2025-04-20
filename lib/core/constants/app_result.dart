@@ -1,4 +1,4 @@
-import 'package:offline_test_app/core/constants/app_string_constants.dart';
+import 'package:crackitx/core/constants/app_string_constants.dart';
 
 sealed class AppResult<T> {
   const AppResult();

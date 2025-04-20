@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/controllers/edit_user_detail_controller.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart'; // Import the color constants
+import 'package:crackitx/controllers/edit_user_detail_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart'; // Import the color constants
 
 class EditUserScreen extends StatelessWidget {
   const EditUserScreen({

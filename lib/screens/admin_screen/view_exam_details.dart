@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/controllers/past_exam_detail_controller.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
-import 'package:offline_test_app/screens/test_result_screen.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/controllers/past_exam_detail_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/extensions/datetime_extension.dart';
+import 'package:crackitx/screens/admin_screen/create_exams/text_field_widget.dart';
+import 'package:crackitx/screens/test_result_screen.dart';
 
 class ViewExamDetails extends StatefulWidget {
   const ViewExamDetails({super.key, required this.examHistoryModel});

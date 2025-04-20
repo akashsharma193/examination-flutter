@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/controllers/home_controller.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/screens/admin_screen/admin_home.dart';
-import 'package:offline_test_app/widgets/drawer_widget.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/controllers/home_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/extensions/datetime_extension.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/screens/admin_screen/admin_home.dart';
+import 'package:crackitx/widgets/drawer_widget.dart';
 
 Widget homePage() {
   if (AppLocalStorage.instance.user.isAdmin) {

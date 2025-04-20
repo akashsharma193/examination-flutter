@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/core/extensions/app_string_extensions.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
-import 'package:offline_test_app/screens/network_log_screen.dart';
-import 'package:offline_test_app/repositories/auth_repo.dart';
-import 'package:offline_test_app/screens/student_exam_history.dart';
-import 'package:offline_test_app/services/app_package_service.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/extensions/app_string_extensions.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
+import 'package:crackitx/screens/network_log_screen.dart';
+import 'package:crackitx/repositories/auth_repo.dart';
+import 'package:crackitx/screens/student_exam_history.dart';
+import 'package:crackitx/services/app_package_service.dart';
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});

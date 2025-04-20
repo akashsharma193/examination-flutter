@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/services/internet_service_checker.dart';
-import 'package:offline_test_app/widgets/test_completed_screen.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
+import 'package:crackitx/services/internet_service_checker.dart';
+import 'package:crackitx/widgets/test_completed_screen.dart';
 
 class ExamController extends GetxController with WidgetsBindingObserver {
   final List<QuestionModel> questions;

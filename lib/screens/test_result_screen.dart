@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/controllers/test_result_detail_controller.dart';
-import 'package:offline_test_app/app_models/test_result_detail_model.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/controllers/test_result_detail_controller.dart';
+import 'package:crackitx/app_models/test_result_detail_model.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;

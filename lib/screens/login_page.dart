@@ -1,10 +1,10 @@
 // import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
-// import 'package:offline_test_app/controllers/auth_controller.dart';
-// import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-// import 'package:offline_test_app/screens/register_screen.dart';
-// import 'package:offline_test_app/widgets/custom_text_field.dart';
-// import 'package:offline_test_app/core/constants/color_constants.dart';
+// import 'package:crackitx/controllers/auth_controller.dart';
+// import 'package:crackitx/core/constants/textstyles_constants.dart';
+// import 'package:crackitx/screens/register_screen.dart';
+// import 'package:crackitx/widgets/custom_text_field.dart';
+// import 'package:crackitx/core/constants/color_constants.dart';
 
 // class LoginPage extends StatefulWidget {
 //   const LoginPage({super.key});
@@ -116,12 +116,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/controllers/auth_controller.dart';
-import 'package:offline_test_app/core/constants/textstyles_constants.dart';
-import 'package:offline_test_app/screens/forgot_password.dart';
-import 'package:offline_test_app/screens/register_screen.dart';
-import 'package:offline_test_app/widgets/custom_text_field.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
+import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/screens/forgot_password.dart';
+import 'package:crackitx/screens/register_screen.dart';
+import 'package:crackitx/widgets/custom_text_field.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

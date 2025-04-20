@@ -1,4 +1,4 @@
-import 'package:offline_test_app/app_models/exam_model.dart';
+import 'package:crackitx/app_models/exam_model.dart';
 
 class SingleExamHistoryModel {
   final String id;

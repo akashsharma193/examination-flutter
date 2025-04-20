@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/repositories/auth_repo.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/repositories/auth_repo.dart';
 
 class ForgotPasswordController extends GetxController {
   final emailController = TextEditingController();

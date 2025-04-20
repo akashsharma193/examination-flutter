@@ -1,8 +1,8 @@
-import 'package:offline_test_app/app_models/app_user_model.dart';
-import 'package:offline_test_app/app_models/single_exam_history_model.dart';
-import 'package:offline_test_app/core/constants/api_endpoints.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/remote/app_dio_service.dart';
+import 'package:crackitx/app_models/app_user_model.dart';
+import 'package:crackitx/app_models/single_exam_history_model.dart';
+import 'package:crackitx/core/constants/api_endpoints.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/remote/app_dio_service.dart';
 
 class AdminRepo {
   final dioService = AppDioService.instance;

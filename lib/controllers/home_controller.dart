@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
-import 'package:offline_test_app/repositories/auth_repo.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/services/internet_service_checker.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
+import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/repositories/auth_repo.dart';
+import 'package:crackitx/repositories/exam_repo.dart';
+import 'package:crackitx/services/internet_service_checker.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
