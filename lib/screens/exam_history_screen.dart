@@ -37,7 +37,7 @@ class _PastExamScreenState extends State<PastExamScreen> {
         appBar: widget.userId.isEmpty
             ? null
             : AppBar(
-                iconTheme: IconThemeData(color: Colors.white),
+                iconTheme: const IconThemeData(color: Colors.white),
                 title: const Text(
                   'Past Exams',
                   style: TextStyle(color: Colors.white),

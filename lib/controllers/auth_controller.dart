@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -61,12 +60,12 @@ class AppAuthController extends GetxController {
       }
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
-      debugPrint("repsonse of login in authController : $response");
+      
       switch (response) {
         case AppSuccess():
           isUserAuthenticated.value = true;
           localStorage.setIsUserLoggedIn(true);
-          log(response.value.toString());
+          
           localStorage.setUserData(response.value);
           repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
           break;
@@ -75,8 +74,6 @@ class AppAuthController extends GetxController {
               isSuccess: false, subTitle: response.errorMessage);
           isUserAuthenticated.value = false;
       }
-    } catch (e) {
-      debugPrint("error in login authcontroller : $e");
     } finally {
       isLoading.value = false;
       update();
@@ -97,11 +94,11 @@ class AppAuthController extends GetxController {
         "orgCode": orgCodeController.text.trim()
       });
 
-      debugPrint("Response of register in authController: $response");
+      
 
       switch (response) {
         case AppSuccess():
-          log(response.value.toString());
+          
           AppSnackbarWidget.showSnackBar(
             isSuccess: true,
             subTitle: "Registration Successful",
@@ -109,7 +106,7 @@ class AppAuthController extends GetxController {
           Get.toNamed('/login');
           break;
         case AppFailure():
-          log("error occured in register : ");
+          
           AppSnackbarWidget.showSnackBar(
               isSuccess: false, subTitle: response.errorMessage);
           isUserAuthenticated.value = false;
@@ -117,7 +114,7 @@ class AppAuthController extends GetxController {
           break;
       }
     } catch (e) {
-      debugPrint("Error in register authController: $e");
+      
       AppSnackbarWidget.showSnackBar(
           isSuccess: false,
           subTitle: 'Error occured in registeration, try again');

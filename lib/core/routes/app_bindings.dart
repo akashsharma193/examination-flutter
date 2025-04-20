@@ -4,7 +4,6 @@ import 'package:offline_test_app/controllers/edit_user_detail_controller.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/controllers/home_controller.dart';
 import 'package:offline_test_app/controllers/user_list_controller.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 
 class AppBindings extends Bindings {
   @override

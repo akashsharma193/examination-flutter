@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:offline_test_app/app_models/app_user_model.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/core/constants/api_endpoints.dart';
@@ -24,7 +23,7 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      log("error caught in Admin repo getAllUserList func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -42,7 +41,7 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      log("error caught in Admin repo fetchUserDetails func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -78,7 +77,7 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      log("error caught in Admin repo getAllExamsList func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -96,7 +95,7 @@ class AdminRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      log("Error caught in getReportCount: $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }

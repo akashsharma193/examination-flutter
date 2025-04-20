@@ -2,12 +2,10 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/state_manager.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/data/remote/network_log_interceptor.dart';
 import 'package:offline_test_app/services/device_service.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -18,7 +16,6 @@ class AppDioService {
   static Dio get dio => Dio();
 
   final Dio _serviceDio = dio;
-
   Future<void> initDioService(
       {required String baseUrl, List<Interceptor>? interceptors}) async {
     _serviceDio.options = BaseOptions(
@@ -34,10 +31,10 @@ class AppDioService {
           return code != null && code >= 200 && code <= 503;
         },
         contentType: 'application/json');
-    if (kDebugMode) {
-      _serviceDio.interceptors.add(PrettyDioLogger(
-          request: true, requestBody: true, responseBody: true));
-    }
+    // if (kDebugMode) {
+    //   _serviceDio.interceptors.add(PrettyDioLogger(
+    //       request: true, requestBody: true, responseBody: true));
+    // }
     _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
 
     _serviceDio.interceptors.add(NetworkLogInterceptor());
@@ -59,8 +56,6 @@ class AppDioService {
     } on DioException catch (e) {
       return _handleDioExceptionError(e);
     } catch (e, s) {
-      debugPrint("error caught in get request in Dio service  :$e");
-
       return _handleCaughtError(e, s);
     }
     // return AppResult.failure(AppFailure());
@@ -74,27 +69,17 @@ class AppDioService {
     Map<String, dynamic>? headers,
   }) async {
     try {
-      log("📡 [DIO] Sending POST request to: $endpoint");
-      log("📌 [DIO] Request Body: $body");
-      log("🔍 [DIO] Query Params: $queryParams");
-
       final response = await _serviceDio.post(endpoint,
           data: body, queryParameters: queryParams);
-
-      log("✅ [DIO] Response received from: $endpoint");
-      log("🔗 [DIO] Status Code: ${response.statusCode}");
-      log("📩 [DIO] Response Data: ${response.data}");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         return AppSuccess(response.data);
       } else {
         return _handleOtherStatusCodeResponse(response);
       }
-    } on SocketException catch (e) {
-      log("🚫 [DIO] SocketException in POST: No Internet - $e");
+    } on SocketException {
       return AppResult.failure(const AppNoInternetFailure());
     } on DioException catch (e) {
-      log("❌ [DIO] DioException in POST request: $endpoint");
       return _handleDioExceptionError(e);
     } catch (e, s) {
       log("💥 [DIO] Unknown Error in POST request: $endpoint",
@@ -122,8 +107,6 @@ class AppDioService {
     } on DioException catch (e) {
       _handleDioExceptionError(e);
     } catch (e, s) {
-      debugPrint("error caught in POST request in Dio service  :$e");
-
       return _handleCaughtError(e, s);
     }
     return AppResult.failure(const AppFailure());
@@ -138,13 +121,7 @@ _handleCaughtError(Object e, StackTrace s) {
 }
 
 AppResult _handleDioExceptionError(DioException e) {
-  log("❌ DioException caught in API request: ${e.requestOptions.uri}");
-  log("👉 Dio Error Type: ${e.type}");
-  log("📝 Error Message: ${e.message}");
-  log("🔗 Status Code: ${e.response?.statusCode}");
-  log("📡 Response Data: ${e.response?.data}");
   if (e.type == DioExceptionType.connectionError) {
-    log("no internet available.....");
     return AppResult.failure(const AppNoInternetFailure());
   } else if (e.type == DioExceptionType.connectionTimeout) {
     return AppResult.failure(const AppConnectionTimeOutFailure());

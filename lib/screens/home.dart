@@ -11,7 +11,7 @@ import 'package:offline_test_app/widgets/drawer_widget.dart';
 
 Widget homePage() {
   if (AppLocalStorage.instance.user.isAdmin) {
-    return AdminDashboard();
+    return const AdminDashboard();
   } else {
     return const StudentHomePage();
   }
@@ -21,18 +21,12 @@ class StudentHomePage extends StatelessWidget {
   const StudentHomePage({super.key});
 
   bool isExamLive(ExamModel model) {
-    if (model.startTime == null || model.endTime == null) {
-      return false;
-    }
-    return DateTime.now().isAfter(model.startTime!) &&
-        DateTime.now().isBefore(model.endTime!);
+    return DateTime.now().isAfter(model.startTime) &&
+        DateTime.now().isBefore(model.endTime);
   }
 
   bool isExamEnded(ExamModel model) {
-    if (model.endTime == null) {
-      return false;
-    }
-    return DateTime.now().isAfter(model.endTime!);
+    return DateTime.now().isAfter(model.endTime);
   }
 
   @override
@@ -124,11 +118,11 @@ class StudentHomePage extends StatelessWidget {
                           Text('by ${singleItem.teacherName ?? '-'} ',
                               style: AppTextStyles.body),
                           Text(
-                            'Start Time : ${singleItem.startTime?.formatTime}',
+                            'Start Time : ${singleItem.startTime.formatTime}',
                             style: AppTextStyles.body.copyWith(fontSize: 12),
                           ),
                           Text(
-                            'End Time : ${singleItem.endTime?.formatTime}',
+                            'End Time : ${singleItem.endTime.formatTime}',
                             style: AppTextStyles.body.copyWith(fontSize: 12),
                           ),
                         ],

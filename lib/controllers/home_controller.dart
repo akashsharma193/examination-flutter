@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -48,7 +47,7 @@ class HomeController extends GetxController {
         AppLocalStorage.instance.getOfflineUnSubmittedExams();
 
     for (Map<String, dynamic> item in unSubmitedExams) {
-      debugPrint("item  = $item");
+      
       List<QuestionModel> questionList = List<QuestionModel>.from(
           item['answerPaper'].map(
               (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
@@ -56,10 +55,10 @@ class HomeController extends GetxController {
 
       switch (res) {
         case AppSuccess():
-          log("success  exam sub getAndSubmitOfflinePendingExams");
+          
           break;
         case AppFailure():
-          log("failed to submit exam  getAndSubmitOfflinePendingExams: ${res.errorMessage}");
+          
       }
       await Future.delayed(const Duration(seconds: 1));
     }
@@ -87,8 +86,6 @@ class HomeController extends GetxController {
           allExams.value = [];
           break;
       }
-    } catch (e) {
-      debugPrint("error caught in home controller in getexams func : $e");
     } finally {
       isLoading.value = false;
       update();
@@ -97,10 +94,8 @@ class HomeController extends GetxController {
 
   void _initializeTimers() {
     for (var exam in allExams) {
-      if (exam.startTime != null) {
-        _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime!);
-      }
-    }
+      _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime);
+        }
   }
 
   void _startCountdown(String examId, DateTime startTime) {
@@ -129,8 +124,6 @@ class HomeController extends GetxController {
       repo.logOut(userId: AppLocalStorage.instance.user.userId);
       AppLocalStorage.instance.clearStorage();
       Get.offAllNamed('/login');
-    } catch (e) {
-      debugPrint("error in logout authcontroller : $e");
     } finally {
       isLoading.value = false;
       update();
@@ -164,8 +157,6 @@ class HomeController extends GetxController {
         case AppFailure():
           compliences.value = [];
       }
-    } catch (e) {
-      debugPrint("error caught in home controller in getCompliances func : $e");
     } finally {
       isCompliencesLoading.value = false;
       update();

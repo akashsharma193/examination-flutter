@@ -4,16 +4,12 @@ import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/exam_history_controller.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/helper.dart';
-import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
-import 'package:offline_test_app/screens/admin_screen/view_exam_details.dart';
 import 'package:offline_test_app/screens/test_result_screen.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 import '../controllers/test_result_detail_controller.dart';
 
 class StudentExamHistory extends StatefulWidget {
-  StudentExamHistory({super.key, this.userId = ''});
+  const StudentExamHistory({super.key, this.userId = ''});
   final String userId;
   @override
   State<StudentExamHistory> createState() => _StudentExamHistoryState();
@@ -34,7 +30,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
           appBar: AppBar(
-            iconTheme: IconThemeData(color: Colors.white),
+            iconTheme: const IconThemeData(color: Colors.white),
             backgroundColor: AppColors.appBar,
             title: const Text(
               'Exam History',

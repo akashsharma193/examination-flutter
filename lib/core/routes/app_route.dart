@@ -3,7 +3,6 @@ import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/routes/app_bindings.dart';
 import 'package:offline_test_app/core/routes/middle_wares.dart';
 import 'package:offline_test_app/screens/admin_screen/user_edit_page.dart';
-import 'package:offline_test_app/screens/exam_history_screen.dart';
 import 'package:offline_test_app/screens/exam_screen.dart';
 import 'package:offline_test_app/screens/home.dart';
 import 'package:offline_test_app/screens/login_page.dart';

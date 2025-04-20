@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
@@ -41,7 +40,7 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "request", logEntry);
-    log("📡 [REQUEST] ${logEntry["url"]} \n📌 Query Params: ${logEntry["queryParams"]} \n📩 Body: ${logEntry["requestBody"]}");
+    
 
     super.onRequest(options, handler);
   }
@@ -60,7 +59,7 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "response", logEntry);
-    log("✅ [RESPONSE] ${logEntry["url"]} \n🔗 Status Code: ${logEntry["statusCode"]} \n📩 Body: ${logEntry["responseBody"]}");
+    
 
     super.onResponse(response, handler);
   }
@@ -81,7 +80,7 @@ class NetworkLogInterceptor extends Interceptor {
     };
 
     _addLog(requestId, "error", logEntry);
-    log("❌ [ERROR] ${logEntry["url"]} \n🔗 Status Code: ${logEntry["statusCode"]} \n📝 Message: ${logEntry["errorMessage"]}");
+    
 
     super.onError(err, handler);
   }

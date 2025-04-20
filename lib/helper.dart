@@ -23,7 +23,7 @@ Future<List<QuestionModel>> importQuestionsFromExcel() async {
     return questions;
   }
 
-  var fileBytes;
+  Uint8List? fileBytes;
 
   if (kIsWeb) {
     fileBytes = result.files.first.bytes;
@@ -67,7 +67,7 @@ Future<List<QuestionModel>> importQuestionsFromExcel() async {
     }
 
     print(
-        "✅ First sheet '${firstSheetName}' contains ${sheet.rows.length} rows.");
+        "✅ First sheet '$firstSheetName' contains ${sheet.rows.length} rows.");
 
     bool headerFound = false;
     int headerRowIndex = 0;

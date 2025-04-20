@@ -31,7 +31,7 @@ class _AppDrawerState extends State<AppDrawer> {
       drawerItems['Create Exam'] = Icons.add;
     }
     drawerItems.addAll({
-      'Network Logs': Icons.bug_report,
+      // 'Network Logs': Icons.bug_report,
       'Log Out': Icons.logout_outlined,
     });
   }
@@ -79,9 +79,9 @@ class _AppDrawerState extends State<AppDrawer> {
                                 userId: AppLocalStorage.instance.user.userId,
                               ));
                           break;
-                        case 'Network Logs':
-                          Get.to(() => ScaffoldNetworkScreen());
-                          break;
+                        // case 'Network Logs':
+                        //   Get.to(() => const ScaffoldNetworkScreen());
+                        //   break;
                         case 'Log Out':
                           final AuthRepo repo = AuthRepo();
                           repo.logOut(

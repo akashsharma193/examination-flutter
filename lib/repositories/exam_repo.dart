@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
@@ -31,7 +30,7 @@ class ExamRepo {
           return AppResult.failure(response);
       }
     } catch (e) {
-      log("error caught in Exam repo getALlExams func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -49,7 +48,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      log("error caught in Exam repo getCompliance func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -57,7 +56,7 @@ class ExamRepo {
   Future<AppResult<bool>> submitExam(
       List<QuestionModel> paper, String testID) async {
     try {
-      log("calling sub exam in exam repo  :${DateTime.now()}");
+      
       bool isOnline = await _checkInternet();
       Map<String, dynamic> examData = {
         "answerPaper": paper.map((e) => e.toJson()).toList(),
@@ -81,7 +80,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      log("error caught in Exam repo submitExam func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -103,7 +102,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      log("error caught in Exam repo getExamHistory func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -121,7 +120,7 @@ class ExamRepo {
         "userId": userId,
         "questionId": qID,
       });
-      log("response of getresult: $response");
+      
 
       switch (response) {
         case AppSuccess():
@@ -132,7 +131,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      log("error caught in Exam repo getTestResult func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -141,7 +140,7 @@ class ExamRepo {
     try {
       final response = await dioService.postDio(
           endpoint: 'questionPaper/createQuestionPaper', body: examData);
-      log("response of createExam: $response");
+      
 
       switch (response) {
         case AppSuccess():
@@ -151,7 +150,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code));
       }
     } catch (e) {
-      log("error caught in Exam repo createExam func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }
@@ -163,7 +162,7 @@ class ExamRepo {
         "email": text,
       });
 
-      log("response of forgotPassword: $response");
+      
       switch (response) {
         case AppSuccess():
           AppSnackbarWidget.showSnackBar(
@@ -175,7 +174,7 @@ class ExamRepo {
               isSuccess: false, subTitle: response.errorMessage);
       }
     } catch (e) {
-      log("error caught in Exam repo forgotPassword func : $e");
+      
     }
   }
 
@@ -197,7 +196,7 @@ class ExamRepo {
           return const AppFailure();
       }
     } catch (e) {
-      log("error caught in Exam repo getStudentListByQuestionId func : $e");
+      
       return AppResult.failure(const AppFailure());
     }
   }

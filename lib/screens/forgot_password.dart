@@ -115,7 +115,7 @@ import 'package:offline_test_app/controllers/forgot_password_controller.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
-  ForgotPasswordScreen({Key? key}) : super(key: key);
+  ForgotPasswordScreen({super.key});
 
   final ForgotPasswordController controller =
       Get.put(ForgotPasswordController());

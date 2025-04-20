@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/single_exam_history_model.dart';
 import 'package:offline_test_app/controllers/past_exam_detail_controller.dart';
-import 'package:offline_test_app/core/constants/app_result.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
 import 'package:offline_test_app/core/constants/textstyles_constants.dart';
 import 'package:offline_test_app/core/extensions/datetime_extension.dart';
-import 'package:offline_test_app/repositories/exam_repo.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/date_time_picker_widget.dart';
-import 'package:offline_test_app/screens/admin_screen/create_exams/question_list_widget.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/text_field_widget.dart';
 import 'package:offline_test_app/screens/test_result_screen.dart';
-import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 
 class ViewExamDetails extends StatefulWidget {
-  ViewExamDetails({super.key, required this.examHistoryModel});
+  const ViewExamDetails({super.key, required this.examHistoryModel});
   final SingleExamHistoryModel examHistoryModel;
 
   @override
@@ -107,7 +102,7 @@ class _AttemptedStudentListState extends State<AttemptedStudentList> {
                       title: Text(student['name'] ?? '-'),
                       subtitle: Text(
                           'Total Marks : ${student['marks'] ?? '0'}/${student['totalMarks'] ?? '0'}'),
-                      trailing: Icon(Icons.arrow_forward_ios),
+                      trailing: const Icon(Icons.arrow_forward_ios),
                     ),
                   );
                 },

@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/test_result_detail_model.dart';
 import 'package:offline_test_app/core/constants/app_result.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/repositories/exam_repo.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
 

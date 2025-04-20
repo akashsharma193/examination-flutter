@@ -3,12 +3,11 @@ import 'package:get/get.dart';
 import 'package:offline_test_app/controllers/user_list_controller.dart';
 import 'package:offline_test_app/core/constants/app_route_name_constants.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart';
-import 'package:offline_test_app/data/local_storage/app_local_storage.dart';
 import 'package:offline_test_app/screens/exam_history_screen.dart';
 import 'package:offline_test_app/widgets/custom_dropdown_widget.dart';
 
 class UserListScreen extends StatefulWidget {
-  const UserListScreen({Key? key}) : super(key: key);
+  const UserListScreen({super.key});
 
   @override
   State<UserListScreen> createState() => _UserListScreenState();
@@ -28,7 +27,7 @@ class _UserListScreenState extends State<UserListScreen> {
           return Center(
             child: Text(
               controller.errorMessage.value,
-              style: TextStyle(color: AppColors.error),
+              style: const TextStyle(color: AppColors.error),
             ),
           );
         }
@@ -91,7 +90,7 @@ class _UserListScreenState extends State<UserListScreen> {
                   ),
                   title: Text(
                     user.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppColors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
@@ -101,16 +100,16 @@ class _UserListScreenState extends State<UserListScreen> {
                     children: [
                       Text(
                         'Email: ${user.email}',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: const TextStyle(color: AppColors.textPrimary),
                       ),
-                      if (user.batch != null && user.batch!.isNotEmpty)
+                      if (user.batch.isNotEmpty)
                         Text(
                           'Batch: ${user.batch}',
-                          style: TextStyle(color: AppColors.textPrimary),
+                          style: const TextStyle(color: AppColors.textPrimary),
                         ),
                     ],
                   ),
-                  trailing: Icon(Icons.edit, color: AppColors.textPrimary),
+                  trailing: const Icon(Icons.edit, color: AppColors.textPrimary),
                 ),
               );
             },
@@ -169,7 +168,7 @@ class _UserListScreenState extends State<UserListScreen> {
                         const SizedBox(width: 10),
                         Text(
                           user.name,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: AppColors.textPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
@@ -180,15 +179,15 @@ class _UserListScreenState extends State<UserListScreen> {
                     const SizedBox(height: 10),
                     Text(
                       'Email: ${user.email}',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      style: const TextStyle(color: AppColors.textPrimary),
                     ),
-                    if (user.batch != null && user.batch!.isNotEmpty)
+                    if (user.batch.isNotEmpty)
                       Text(
                         'Batch: ${user.batch}',
-                        style: TextStyle(color: AppColors.textPrimary),
+                        style: const TextStyle(color: AppColors.textPrimary),
                       ),
                     // const Spacer(),
-                    SizedBox(
+                    const SizedBox(
                       height: 10,
                     ),
                     Align(
@@ -198,7 +197,7 @@ class _UserListScreenState extends State<UserListScreen> {
                             Get.toNamed(AppRoutesNames.editUserScreen,
                                 arguments: {"user": user});
                           },
-                          icon: Icon(Icons.edit, color: AppColors.textPrimary)),
+                          icon: const Icon(Icons.edit, color: AppColors.textPrimary)),
                     ),
                   ],
                 ),

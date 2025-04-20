@@ -11,7 +11,6 @@ import 'package:offline_test_app/screens/active_exams_screen.dart';
 import 'package:offline_test_app/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:offline_test_app/screens/admin_screen/e_resource_screen.dart';
 import 'package:offline_test_app/screens/admin_screen/user_list_screen.dart';
-import 'package:offline_test_app/screens/admin_screen/view_exam_details.dart';
 import 'package:offline_test_app/screens/exam_history_screen.dart';
 import 'package:offline_test_app/screens/network_log_screen.dart';
 
@@ -24,6 +23,8 @@ T getController<T>(T Function() f) {
 }
 
 class AdminDashboard extends StatefulWidget {
+  const AdminDashboard({super.key});
+
   @override
   _AdminDashboardState createState() => _AdminDashboardState();
 }
@@ -36,7 +37,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     "Students",
     "Past Exams",
     "Create Exam",
-    "Network Log",
   ];
 
   final AuthRepo authRepo = AuthRepo();
@@ -98,24 +98,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Email :' + AppLocalStorage.instance.user.email,
-                style: TextStyle(
+                'Email :${AppLocalStorage.instance.user.email}',
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
                 ),
               ),
               Text(
-                'Name :' + AppLocalStorage.instance.user.name,
-                style: TextStyle(
+                'Name :${AppLocalStorage.instance.user.name}',
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
                 ),
               ),
               Text(
-                'Organization : ' + AppLocalStorage.instance.user.orgCode,
-                style: TextStyle(
+                'Organization : ${AppLocalStorage.instance.user.orgCode}',
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.normal,
                   fontSize: 16,
@@ -123,7 +123,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               ),
             ],
           ),
-          Divider(),
+          const Divider(),
           ...List.generate(sidebarItems.length, (index) {
             return _buildSidebarItem(
               icon: _getIconForIndex(index),
@@ -146,7 +146,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               },
             );
           }),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           _buildSidebarItem(
@@ -159,7 +159,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 AppLocalStorage.instance.clearStorage();
                 Get.offAllNamed('/login');
               } catch (e) {
-                debugPrint("Logout error: $e");
+                
               }
             },
           ),
@@ -238,17 +238,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       case 0:
         return _buildDashboardView();
       case 1:
-        return UserListScreen(); // Replace with actual widget
+        return const UserListScreen(); // Replace with actual widget
       case 2:
-        return PastExamScreen(); // Replace with actual widget
+        return const PastExamScreen(); // Replace with actual widget
       case 3:
-        return AdminExamDashboard();
-      case 4:
-        return const NetworkLogScreen();
+        return const AdminExamDashboard();
+      // case 4:
+      //   return const NetworkLogScreen();
       case 5:
-        return ActiveExamScreen();
+        return const ActiveExamScreen();
       case 6:
-        return EResourceScreen();
+        return const EResourceScreen();
       default:
         return const Center(child: Text("Invalid selection"));
     }
@@ -314,7 +314,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         decoration: BoxDecoration(
           color: AppColors.dialogBackground,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(color: Colors.black12, blurRadius: 6, spreadRadius: 2),
           ],
         ),
@@ -324,14 +324,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
             Icon(icon, size: 40, color: AppColors.textPrimary),
             const SizedBox(height: 10),
             Text(title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
                 )),
             const SizedBox(height: 5),
             Text(count,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,

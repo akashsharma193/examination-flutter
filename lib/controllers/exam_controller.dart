@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:offline_test_app/app_models/exam_model.dart';
@@ -41,7 +40,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _internetSubscription = InternetServiceChecker()
         .checkIfInternetIsConnected()
         .listen((isConnected) {
-      log("Internet connection: $isConnected");
       if (isConnected) showInternetWarning();
     });
   }
@@ -118,10 +116,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void autoSubmitExam() {
-    ExamRepo().submitExam(
-      questionList.map((e) => QuestionModel.fromJson(e)).toList(),
-      testId,
-    );
     Get.offAll(() => TestCompletedScreen(
           list: questionList
               .map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))

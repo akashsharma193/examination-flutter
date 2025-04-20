@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:offline_test_app/app_models/app_user_model.dart';
 import 'package:offline_test_app/controllers/edit_user_detail_controller.dart';
 import 'package:offline_test_app/core/constants/color_constants.dart'; // Import the color constants
 
@@ -118,8 +117,7 @@ class EditUserScreen extends StatelessWidget {
 
   // Reusable TextField Widget
   Widget _buildTextField(String label, TextEditingController textController,
-      EditUserDetailController controller,
-      {bool isPassword = false}) {
+      EditUserDetailController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
@@ -136,16 +134,16 @@ class EditUserScreen extends StatelessWidget {
           //         ))
           //     : const SizedBox.shrink(),
           labelText: label,
-          labelStyle: TextStyle(color: AppColors.textPrimary), // Deep Brown
+          labelStyle: const TextStyle(color: AppColors.textPrimary), // Deep Brown
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.border), // Grey border
+            borderSide: const BorderSide(color: AppColors.border), // Grey border
           ),
           filled: true,
           fillColor: AppColors.inputBackground, // Light Grey
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: AppColors.primary), // Brown border
+            borderSide: const BorderSide(color: AppColors.primary), // Brown border
           ),
         ),
       ),
@@ -160,7 +158,7 @@ class EditUserScreen extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: AppColors.textPrimary, // Deep Brown
             ),
@@ -194,7 +192,7 @@ class EditUserScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
           ),
         ),
-        child: Text(
+        child: const Text(
           'Save Changes',
           style: TextStyle(
             fontSize: 16,

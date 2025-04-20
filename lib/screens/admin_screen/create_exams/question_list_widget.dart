@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:offline_test_app/app_models/exam_model.dart';
 import 'package:offline_test_app/helper.dart';
 import 'package:offline_test_app/screens/admin_screen/create_exams/question_card_widget.dart';
 import 'package:offline_test_app/widgets/app_snackbar_widget.dart';
@@ -67,7 +66,7 @@ class QuestionListWidgetState extends State<QuestionListWidget> {
                     onPressed: _addQuestion,
                     child: const Text("Add Question"),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 20,
                   ),
                   ElevatedButton(
