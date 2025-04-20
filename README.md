@@ -4,3 +4,7 @@
 
 // flutter build apk --release
 
+//dart pub global activate flutterfire_cli
+
+//flutterfire configure
+
