@@ -17,7 +17,7 @@ class AppFirebaseService {
     await _setupBackgroundMessageHandler();
 
     // Get FCM Token
-    String? token = await getFcmToken();
+    // String? token = await getFcmToken();
   }
 
   /// Request notification permissions (iOS & Web)
@@ -42,12 +42,13 @@ class AppFirebaseService {
             )
           : await _firebaseMessaging.getToken();
     } catch (e) {
-      if (maxRetries > 0) {
-        await Future.delayed(const Duration(seconds: 5));
-        return getFcmToken(maxRetries: maxRetries - 1);
-      } else {
-        return null;
-      }
+      debugPrint("error while getting token : $e");
+      // if (maxRetries > 0) {
+      //   await Future.delayed(const Duration(seconds: 5));
+      //   return getFcmToken(maxRetries: maxRetries - 1);
+      // } else {
+      //   return null;
+      // }
     }
   }
 
