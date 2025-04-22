@@ -66,7 +66,7 @@ class AppAuthController extends GetxController {
           localStorage.setIsUserLoggedIn(true);
 
           localStorage.setUserData(response.value);
-          repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
+          // repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
           break;
         case AppFailure():
           AppSnackbarWidget.showSnackBar(

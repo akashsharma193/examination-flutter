@@ -1,4 +1,4 @@
-package com.crackitx.crackitx
+package com.contentive.crackitx
 
 import io.flutter.embedding.android.FlutterActivity
 

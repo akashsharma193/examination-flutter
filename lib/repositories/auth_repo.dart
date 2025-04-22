@@ -62,30 +62,30 @@ class AuthRepo {
   }
 
   /// call  FCM api
-  Future<AppResult<dynamic>> saveFCMToken({required String userId}) async {
-    try {
-      final token = await AppFirebaseService.instance.getFcmToken();
-      if (token == null || token.isEmpty) {
-        return AppResult.success(null);
-      }
-      final response = await dioService.postDio(
-          endpoint: 'user/saveFcmToken',
-          body: {
-            "fcmToken": token,
-            "userId": AppLocalStorage.instance.user.userId
-          });
+  // Future<AppResult<dynamic>> saveFCMToken({required String userId}) async {
+  //   try {
+  //     final token = await AppFirebaseService.instance.getFcmToken();
+  //     if (token == null || token.isEmpty) {
+  //       return AppResult.success(null);
+  //     }
+  //     final response = await dioService.postDio(
+  //         endpoint: 'user/saveFcmToken',
+  //         body: {
+  //           "fcmToken": token,
+  //           "userId": AppLocalStorage.instance.user.userId
+  //         });
 
-      switch (response) {
-        case AppSuccess():
-          return const AppSuccess(null);
-        case AppFailure():
-          return AppFailure(
-              errorMessage: response.errorMessage, code: response.code);
-      }
-    } catch (e) {
-      return AppResult.failure(const AppFailure());
-    }
-  }
+  //     switch (response) {
+  //       case AppSuccess():
+  //         return const AppSuccess(null);
+  //       case AppFailure():
+  //         return AppFailure(
+  //             errorMessage: response.errorMessage, code: response.code);
+  //     }
+  //   } catch (e) {
+  //     return AppResult.failure(const AppFailure());
+  //   }
+  // }
 
   Future<AppResult<bool>> sendTempPassword(String email) async {
     try {
