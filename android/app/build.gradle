@@ -56,6 +56,11 @@ def getFlutterVersionCode() {
     def versionLine = pubspec.readLines().find { it.startsWith('version:') }
     return versionLine?.split("\\+")[1]?.toInteger() ?: 1
 }
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
 android {
     namespace = "com.contentive.crackitx"
     compileSdk = 35
@@ -85,13 +90,7 @@ android {
 
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.debug
-        }
-    }
+ 
     applicationVariants.all { variant ->
      updateFlutterVersion(variant.buildType.name.equals("release"));
 
@@ -102,6 +101,22 @@ android {
             def versionCode = variant.versionCode
 
             outputFileName = "${appName}_${buildType}_${versionName}+${versionCode}.apk"
+        }
+    }
+    signingConfigs {
+        release {
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+        }
+    }
+       buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+           // proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
