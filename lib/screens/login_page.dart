@@ -113,15 +113,15 @@
 //     });
 //   }
 // }
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
 import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/screens/forgot_password.dart';
 import 'package:crackitx/screens/register_screen.dart';
 import 'package:crackitx/widgets/custom_text_field.dart';
-import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -180,7 +180,8 @@ class _LoginPageState extends State<LoginPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(32.0),
                           child: SvgPicture.asset(
-                            'assets/login_vector.svg', // Replace with your GIF/SVG
+                            'assets/login_vector.svg',
+                            // Replace with your GIF/SVG
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -267,9 +268,21 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () {
                 Get.to(() => const RegistrationPage());
               },
-              child: const Text(
-                "Don't have an account? Register",
-                style: AppTextStyles.body,
+              child: RichText(
+                text: TextSpan(
+                  style: AppTextStyles.body,
+                  children: [
+                    const TextSpan(text: "Don't have an account? "),
+                    TextSpan(
+                      text: "Register",
+                      style: AppTextStyles.body.copyWith(
+                        color: Colors.deepPurple,
+                        fontWeight: FontWeight.w500,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
