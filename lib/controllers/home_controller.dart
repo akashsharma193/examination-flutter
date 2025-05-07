@@ -1,8 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
@@ -10,6 +7,9 @@ import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/services/internet_service_checker.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
@@ -50,7 +50,8 @@ class HomeController extends GetxController {
       List<QuestionModel> questionList = List<QuestionModel>.from(
           item['answerPaper'].map(
               (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
-      final res = await examRepo.submitExam(questionList, item['questionId']);
+      final res = await examRepo.submitExam(questionList, item['questionId'],
+          timestamp: item["timestamp"]);
 
       switch (res) {
         case AppSuccess():
@@ -162,14 +163,22 @@ class HomeController extends GetxController {
 
   void showExamNotLiveDialog({bool isExamEnded = false}) {
     Get.defaultDialog(
-      title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
-      content: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(isExamEnded
-            ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
-            : 'Exam will start soon, come back when Exam is Live!'),
-      ),
-    );
+        title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
+        content: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(isExamEnded
+              ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
+              : 'Exam will start soon, come back when Exam is Live!'),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Get.back(),
+            child: const Text('Ok'),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.lightBlue,
+                foregroundColor: Colors.white),
+          )
+        ]);
   }
 
   void showAcknowledgementDialogPopUp() async {

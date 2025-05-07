@@ -50,17 +50,21 @@ class ExamRepo {
     }
   }
 
-  Future<AppResult<bool>> submitExam(
-      List<QuestionModel> paper, String testID) async {
+  Future<AppResult<bool>> submitExam(List<QuestionModel> paper, String testID,
+      {int? timestamp}) async {
     try {
       bool isOnline = await _checkInternet();
       Map<String, dynamic> examData = {
         "answerPaper": paper.map((e) => e.toJson()).toList(),
         "userId": AppLocalStorage.instance.user.userId,
-        "questionId": testID
+        "questionId": testID,
       };
+      if (timestamp != null && timestamp > 0) {
+        examData['timestamp'] = timestamp;
+      }
 
       if (!isOnline) {
+        examData['timestamp'] = DateTime.now().millisecondsSinceEpoch;
         AppLocalStorage.instance.storeExamOffline(examData);
         return AppResult.success(true);
       }

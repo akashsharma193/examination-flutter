@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/controllers/exam_controller.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ExamScreen extends StatelessWidget {
   final List<QuestionModel> questions;
@@ -31,8 +31,14 @@ class ExamScreen extends StatelessWidget {
       onPopInvokedWithResult: (didPop, _) {
         Get.dialog(
           AlertDialog(
-            title: const Text("Are You Sure , you want to Back?"),
-            content: const Text('The Paper will be automatically submitted.'),
+            title: const Text(
+              "Are You Sure ?",
+              textAlign: TextAlign.center,
+            ),
+            content: const Text(
+              'Do you want to Go Back?\nThe Paper will be automatically submitted.',
+              textAlign: TextAlign.center,
+            ),
             actions: [
               TextButton(
                 onPressed: () {
@@ -44,7 +50,7 @@ class ExamScreen extends StatelessWidget {
                         testID: testId,
                       ));
                 },
-                child: const Text("OK"),
+                child: const Center(child: Text("OK")),
               ),
             ],
           ),
@@ -53,8 +59,9 @@ class ExamScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: Text(examName),
-          elevation: 1, // Subtle shadow
-          backgroundColor: Colors.white,
+          elevation: 1,
+          // Subtle shadow
+          // backgroundColor: Colors.white,
           foregroundColor: Colors.black87,
           leading: null,
           automaticallyImplyLeading: false,
@@ -171,37 +178,44 @@ class ExamScreen extends StatelessWidget {
 
   Widget _buildQuestionHeader(ExamController controller,
       Map<String, dynamic> currentQuestion, BuildContext context) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: Text(
-            "Q ${controller.currentQuestionIndex.value + 1}: ${currentQuestion["question"]}",
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ) ??
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                "Q ${controller.currentQuestionIndex.value + 1}: ${currentQuestion["question"]}",
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ) ??
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
-        IconButton(
-          onPressed: () {
-            controller.questionList[controller.currentQuestionIndex.value]
-                    ["isMarked"] =
-                !(controller.questionList[controller.currentQuestionIndex.value]
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: () {
+                controller.questionList[controller.currentQuestionIndex.value]
+                    ["isMarked"] = !(controller
+                            .questionList[controller.currentQuestionIndex.value]
                         ["isMarked"] ??
                     false);
-            controller.questionList.refresh();
-          },
-          icon: Icon(
-              (controller.questionList[controller.currentQuestionIndex.value]
-                          ["isMarked"] ??
+                controller.questionList.refresh();
+              },
+              icon: Icon((controller.questionList[
+                          controller.currentQuestionIndex.value]["isMarked"] ??
                       false)
                   ? Icons.bookmark
                   : Icons.bookmark_add_outlined),
-        ),
-        TextButton(
-          onPressed: controller.clearAnswer,
-          child: const Text('CLEAR'),
+            ),
+            TextButton(
+              onPressed: controller.clearAnswer,
+              child: const Text('CLEAR'),
+            ),
+          ],
         ),
       ],
     );
@@ -210,6 +224,7 @@ class ExamScreen extends StatelessWidget {
   Widget _buildOptions(ExamController controller,
       Map<String, dynamic> currentQuestion, BuildContext context) {
     return ListView.separated(
+      shrinkWrap: true,
       itemCount: currentQuestion['options'].length,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
@@ -263,18 +278,15 @@ class ExamScreen extends StatelessWidget {
               ),
           ],
         ),
+        const SizedBox(
+          height: 24,
+        ),
         SizedBox(
           width: Get.width,
           child: FilledButton(
+              style: FilledButton.styleFrom(elevation: 4),
               onPressed: () {
                 controller.showExamSubumitConfirmationDialog();
-                Get.offAll(() => TestCompletedScreen(
-                      list: controller.questionList
-                          .map((e) => QuestionModel.fromJson(
-                              Map<String, dynamic>.from(e)))
-                          .toList(),
-                      testID: testId,
-                    ));
               },
               child: const Text('Submit')),
         ),

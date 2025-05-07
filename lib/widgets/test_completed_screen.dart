@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class TestCompletedScreen extends StatelessWidget {
   final List<QuestionModel> list;
@@ -12,6 +12,7 @@ class TestCompletedScreen extends StatelessWidget {
 
   const TestCompletedScreen(
       {super.key, required this.list, required this.testID});
+
   Future<bool> _checkInternet() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     final result =
@@ -80,16 +81,54 @@ class TestCompletedScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  "To submit your exam, please turn on your internet connection now. The app requires an active internet connection to securely upload your answers. Do not close or kill the app during this process. If the app is closed before submission, your exam may not be submitted and your attempt could be marked as incomplete or lost. Ensure you stay on this screen until you see the confirmation that your paper has been successfully submitted.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                const SizedBox(height: 24),
+                RichText(
+                  text: const TextSpan(
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                    children: [
+                      TextSpan(
+                        text: "Note: ",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.red),
+                      ),
+                      TextSpan(
+                        text: "To submit your exam, please ",
+                      ),
+                      TextSpan(
+                        text: "turn on your internet connection now",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text:
+                            ". The app requires an active internet connection to securely upload your answers. ",
+                      ),
+                      TextSpan(
+                        text:
+                            "Do not close or kill the app during this process",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.red),
+                      ),
+                      TextSpan(
+                        text:
+                            ". If the app is closed before submission, your exam may not be submitted and your attempt could be marked as incomplete or lost. Ensure you stay on this screen until you see the confirmation that your paper has been successfully submitted.",
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 30),
-                ElevatedButton(
-                  onPressed: submitExam,
-                  child: const Text("Go to Home"),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            elevation: 2,
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white),
+                        onPressed: submitExam,
+                        child: const Text("Go to Home"),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

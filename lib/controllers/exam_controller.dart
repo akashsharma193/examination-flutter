@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/services/internet_service_checker.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class ExamController extends GetxController with WidgetsBindingObserver {
   final List<QuestionModel> questions;
@@ -152,15 +153,63 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       {String? message, bool isDismissable = true}) {
     Get.dialog(
         AlertDialog(
-          title: const Text("Test Completed"),
-          content: Text(message ??
-              'Turn on Internet\nDo you want to submit TEST?\nAttempted ${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}'),
+          title: const Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.warning,
+                  color: Colors.amber,
+                ),
+                SizedBox(
+                  width: 16,
+                ),
+                Text(
+                  "Alert !",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          content: RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: const TextStyle(color: Colors.black, fontSize: 16),
+              children: [
+                TextSpan(
+                  style: TextStyle(fontWeight: FontWeight.w400),
+                  text: message ?? 'Do you want to submit the TEST?\n\n',
+                ),
+                const TextSpan(
+                  text: 'Attempted Questions: ',
+                ),
+                TextSpan(
+                  text:
+                      '${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}\n\n',
+                  // style: const TextStyle(color: Colors.blue),
+                ),
+                const TextSpan(
+                  text: 'Instruction: ',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+                const TextSpan(
+                  text: 'Kindly enable your internet in your next step.',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
           actions: [
-            TextButton(
-              onPressed: () {
-                autoSubmitExam();
-              },
-              child: const Text("OK"),
+            Center(
+              child: TextButton(
+                style: TextButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white),
+                onPressed: () {
+                  autoSubmitExam();
+                },
+                child: const Text("OK"),
+              ),
             ),
           ],
         ),
