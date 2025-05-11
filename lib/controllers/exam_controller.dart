@@ -103,7 +103,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         timer.cancel();
         showExamSubumitConfirmationDialog(
             isDismissable: false,
-            message: 'Time Up,\n click OK to continue Submitting...');
+            message: 'Time Up,\n click OK to continue Submitting...\n');
       }
     });
   }

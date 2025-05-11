@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
@@ -175,7 +176,7 @@ class HomeController extends GetxController {
             onPressed: () => Get.back(),
             child: const Text('Ok'),
             style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.lightBlue,
+                backgroundColor: AppColors.cardBackground,
                 foregroundColor: Colors.white),
           )
         ]);
@@ -228,6 +229,7 @@ class HomeController extends GetxController {
                       }
                     }
                   : null, // Disabled if checkbox is unchecked
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.cardBackground,foregroundColor: Colors.white),
               child: const Text("Continue"),
             )
           ],

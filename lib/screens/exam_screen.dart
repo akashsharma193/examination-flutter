@@ -1,5 +1,6 @@
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/controllers/exam_controller.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -145,8 +146,8 @@ class ExamScreen extends StatelessWidget {
                           : isSelected
                               ? Theme.of(context).primaryColor
                               : Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: answered ? Colors.grey.shade300: AppColors.cardBackground),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -205,7 +206,7 @@ class ExamScreen extends StatelessWidget {
               icon: Icon((controller.questionList[
                           controller.currentQuestionIndex.value]["isMarked"] ??
                       false)
-                  ? Icons.bookmark
+                  ? Icons.bookmark_outline_rounded
                   : Icons.bookmark_add_outlined),
             ),
             TextButton(
@@ -278,14 +279,37 @@ class ExamScreen extends StatelessWidget {
         const SizedBox(
           height: 24,
         ),
-        SizedBox(
-          width: Get.width,
-          child: FilledButton(
-              style: FilledButton.styleFrom(elevation: 4),
-              onPressed: () {
-                controller.showExamSubumitConfirmationDialog();
-              },
-              child: const Text('Submit')),
+        Material(
+          elevation: 4,
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () {
+              controller.showExamSubumitConfirmationDialog();
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF9181F4), Color(0xFF5038ED)], // Your gradient colors
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Center(
+                child: Text(
+                  'Submit',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );

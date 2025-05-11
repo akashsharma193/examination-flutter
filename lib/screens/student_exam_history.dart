@@ -240,6 +240,10 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       TextButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.cardBackground,
+                          side: BorderSide(color: AppColors.cardBackground),
+                        ),
                         onPressed: () {
                           setState(() {
                             tempTeacher = null;
@@ -258,6 +262,10 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.cardBackground,
+                          foregroundColor: Colors.white,
+                        ),
                         onPressed: () {
                           setState(() {
                             selectedTeacher = tempTeacher;
