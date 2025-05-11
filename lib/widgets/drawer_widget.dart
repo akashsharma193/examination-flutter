@@ -8,6 +8,10 @@ import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/screens/student_exam_history.dart';
 import 'package:crackitx/services/app_package_service.dart';
+import 'package:crackitx/widgets/wavy_gradient_background.dart';
+import 'package:crackitx/widgets/curvy_left_clipper.dart';
+import 'package:feather_icons/feather_icons.dart';
+import 'package:crackitx/widgets/wavy_gradient_container.dart';
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -24,111 +28,119 @@ class _AppDrawerState extends State<AppDrawer> {
     super.initState();
 
     if (!AppLocalStorage.instance.user.isAdmin) {
-      drawerItems['Exam History'] = Icons.history_toggle_off_rounded;
+      drawerItems['Exam History'] = FeatherIcons.clock;
     }
     if (AppLocalStorage.instance.user.isAdmin) {
-      drawerItems['Create Exam'] = Icons.add;
+      drawerItems['Create Exam'] = FeatherIcons.plus;
     }
     drawerItems.addAll({
-      // 'Network Logs': Icons.bug_report,
-      'Log Out': Icons.logout_outlined,
+      // 'Network Logs': FeatherIcons.activity,
+      'Log Out': FeatherIcons.logOut,
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = AppLocalStorage.instance.user;
     return Drawer(
-      backgroundColor: AppColors.dialogBackground,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 50),
-            Align(
-              alignment: Alignment.center,
-              child: CircleAvatar(
-                radius: 40,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  AppLocalStorage.instance.user.name.getInitials,
-                  style: AppTextStyles.heading.copyWith(color: Colors.white),
+      backgroundColor: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top wavy gradient section with avatar
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(160),
+                ),
+                child: WavyGradientContainer(
+                  height: 240,
+                  width: double.infinity,
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Text('Batch: ${AppLocalStorage.instance.user.batch}',
-                style: AppTextStyles.body),
-            Text('Org Code: ${AppLocalStorage.instance.user.orgCode}',
-                style: AppTextStyles.body),
-            Text('User ID: ${AppLocalStorage.instance.user.userId}',
-                style: AppTextStyles.body),
-            Text('Email: ${AppLocalStorage.instance.user.email}',
-                style: AppTextStyles.body),
-            const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 20),
-            ...drawerItems.entries.map((entry) => Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: InkWell(
-                    onTap: () {
-                      switch (entry.key) {
-                        case 'Exam History':
-                          Get.to(() => StudentExamHistory(
-                                userId: AppLocalStorage.instance.user.userId,
-                              ));
-                          break;
-                        // case 'Network Logs':
-                        //   Get.to(() => const ScaffoldNetworkScreen());
-                        //   break;
-                        case 'Log Out':
-                          final AuthRepo repo = AuthRepo();
-                          repo.logOut(
-                              userId: AppLocalStorage.instance.user.userId);
-                          AppLocalStorage.instance.clearStorage();
-                          Get.offAllNamed('/login');
-                          break;
-                        case 'Create Exam':
-                          Get.to(() => const AdminExamDashboard());
-                          break;
-                      }
-                    },
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(entry.key, style: AppTextStyles.subheading),
-                            Icon(entry.value, color: AppColors.primary),
-                          ],
-                        ),
-                        const Divider(),
-                      ],
+              Positioned(
+                top: 80,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      user.name.getInitials,
+                      style: AppTextStyles.heading.copyWith(
+                        color: Colors.deepPurple,
+                        fontSize: 36,
+                      ),
                     ),
                   ),
-                )),
-            const Spacer(),
-            const Divider(),
-            FutureBuilder(
-                future: AppPackageService.instance.initialize(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox.shrink();
-                  }
-                  return Center(
-                    child: Column(
-                      children: [
-                        Text(AppPackageService.instance.appName,
-                            style: AppTextStyles.body),
-                        Text(AppPackageService.instance.appVersion,
-                            style: AppTextStyles.body),
-                      ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 30),
+          // User info
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Email : ${user.email}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Name : ${user.name}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+                if (user.batch.trim().isNotEmpty)
+                  Text('Batch : ${user.batch}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                Text('Organization : ${user.orgCode}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+          // Drawer items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: drawerItems.entries.map((entry) {
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(entry.key, style: AppTextStyles.body),
+                      trailing: Icon(entry.value, color: Colors.black87),
+                      onTap: () {
+                        switch (entry.key) {
+                          case 'Exam History':
+                            Get.to(() => StudentExamHistory(
+                                  userId: user.userId,
+                                ));
+                            break;
+                          case 'Log Out':
+                            final AuthRepo repo = AuthRepo();
+                            repo.logOut(userId: user.userId);
+                            AppLocalStorage.instance.clearStorage();
+                            Get.offAllNamed('/login');
+                            break;
+                          case 'Create Exam':
+                            Get.to(() => const AdminExamDashboard());
+                            break;
+                        }
+                      },
                     ),
-                  );
-                }),
-            const SizedBox(height: 50),
-          ],
-        ),
+                    const Divider(height: 1),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import 'package:crackitx/controllers/test_result_detail_controller.dart';
 import 'package:crackitx/app_models/test_result_detail_model.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
@@ -38,13 +39,12 @@ class _TestResultScreenState extends State<TestResultScreen> {
             },
             child: const Icon(Icons.refresh),
           ),
-          appBar: AppBar(
-            iconTheme: const IconThemeData(color: Colors.white),
-            backgroundColor: AppColors.appBar,
+          appBar: GradientAppBar(
             title: Text(
               "${widget.model.subjectName}",
               style: AppTextStyles.heading.copyWith(color: Colors.white),
             ),
+            iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: controller.isLoading
               ? const Center(child: CircularProgressIndicator())

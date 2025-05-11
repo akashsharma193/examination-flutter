@@ -3,6 +3,7 @@ import 'package:crackitx/controllers/exam_controller.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class ExamScreen extends StatelessWidget {
   final List<QuestionModel> questions;
@@ -57,14 +58,10 @@ class ExamScreen extends StatelessWidget {
         );
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(examName),
+        appBar: GradientAppBar(
+          title: Text(examName, style: const TextStyle(color: Colors.white)),
           elevation: 1,
-          // Subtle shadow
-          // backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          leading: null,
-          automaticallyImplyLeading: false,
+          iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16.0),

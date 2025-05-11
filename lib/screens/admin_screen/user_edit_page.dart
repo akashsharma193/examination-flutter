@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/controllers/edit_user_detail_controller.dart';
 import 'package:crackitx/core/constants/color_constants.dart'; // Import the color constants
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class EditUserScreen extends StatelessWidget {
   const EditUserScreen({
@@ -11,10 +12,9 @@ class EditUserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: const Text('Edit User Details',
             style: TextStyle(color: Colors.white)),
-        backgroundColor: AppColors.appBar, // Dark Brown
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: GetBuilder<EditUserDetailController>(builder: (controller) {

@@ -4,6 +4,7 @@ import 'package:crackitx/controllers/auth_controller.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/widgets/custom_text_field.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -35,8 +36,9 @@ class RegistrationPageState extends State<RegistrationPage> {
     final authController = Get.find<AppAuthController>();
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.cardBackground,
+      appBar: GradientAppBar(
+        title: const Text("Register", style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: AppColors.cardBackground,
       body: SingleChildScrollView(

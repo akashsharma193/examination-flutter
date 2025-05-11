@@ -9,6 +9,7 @@ import 'package:crackitx/screens/test_result_screen.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/widgets/custom_dropdown_widget.dart';
 import '../controllers/test_result_detail_controller.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class PastExamScreen extends StatefulWidget {
   const PastExamScreen({super.key, this.userId = ''});
@@ -36,13 +37,12 @@ class _PastExamScreenState extends State<PastExamScreen> {
         backgroundColor: AppColors.cardBackground,
         appBar: widget.userId.isEmpty
             ? null
-            : AppBar(
-                iconTheme: const IconThemeData(color: Colors.white),
+            : GradientAppBar(
                 title: const Text(
                   'Past Exams',
                   style: TextStyle(color: Colors.white),
                 ),
-                backgroundColor: AppColors.appBar,
+                iconTheme: const IconThemeData(color: Colors.white),
               ),
         body: examHistoryController.isLoading.value
             ? const Center(child: CircularProgressIndicator.adaptive())

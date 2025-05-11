@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +73,7 @@ class TestCompletedScreen extends StatelessWidget {
                 const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
                 const SizedBox(height: 20),
                 const Text(
-                  "Congratulations!",
+                "Thanks Note",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -89,7 +90,7 @@ class TestCompletedScreen extends StatelessWidget {
                       TextSpan(
                         text: "Note: ",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.red),
+                            fontWeight: FontWeight.bold, color: AppColors.textSecondaryColor),
                       ),
                       TextSpan(
                         text: "To submit your exam, please ",
@@ -106,7 +107,7 @@ class TestCompletedScreen extends StatelessWidget {
                         text:
                             "Do not close or kill the app during this process",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.red),
+                            fontWeight: FontWeight.bold, color: AppColors.textSecondaryColor),
                       ),
                       TextSpan(
                         text:
@@ -116,19 +117,34 @@ class TestCompletedScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            elevation: 2,
-                            backgroundColor: Colors.deepPurple,
-                            foregroundColor: Colors.white),
-                        onPressed: submitExam,
-                        child: const Text("Go to Home"),
+                Material(
+                  elevation: 2,
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: submitExam,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF9181F4), Color(0xFF5038ED)], // Your gradient
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "Go to Home",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

@@ -13,6 +13,7 @@ import 'package:crackitx/screens/admin_screen/create_exams/question_list_widget.
 import 'package:crackitx/screens/admin_screen/create_exams/text_field_widget.dart';
 import 'package:crackitx/screens/admin_screen/function_helper.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class AdminExamDashboard extends StatelessWidget {
   const AdminExamDashboard(
@@ -24,13 +25,12 @@ class AdminExamDashboard extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.cardBackground,
       appBar: isEdit
-          ? AppBar(
-              iconTheme: const IconThemeData(color: Colors.white),
-              backgroundColor: AppColors.appBar,
+          ? GradientAppBar(
               title: const Text(
                 'Edit Exam',
                 style: TextStyle(color: Colors.white),
               ),
+              iconTheme: const IconThemeData(color: Colors.white),
             )
           : null,
       body: Padding(

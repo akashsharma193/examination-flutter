@@ -7,6 +7,7 @@ import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/core/extensions/datetime_extension.dart';
 import 'package:crackitx/screens/admin_screen/create_exams/text_field_widget.dart';
 import 'package:crackitx/screens/test_result_screen.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class ViewExamDetails extends StatefulWidget {
   const ViewExamDetails({super.key, required this.examHistoryModel});
@@ -34,12 +35,11 @@ class _ViewExamDetailsState extends State<ViewExamDetails> {
   Widget build(BuildContext context) {
     final isTablet = Get.width > 400;
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text('Exam Details',
             style: AppTextStyles.heading.copyWith(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.appBar,
       ),
       body: Padding(
           padding: const EdgeInsets.all(16.0),

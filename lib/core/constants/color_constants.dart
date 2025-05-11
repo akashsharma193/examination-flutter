@@ -6,12 +6,13 @@ class AppColors {
   static const Color button = Color(0xFFD4A373); // Warm Tan
   static const Color appBar = Color(0xFF6D4C3D); // Dark Brown
   static const Color dialogBackground = Color(0xFFFAF3EB); // Off-White
-  static const Color cardBackground = Color(0xFFFFF8F1); // Very Light Beige
+  static const Color cardBackground = Color(0xFF7460F1); // Updated to new purple
   static const Color textPrimary = Color(0xFF3D2E1E); // Deep Brown
   static const Color success = Color(0xFF4CAF50); // Green
   static const Color error = Color(0xFFD32F2F);
 
   static const Color border = Colors.grey;
+  static const Color textSecondaryColor = Color(0xFF8371F2);
 
   static Color? inputBackground = Colors.grey[200]; // Red
 }

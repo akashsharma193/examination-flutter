@@ -7,6 +7,7 @@ import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/core/extensions/datetime_extension.dart';
 import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/widgets/custom_dropdown_widget.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class ActiveExamScreen extends StatefulWidget {
   const ActiveExamScreen({super.key});
@@ -29,10 +30,10 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
         backgroundColor: AppColors.cardBackground,
-        appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            title: const Text('Active Exams')),
+        appBar: GradientAppBar(
+          title: const Text('Active Exams', style: TextStyle(color: Colors.white)),
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
         body: examHistoryController.isLoading.value
             ? const Center(child: CircularProgressIndicator.adaptive())
             : examHistoryController.filteredExams.isEmpty

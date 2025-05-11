@@ -1,13 +1,14 @@
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/controllers/home_controller.dart';
-import 'package:crackitx/core/constants/color_constants.dart';
-import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/theme/app_theme.dart';
 import 'package:crackitx/core/extensions/datetime_extension.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_home.dart';
 import 'package:crackitx/widgets/drawer_widget.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 Widget homePage() {
   if (AppLocalStorage.instance.user.isAdmin) {
@@ -35,33 +36,43 @@ class StudentHomePage extends StatelessWidget {
       return Scaffold(
         drawer: const AppDrawer(),
         floatingActionButton: FloatingActionButton.small(
-          backgroundColor: AppColors.button,
+          backgroundColor: AppTheme.gradientStart,
           onPressed: controller.refreshPage,
           child: const Icon(Icons.refresh, color: Colors.white),
         ),
-        appBar: AppBar(
+        appBar: GradientAppBar(
+          title: Text(
+            'Home',
+            style: AppTheme.headingLarge.copyWith(color: Colors.white),
+          ),
           iconTheme: const IconThemeData(color: Colors.white),
-          title: Text('Home',
-              style: AppTextStyles.heading.copyWith(color: Colors.white)),
-          backgroundColor: AppColors.appBar,
           actions: [
             IconButton(
               onPressed: controller.initialized ? controller.logOut : null,
               icon: const Icon(Icons.logout_outlined, color: Colors.white),
-            )
+            ),
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(AppTheme.spacingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacingL),
               Text(
                 'Hello, ${AppLocalStorage.instance.user.name}',
-                style: AppTextStyles.heading,
+                style: AppTheme.headingLarge.copyWith(
+                  color: Colors.black,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.25),
+                      offset: Offset(2, 4),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppTheme.spacingL),
               Expanded(child: getExamListWidget(controller))
             ],
           ),
@@ -75,13 +86,14 @@ class StudentHomePage extends StatelessWidget {
       return const SizedBox.shrink();
     }
     if (controller.isLoading.value) {
-      return const Text('Fetching exam details...', style: AppTextStyles.body);
+      return Text('Fetching exam details...',
+          style: AppTheme.bodyLarge.copyWith(color: Colors.white));
     }
     return controller.allExams.isEmpty
-        ? const Center(
+        ? Center(
             child: Text(
               'No Exams Scheduled for you as of now..',
-              style: AppTextStyles.subheading,
+              style: AppTheme.headingMedium.copyWith(color: Colors.black),
             ),
           )
         : ListView.builder(
@@ -91,7 +103,7 @@ class StudentHomePage extends StatelessWidget {
             itemBuilder: (context, index) {
               final singleItem = controller.allExams[index];
               return Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(AppTheme.spacingS),
                 child: InkWell(
                   onTap: () {
                     if (isExamLive(singleItem)) {
@@ -104,50 +116,84 @@ class StudentHomePage extends StatelessWidget {
                   },
                   child: Material(
                     elevation: 2,
-                    borderRadius: BorderRadius.circular(12),
+                
+                    borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
                     color: AppColors.cardBackground,
-                    child: ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      title: Text(singleItem.subjectName ?? '-',
-                          style: AppTextStyles.subheading),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('by ${singleItem.teacherName ?? '-'} ',
-                              style: AppTextStyles.body),
-                          Text(
-                            'Start Time : ${singleItem.startTime.formatTime}',
-                            style: AppTextStyles.body.copyWith(fontSize: 12),
-                          ),
-                          Text(
-                            'End Time : ${singleItem.endTime.formatTime}',
-                            style: AppTextStyles.body.copyWith(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      trailing: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'Duration : ${singleItem.examDuration} mins',
-                            textAlign: TextAlign.end,
-                            style: AppTextStyles.body.copyWith(fontSize: 12),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Obx(
-                            () => Text(
-                              controller.examTimers[singleItem.questionId] ??
-                                  'Calculating...',
-                              textAlign: TextAlign.end,
-                              style: AppTextStyles.body.copyWith(fontSize: 12),
+                    shadowColor: AppTheme.shadowSmall[0].color,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              singleItem.subjectName,
+                              style: AppTheme.headingMedium
+                                  .copyWith(color: Colors.white),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Left section
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'by ${singleItem.teacherName}',
+                                        style: AppTheme.bodyLarge
+                                            .copyWith(color: Colors.white70),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Start: ${singleItem.startTime.formatTime}',
+                                        style: AppTheme.bodyMedium
+                                            .copyWith(color: Colors.white),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        'End: ${singleItem.endTime.formatTime}',
+                                        style: AppTheme.bodyMedium
+                                            .copyWith(color: Colors.white),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Right section
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Duration: ${singleItem.examDuration} mins',
+                                      style: AppTheme.bodyMedium
+                                          .copyWith(color: Colors.white),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Obx(() => Text(
+                                          controller.examTimers[
+                                                  singleItem.questionId] ??
+                                              'Calculating...',
+                                          style: AppTheme.bodyMedium
+                                              .copyWith(color: Colors.white),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        )),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ]),
                     ),
                   ),
                 ),

@@ -12,6 +12,7 @@ import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/screens/admin_screen/e_resource_screen.dart';
 import 'package:crackitx/screens/admin_screen/user_list_screen.dart';
 import 'package:crackitx/screens/exam_history_screen.dart';
+import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 T getController<T>(T Function() f) {
   if (Get.isRegistered<T>()) {
@@ -215,10 +216,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildAppBar() {
-    return AppBar(
-      backgroundColor: AppColors.appBar,
-      elevation: 0,
-      automaticallyImplyLeading: false,
+    return GradientAppBar(
       title: const Text(
         "Admin Panel",
         style: TextStyle(
@@ -227,6 +225,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           fontWeight: FontWeight.bold,
         ),
       ),
+      iconTheme: const IconThemeData(color: Colors.white),
     );
   }
 
