@@ -119,7 +119,7 @@ class TestCompletedScreen extends StatelessWidget {
                 const SizedBox(height: 30),
                 Material(
                   elevation: 2,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
                     onTap: submitExam,
@@ -131,7 +131,7 @@ class TestCompletedScreen extends StatelessWidget {
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Center(
                         child: Text(

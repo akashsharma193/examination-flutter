@@ -201,14 +201,36 @@ class ExamController extends GetxController with WidgetsBindingObserver {
           ),
           actions: [
             Center(
-              child: TextButton(
-                style: TextButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white),
-                onPressed: () {
-                  autoSubmitExam();
-                },
-                child: const Text("OK"),
+              child: Material(
+                elevation: 2,
+                borderRadius: BorderRadius.circular(8),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    autoSubmitExam();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF9181F4), Color(0xFF5038ED)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

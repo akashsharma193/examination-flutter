@@ -333,10 +333,18 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
   // Reusable Exam Card Widget
   Widget _buildExamCard(
       SingleExamHistoryModel singleItem, ExamHistoryController controller) {
-    return Card(
-      elevation: 5,
-      color: AppColors.cardBackground,
-      shape: RoundedRectangleBorder(
+    return InkWell(
+      onTap: () {
+        Get.to(() => TestResultScreen(
+              model: singleItem,
+              userId: widget.userId,
+            
+            ));
+      },
+      child: Card(
+        elevation: 5,
+        color: AppColors.cardBackground,
+        shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -404,6 +412,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
           ),
         ],
       ),
+    ),
     );
   }
 }

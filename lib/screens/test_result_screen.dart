@@ -31,13 +31,14 @@ class _TestResultScreenState extends State<TestResultScreen> {
     return GetBuilder<TestResultDetailController>(
       builder: (controller) {
         return Scaffold(
-          backgroundColor: AppColors.cardBackground,
+          backgroundColor: Colors.white,
           floatingActionButton: FloatingActionButton.small(
             onPressed: () {
               controller.refreshData(
                   widget.model.questionId ?? '', widget.userId);
             },
-            child: const Icon(Icons.refresh),
+            backgroundColor: AppColors.cardBackground,
+            child: const Icon(Icons.refresh,color: Colors.white,),
           ),
           appBar: GradientAppBar(
             title: Text(
