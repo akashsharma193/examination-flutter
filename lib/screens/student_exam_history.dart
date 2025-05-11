@@ -8,6 +8,8 @@ import 'package:crackitx/screens/test_result_screen.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import '../controllers/test_result_detail_controller.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
+import 'package:crackitx/core/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 
 class StudentExamHistory extends StatefulWidget {
   const StudentExamHistory({super.key, this.userId = ''});
@@ -20,6 +22,21 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
   final controller = Get.put(ExamHistoryController());
   final TextEditingController searchController = TextEditingController();
   final RxString searchQuery = ''.obs;
+  String? selectedTeacher;
+  String? selectedTestName;
+  DateTime? selectedStartDate;
+  DateTime? selectedEndDate;
+
+  List<String> get teacherNames => controller.allAttemptedExamsList
+      .map((e) => e.teacherName ?? '')
+      .toSet()
+      .where((e) => e.isNotEmpty)
+      .toList();
+  List<String> get testNames => controller.allAttemptedExamsList
+      .map((e) => e.subjectName ?? '')
+      .toSet()
+      .where((e) => e.isNotEmpty)
+      .toList();
 
   @override
   void initState() {
@@ -33,51 +50,77 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
   Widget build(BuildContext context) {
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
-          appBar: GradientAppBar(
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Exam History',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 40,
-                        margin: const EdgeInsets.only(right: 8),
-                        child: TextField(
-                          controller: searchController,
-                          onChanged: (value) => searchQuery.value = value,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: const TextStyle(color: Colors.white70),
-                            prefixIcon: const Icon(Icons.search, color: Colors.white),
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.15),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(120),
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: AppTheme.primaryGradient,
+              ),
+              padding: const EdgeInsets.only(top: 36, left: 16, right: 16, bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.of(context).maybePop(),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Exam History',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 40,
+                          margin: const EdgeInsets.only(right: 8),
+                          child: TextField(
+                            controller: searchController,
+                            onChanged: (value) => searchQuery.value = value,
+                            style: const TextStyle(color: Colors.black38),
+                            decoration: InputDecoration(
+                              hintText: 'Search',
+                              hintStyle: const TextStyle(color: Colors.black38),
+                              prefixIcon: const Icon(Icons.search, color: Colors.black),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.filter_alt_rounded, color: Colors.white),
-                      onPressed: () {
-                        _showFilterDialog(context);
-                      },
-                    ),
-                  ],
-                ),
-              ],
+                      Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.filter_alt_rounded, color: Colors.black),
+                          onPressed: () {
+                            _showFilterDialog(context);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: examHistoryController.isLoading.value
               ? const Center(
@@ -90,34 +133,152 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                         style: AppTextStyles.body,
                       ),
                     )
-                  : Column(
-                      children: [
-                        Expanded(
-                          child: Obx(() {
-                            final filteredList = controller.allAttemptedExamsList.where((exam) {
-                              final name = (exam.subjectName ?? '').toLowerCase();
-                              final query = searchQuery.value.toLowerCase();
-                              return name.contains(query);
-                            }).toList();
-                            return _buildMobileLayoutFiltered(controller, filteredList);
-                          }),
-                        ),
-                      ],
-                    ));
+                  : Obx(() {
+                      final filteredList = controller.allAttemptedExamsList.where((exam) {
+                        final name = (exam.subjectName ?? '').toLowerCase();
+                        final teacher = (exam.teacherName ?? '').toLowerCase();
+                        final query = searchQuery.value.toLowerCase();
+                        final matchesSearch = name.contains(query) || teacher.contains(query);
+                        final matchesTeacher = selectedTeacher == null || selectedTeacher == '' || teacher == selectedTeacher!.toLowerCase();
+                        final matchesTest = selectedTestName == null || selectedTestName == '' || name == selectedTestName!.toLowerCase();
+                        final matchesStart = selectedStartDate == null || (exam.startTime != null && !exam.startTime!.isBefore(selectedStartDate!));
+                        final matchesEnd = selectedEndDate == null || (exam.endTime != null && !exam.endTime!.isAfter(selectedEndDate!));
+                        return matchesSearch && matchesTeacher && matchesTest && matchesStart && matchesEnd;
+                      }).toList();
+                      return ListView.separated(
+                        padding: const EdgeInsets.all(16),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: filteredList.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final singleItem = filteredList[index];
+                          return _buildExamCard(singleItem, controller);
+                        },
+                      );
+                    }));
     });
   }
 
-  Widget _buildMobileLayoutFiltered(ExamHistoryController controller, List<SingleExamHistoryModel> filteredList) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      physics: const BouncingScrollPhysics(),
-      itemCount: filteredList.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final singleItem = filteredList[index];
-        return _buildExamCard(singleItem, controller);
+  void _showFilterDialog(BuildContext context) async {
+    String? tempTeacher = selectedTeacher;
+    String? tempTest = selectedTestName;
+    DateTime? tempStart = selectedStartDate;
+    DateTime? tempEnd = selectedEndDate;
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Filter by', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const SizedBox(height: 16),
+               
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: tempTeacher,
+                    hint: const Text('Teacher Name'),
+                    items: teacherNames.map((name) => DropdownMenuItem(value: name, child: Text(name))).toList(),
+                    onChanged: (val) => setState(() => tempTeacher = val),
+                    isExpanded: true,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: tempStart ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) setState(() => tempStart = picked);
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: 'Start Date',
+                              border: OutlineInputBorder(),
+                            ),
+                            child: Text(tempStart == null ? '' : DateFormat('dd MMM yyyy').format(tempStart!)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: tempEnd ?? DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) setState(() => tempEnd = picked);
+                          },
+                          child: InputDecorator(
+                            decoration: const InputDecoration(
+                              labelText: 'End Date',
+                              border: OutlineInputBorder(),
+                            ),
+                            child: Text(tempEnd == null ? '' : DateFormat('dd MMM yyyy').format(tempEnd!)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            tempTeacher = null;
+                            tempTest = null;
+                            tempStart = null;
+                            tempEnd = null;
+                            selectedTeacher = null;
+                            selectedTestName = null;
+                            selectedStartDate = null;
+                            selectedEndDate = null;
+                          });
+                          Navigator.pop(context);
+                          setState(() {}); // Refresh the filtered list
+                        },
+                        child: const Text('Clear'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            selectedTeacher = tempTeacher;
+                            selectedTestName = tempTest;
+                            selectedStartDate = tempStart;
+                            selectedEndDate = tempEnd;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Apply'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
       },
     );
+    setState(() {}); // Refresh the filtered list
   }
 
   // Mobile Layout
@@ -166,105 +327,76 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
       SingleExamHistoryModel singleItem, ExamHistoryController controller) {
     return Card(
       elevation: 5,
+      color: AppColors.cardBackground,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Get.put(TestResultDetailController());
-
-          Get.to(() => TestResultScreen(
-                model: singleItem,
-                userId: singleItem.userId ?? '',
-              ));
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    singleItem.subjectName ?? '-',
-                    style: AppTextStyles.subheading.copyWith(
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.fade),
-                  ),
-                  Text(
-                    'Scored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
-                    style: AppTextStyles.subheading.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top title/score bar
+          Container(
+            width: 300,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFD3D3D3), // Light gray
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomRight: Radius.circular(40), // Large curve
               ),
-              const SizedBox(height: 8),
-              Text(
-                'by ${singleItem.teacherName ?? '-'}',
-                style: AppTextStyles.body,
+            ),
+            child: Text(
+              'Test ${singleItem.subjectName ?? ''} Scored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.black,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Started on: ${singleItem.startTime?.formatTime ?? '-'}',
-                style: AppTextStyles.body,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'End: ${singleItem.endTime?.formatTime ?? '-'}',
-                style: AppTextStyles.body,
-              ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showFilterDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Filter by', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 16),
-              // Add filter options here (date, start date, end date, teacher name)
-              // For now, just show placeholders
-              ListTile(
-                leading: const Icon(Icons.date_range),
-                title: const Text('Date'),
-                onTap: () {},
+          // Main content
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
               ),
-              ListTile(
-                leading: const Icon(Icons.play_arrow),
-                title: const Text('Start Date'),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(Icons.stop),
-                title: const Text('End Date'),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Teacher Name'),
-                onTap: () {},
-              ),
-            ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'by ${singleItem.teacherName ?? ''}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Started on: ${singleItem.startTime?.formatTime ?? '-'} End:',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  singleItem.endTime?.formatTime ?? '-',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
+
