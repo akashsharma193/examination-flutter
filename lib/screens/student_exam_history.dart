@@ -54,7 +54,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
             preferredSize: const Size.fromHeight(120),
             child: Container(
               decoration: const BoxDecoration(
-                gradient: AppTheme.primaryGradient,
+                gradient: AppTheme.secondaryGradient,
               ),
               padding: const EdgeInsets.only(top: 36, left: 16, right: 16, bottom: 12),
               child: Column(
