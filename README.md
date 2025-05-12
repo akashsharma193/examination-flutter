@@ -8,3 +8,5 @@
 
 //flutterfire configure
 
+//flutter build appbundle --release --obfuscate --split-debug-info=build/debug-info
+
