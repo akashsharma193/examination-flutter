@@ -8,6 +8,7 @@ class ForgotPasswordController extends GetxController {
   final emailController = TextEditingController();
   final tempPasswordController = TextEditingController();
   final newPasswordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   final AuthRepo _repo = AuthRepo();
 
@@ -70,6 +71,7 @@ class ForgotPasswordController extends GetxController {
     emailController.dispose();
     tempPasswordController.dispose();
     newPasswordController.dispose();
+    confirmPasswordController.dispose();
     super.onClose();
   }
 }
