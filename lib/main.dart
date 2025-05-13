@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/route_manager.dart';
 import 'package:crackitx/core/routes/app_route.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
@@ -38,7 +39,20 @@ class MyApp extends StatelessWidget {
       getPages: AppRoute.routes,
       home: const SplashScreen(),
       initialRoute: '/',
-      // home: LoginPage(),
+      defaultTransition: kIsWeb ? Transition.fade : Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+      enableLog: true,
+      logWriterCallback: (String text, {bool isError = false}) {
+        debugPrint(text);
+      },
+      unknownRoute: GetPage(
+        name: '/not-found',
+        page: () => const Scaffold(
+          body: Center(
+            child: Text('Page not found'),
+          ),
+        ),
+      ),
     );
   }
 }

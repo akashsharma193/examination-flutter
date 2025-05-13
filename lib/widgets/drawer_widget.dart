@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
+import 'package:crackitx/core/constants/app_route_name_constants.dart';
 import 'package:crackitx/core/extensions/app_string_extensions.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
@@ -119,18 +120,19 @@ class _AppDrawerState extends State<AppDrawer> {
                       onTap: () {
                         switch (entry.key) {
                           case 'Exam History':
-                            Get.to(() => StudentExamHistory(
-                                  userId: user.userId,
-                                ));
+                            Get.toNamed(AppRoutesNames.examHistory, arguments: {
+                              'userId': user.userId,
+                              'from': 'drawer'
+                            });
                             break;
                           case 'Log Out':
                             final AuthRepo repo = AuthRepo();
                             repo.logOut(userId: user.userId);
                             AppLocalStorage.instance.clearStorage();
-                            Get.offAllNamed('/login');
+                            Get.offAllNamed(AppRoutesNames.login, arguments: {'from': 'logout'});
                             break;
                           case 'Create Exam':
-                            Get.to(() => const AdminExamDashboard());
+                            Get.toNamed(AppRoutesNames.adminExamDashboard, arguments: {'from': 'drawer'});
                             break;
                         }
                       },

@@ -43,7 +43,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
     return GetBuilder<AppAuthController>(builder: (authController) {
       if (authController.isUserAuthenticated.value) {
         Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+          Get.offAllNamed('/home', arguments: {'from': 'login'});
         });
       }
       return GestureDetector(
@@ -229,7 +229,7 @@ class _WebLoginPageState extends State<WebLoginPage> {
     return GetBuilder<AppAuthController>(builder: (authController) {
       if (authController.isUserAuthenticated.value) {
         Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+          Get.offAllNamed('/home', arguments: {'from': 'login'});
         });
       }
       return GestureDetector(

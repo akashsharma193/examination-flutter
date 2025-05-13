@@ -25,9 +25,9 @@ class SplashScreenState extends State<SplashScreen> {
         AppLocalStorage.instance.isLoggedIn; // Check login status
 
     if (isAuthenticated) {
-      Get.offNamed('/home'); // Navigate to HomePage
+      Get.offAllNamed('/home', arguments: {'from': 'splash'}); // Navigate to HomePage with arguments
     } else {
-      Get.offNamed('/login'); // Navigate to LoginPage
+      Get.offAllNamed('/login', arguments: {'from': 'splash'}); // Navigate to LoginPage with arguments
     }
   }
 
