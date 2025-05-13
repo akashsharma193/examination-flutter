@@ -55,7 +55,8 @@ class _AppDrawerState extends State<AppDrawer> {
                 borderRadius: const BorderRadius.only(
                   bottomRight: Radius.circular(160),
                 ),
-                child: WavyGradientContainer(
+                child: Image.asset(
+                  'assets/cropped_wavy_bg.png',
                   height: 240,
                   width: double.infinity,
                 ),

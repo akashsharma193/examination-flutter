@@ -95,7 +95,7 @@ class ExamScreen extends StatelessWidget {
               controller.questionList[controller.currentQuestionIndex.value];
 
           return Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -123,7 +123,7 @@ class ExamScreen extends StatelessWidget {
       // height: Get.height * 0.2,
       child: SingleChildScrollView(
         child: Wrap(
-          spacing: 8,
+          spacing: 8,runSpacing: 4,
           children: List.generate(controller.questionList.length, (index) {
             final isSelected = index == controller.currentQuestionIndex.value;
             final isMarked =
@@ -256,11 +256,11 @@ class ExamScreen extends StatelessWidget {
                 onPressed: controller.previousQuestion,
                 style: ElevatedButton.styleFrom(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text("Previous"),
+                child: const Icon(Icons.arrow_back_ios_new_outlined),
               ),
             if (controller.currentQuestionIndex.value !=
                 controller.questionList.length - 1)
@@ -268,11 +268,11 @@ class ExamScreen extends StatelessWidget {
                 onPressed: controller.nextQuestion,
                 style: ElevatedButton.styleFrom(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text("Next"),
+                child: const Icon(Icons.arrow_forward_ios_outlined),
               ),
           ],
         ),
@@ -311,6 +311,7 @@ class ExamScreen extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 16),
       ],
     );
   }

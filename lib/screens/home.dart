@@ -87,7 +87,7 @@ class StudentHomePage extends StatelessWidget {
     }
     if (controller.isLoading.value) {
       return Text('Fetching exam details...',
-          style: AppTheme.bodyLarge.copyWith(color: Colors.white));
+          style: AppTheme.bodyLarge.copyWith(color: Colors.black));
     }
     return controller.allExams.isEmpty
         ? Center(
