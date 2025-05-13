@@ -34,8 +34,16 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.dialogBackground,
-      body: Center(
+      body:
+      Container(
+        decoration:const  BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/splash_bg.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: 
+       Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -44,25 +52,20 @@ class SplashScreenState extends State<SplashScreen> {
               'assets/app_logo.png', // Add your logo in assets folder
               width: 150,
             ),
-            const SizedBox(height: 20),
-            // App Name
-            Text(
-              "CrackItX",
-              style: AppTextStyles.heading.copyWith(fontSize: 28),
-            ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 40),
             // Tagline
             Text(
               "Exam without internet, focus without distraction.",
               textAlign: TextAlign.center,
               style: AppTextStyles.subheading.copyWith(
-                color: AppColors.primary,
+                color: Colors.white,
                 fontSize: 16,
               ),
             ),
             const SizedBox(height: 30),
           ],
         ),
+      ),
       ),
     );
   }
