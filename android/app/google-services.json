@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "219919089326",
+    "project_id": "crackitx",
+    "storage_bucket": "crackitx.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219919089326:android:45feb2a52e1e9cd1afb73f",
+        "android_client_info": {
+          "package_name": "com.contentive.crackitx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYDiDiS9ho3SXdOUKMMPv6PLu9iXFGSRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219919089326:android:2ca8a9b360e9a487afb73f",
+        "android_client_info": {
+          "package_name": "com.example.offline_test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYDiDiS9ho3SXdOUKMMPv6PLu9iXFGSRw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

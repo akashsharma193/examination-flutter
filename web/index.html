@@ -35,9 +35,52 @@
       })
       .catch(error => console.error("Error loading Firebase config:", error));
   </script>
+
+  <style>
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background-color: #ffffff;
+    }
+    .loading-content {
+      text-align: center;
+    }
+    .loading-logo {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 20px;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
 <body>
+  <!-- Loading Screen -->
+  <div id="loading" class="loading">
+    <div class="loading-content">
+      <img src="icons/Icon-192.png" alt="App Logo" class="loading-logo">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
   <script src="flutter_bootstrap.js" async></script>
   <script src="main.dart.js" type="application/javascript"></script>
 
@@ -50,6 +93,11 @@
           .catch(err => console.error("Service Worker registration failed:", err));
       });
     }
+
+    // Hide loading screen when Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      document.getElementById('loading').style.display = 'none';
+    });
   </script>
 </body>
 

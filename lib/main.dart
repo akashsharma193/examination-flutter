@@ -10,12 +10,12 @@ import 'package:crackitx/services/firebase_services_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await AppLocalStorage.instance.initAppLocalStorage();
 
-  // await AppFirebaseService.instance.initialize();
-  // await AppNotificationService.instance.initialize();
+  await AppFirebaseService.instance.initialize();
+  await AppNotificationService.instance.initialize();
   await AppDioService.instance
       .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
   runApp(const MyApp());
