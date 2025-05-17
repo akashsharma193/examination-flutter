@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "831248601177",
+    "project_id": "crackitx-96076",
+    "storage_bucket": "crackitx-96076.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:831248601177:android:812952ebdc56dd85c82148",
+        "android_client_info": {
+          "package_name": "com.contentive.crackitx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcXMYiTmSWN8MPl_J8bEvW2rovtcAWVTU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

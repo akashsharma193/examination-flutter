@@ -39,7 +39,7 @@ class AppFirebaseService {
       return kIsWeb
           ? await _firebaseMessaging.getToken(
               vapidKey:
-                  'BElSUkxBnFsd2zVZZSBoeWZxuJAPHCxvITuFvVlWSN7fEaLvMI4AnlO6m0JQbOAy2QuJyL8Ca_kH8DZaowgU7Ww',
+                  'BN_fEHrTYjKal2Dz2eOqGLblOfjoMTA8-hO-tcl0-CfzaWk22cteACdDVQQJSs0mDdrmGxzp1MAKzfUPQKm9fgg',
             )
           : await _firebaseMessaging.getToken();
     } catch (e) {
