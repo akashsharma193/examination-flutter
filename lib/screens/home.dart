@@ -1,4 +1,5 @@
 import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/services/firebase_services_app.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:crackitx/app_models/exam_model.dart';
@@ -82,6 +83,10 @@ class StudentHomePage extends StatelessWidget {
   }
 
   Widget getExamListWidget(HomeController controller) {
+    AppFirebaseService.instance.getFcmToken().then((v) {
+      print('FCM Token: $v');
+    });
+
     if (AppLocalStorage.instance.user.isAdmin) {
       return const SizedBox.shrink();
     }
@@ -116,22 +121,37 @@ class StudentHomePage extends StatelessWidget {
                   },
                   child: Material(
                     elevation: 2,
-                
                     borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
                     color: AppColors.cardBackground,
                     shadowColor: AppTheme.shadowSmall[0].color,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
+                    child:  Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              singleItem.subjectName,
-                              style: AppTheme.headingMedium
-                                  .copyWith(color: Colors.white),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            Container(
+                              width: 300,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFD3D3D3), // Light gray
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  bottomRight:
+                                      Radius.circular(40), // Large curve
+                                ),
+                              ),
+                              child: Text(
+                                singleItem.subjectName,
+                                style: AppTheme.bodyMedium.copyWith(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
+                         Padding (
+                          padding:const EdgeInsets.all(16),
+                          child:
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -144,22 +164,24 @@ class StudentHomePage extends StatelessWidget {
                                       const SizedBox(height: 6),
                                       Text(
                                         'by ${singleItem.teacherName}',
-                                        style: AppTheme.bodyLarge
-                                            .copyWith(color: Colors.white70),
+                                        style: AppTheme.bodyLarge.copyWith(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w400),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
                                         'Start: ${singleItem.startTime.formatTime}',
-                                        style: AppTheme.bodyMedium
+                                        style: AppTheme.normalText
                                             .copyWith(color: Colors.white),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         'End: ${singleItem.endTime.formatTime}',
-                                        style: AppTheme.bodyMedium
+                                        style: AppTheme.normalText
                                             .copyWith(color: Colors.white),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -169,32 +191,48 @@ class StudentHomePage extends StatelessWidget {
                                 ),
                                 // Right section
                                 Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Text(
-                                      'Duration: ${singleItem.examDuration} mins',
-                                      style: AppTheme.bodyMedium
-                                          .copyWith(color: Colors.white),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Obx(() => Text(
-                                          controller.examTimers[
-                                                  singleItem.questionId] ??
-                                              'Calculating...',
-                                          style: AppTheme.bodyMedium
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.schedule,
+                                            color: Colors.white),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '${singleItem.examDuration} mins',
+                                          style: AppTheme.normalText
                                               .copyWith(color: Colors.white),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
-                                        )),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.timer_outlined,
+                                            color: Colors.white),
+                                        const SizedBox(width: 4),
+                                        Obx(() => Text(
+                                              controller.examTimers[
+                                                      singleItem.questionId] ??
+                                                  'Calculating...',
+                                              style: AppTheme.normalText
+                                                  .copyWith(
+                                                      color: Colors.white),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            )),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ],
                             ),
+                        ),
                           ]),
-                    ),
+                    
                   ),
                 ),
               );

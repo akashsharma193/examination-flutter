@@ -57,6 +57,12 @@ class AppTheme {
     letterSpacing: 0.25,
   );
 
+    static const TextStyle normalText = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    color: textPrimaryColor,
+  );
+
   static const TextStyle buttonText = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,

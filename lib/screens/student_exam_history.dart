@@ -365,7 +365,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
               '${singleItem.subjectName ?? ''} Scored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 12,
                 color: Colors.black,
               ),
             ),
@@ -388,23 +388,24 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                   'by ${singleItem.teacherName ?? ''}',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Started on: ${singleItem.startTime?.formatTime ?? '-'} End:',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 12 ,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  singleItem.endTime?.formatTime ?? '-',
+                  'Started on: ${singleItem.startTime?.formatTime ?? '-'} ',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Ended on: ${singleItem.endTime?.formatTime ?? '-'}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
                   ),
                 ),
               ],
