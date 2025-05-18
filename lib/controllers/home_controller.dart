@@ -7,6 +7,7 @@ import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/services/internet_service_checker.dart';
+import 'package:crackitx/widgets/app_dialog.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -163,32 +164,27 @@ class HomeController extends GetxController {
   }
 
   void showExamNotLiveDialog({bool isExamEnded = false}) {
-    Get.defaultDialog(
-        title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
-        content: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(isExamEnded
-              ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
-              : 'Exam will start soon, come back when Exam is Live!'),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Get.back(),
-            child: const Text('Ok'),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.cardBackground,
-                foregroundColor: Colors.white),
-          )
-        ]);
+    AppDialog().show(
+      title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(isExamEnded
+            ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
+            : 'Exam will start soon, come back when Exam is Live!'),
+      ),
+      buttonText: 'Ok',
+      onPressed: () => Get.back(),
+      restrictBack: false,
+      isDismissible: true,
+    );
   }
 
   void showAcknowledgementDialogPopUp() async {
-    while (Get.isDialogOpen ?? false) {
-      Get.back();
-    }
+
 
     await getCompliances();
-    Get.defaultDialog(
+     AppDialog().show(
+      showButton: false,
       title: "Test Acknowledgement",
       content: StatefulBuilder(builder: (context, setState) {
         return Column(
@@ -229,7 +225,9 @@ class HomeController extends GetxController {
                       }
                     }
                   : null, // Disabled if checkbox is unchecked
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.cardBackground,foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.cardBackground,
+                  foregroundColor: Colors.white),
               child: const Text("Continue"),
             )
           ],

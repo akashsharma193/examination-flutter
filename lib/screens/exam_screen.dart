@@ -1,6 +1,7 @@
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/controllers/exam_controller.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/widgets/app_dialog.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,32 +32,26 @@ class ExamScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        Get.dialog(
-          AlertDialog(
-            title: const Text(
-              "Are You Sure ?",
-              textAlign: TextAlign.center,
-            ),
+        if (controller.remainingSeconds.value > 0) {
+          AppDialog().show(
+            title: "Are You Sure ?",
             content: const Text(
               'Do you want to Go Back?\nThe Paper will be automatically submitted.',
               textAlign: TextAlign.center,
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Get.offAll(() => TestCompletedScreen(
-                        list: controller.questionList
-                            .map((e) => QuestionModel.fromJson(
-                                Map<String, dynamic>.from(e)))
-                            .toList(),
-                        testID: testId,
-                      ));
-                },
-                child: const Center(child: Text("OK")),
-              ),
-            ],
-          ),
-        );
+            buttonText: "OK",
+            onPressed: () {
+              Get.back();
+              Get.offAll(() => TestCompletedScreen(
+                    list: controller.questionList
+                        .map((e) => QuestionModel.fromJson(
+                            Map<String, dynamic>.from(e)))
+                        .toList(),
+                    testID: testId,
+                  ));
+            },
+          );
+        }
       },
       child: Scaffold(
         appBar: GradientAppBar(
@@ -122,8 +117,11 @@ class ExamScreen extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: Get.height * 0.2),
       // height: Get.height * 0.2,
       child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        controller: controller.scrollController,
         child: Wrap(
-          spacing: 8,runSpacing: 4,
+          spacing: 8,
+          runSpacing: 4,
           children: List.generate(controller.questionList.length, (index) {
             final isSelected = index == controller.currentQuestionIndex.value;
             final isMarked =
@@ -147,7 +145,10 @@ class ExamScreen extends StatelessWidget {
                               ? Theme.of(context).primaryColor
                               : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: answered ? Colors.grey.shade300: AppColors.cardBackground),
+                  border: Border.all(
+                      color: answered
+                          ? Colors.grey.shade300
+                          : AppColors.cardBackground),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -183,10 +184,10 @@ class ExamScreen extends StatelessWidget {
             Expanded(
               child: Text(
                 "Q ${controller.currentQuestionIndex.value + 1}: ${currentQuestion["question"]}",
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ) ??
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -292,7 +293,10 @@ class ExamScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF9181F4), Color(0xFF5038ED)], // Your gradient colors
+                  colors: [
+                    Color(0xFF9181F4),
+                    Color(0xFF5038ED)
+                  ], // Your gradient colors
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

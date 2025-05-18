@@ -31,6 +31,7 @@ class AppAuthController extends GetxController {
   final registerEmailController = TextEditingController();
   final batchController = TextEditingController();
   final registerPassController = TextEditingController();
+  final confirmPassController = TextEditingController();
   final orgCodeController = TextEditingController();
 
   void checkIfAlreadyLoggedIn() {

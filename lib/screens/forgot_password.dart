@@ -35,13 +35,14 @@ class ForgotPasswordScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                onTap: controller.isLoading.value
+                onTap: controller.isLoading.value || controller.tempSent.value
                     ? null
                     : controller.sendTempPassword,
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    color: controller.tempSent.value?Colors.grey:null,
+                    gradient:controller.tempSent.value?null: AppTheme.primaryGradient,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Center(

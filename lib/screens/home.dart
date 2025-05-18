@@ -64,16 +64,10 @@ class StudentHomePage extends StatelessWidget {
                 'Hello, ${AppLocalStorage.instance.user.name}',
                 style: AppTheme.headingLarge.copyWith(
                   color: Colors.black,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.25),
-                      offset: Offset(2, 4),
-                      blurRadius: 4,
-                    ),
-                  ],
+                
                 ),
               ),
-              SizedBox(height: AppTheme.spacingL),
+              const SizedBox(height: AppTheme.spacingL),
               Expanded(child: getExamListWidget(controller))
             ],
           ),
@@ -83,9 +77,7 @@ class StudentHomePage extends StatelessWidget {
   }
 
   Widget getExamListWidget(HomeController controller) {
-    AppFirebaseService.instance.getFcmToken().then((v) {
-      print('FCM Token: $v');
-    });
+
 
     if (AppLocalStorage.instance.user.isAdmin) {
       return const SizedBox.shrink();

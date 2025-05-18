@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
+import 'package:crackitx/widgets/app_dialog.dart';
 
 class AuthMiddleWare extends GetMiddleware {
   @override
@@ -34,19 +35,12 @@ class InternetCheckMiddleware extends GetMiddleware {
   }
 
   void _showAlertDialog() {
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Internet Detected"),
-        content: const Text("You can't attempt the exam while online."),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text("OK"),
-          ),
-        ],
-      ),
-      barrierDismissible:
-          false, // Prevents user from dismissing the dialog accidentally
+    AppDialog().show(
+      title: "Internet Detected",
+      content: const Text("You can't attempt the exam while online."),
+      buttonText: "OK",
+      onPressed: () => Get.back(),
     );
   }
 }
+

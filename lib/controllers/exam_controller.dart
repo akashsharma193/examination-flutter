@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/services/internet_service_checker.dart';
+import 'package:crackitx/widgets/app_dialog.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,6 +12,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   final List<QuestionModel> questions;
   final String examDurationMinutes;
   final String testId;
+
+  final ScrollController scrollController = ScrollController();
 
   ExamController({
     required this.questions,
@@ -45,6 +48,27 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  void scrollToCurrentIndex() {
+    const itemWidth = 48.0;
+    const spacing = 8.0;
+
+    final screenWidth = View.of(Get.context!).physicalSize.width /
+        View.of(Get.context!).devicePixelRatio;
+
+    final numberOfItemsDisplayed = screenWidth ~/ (itemWidth + spacing);
+    const fullItemWidth = itemWidth + spacing;
+
+    final section = currentQuestionIndex.value ~/ numberOfItemsDisplayed;
+
+    final position = section * numberOfItemsDisplayed * fullItemWidth;
+
+    scrollController.animateTo(
+      position,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
   @override
   void onClose() {
     _timer?.cancel();
@@ -58,7 +82,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       warningCount.value++;
-      if (warningCount.value >= 4) autoSubmitExam();
+      if (warningCount.value >= 4) goToCompletedScreen();
     } else if (state == AppLifecycleState.resumed &&
         warningCount.value > 0 &&
         warningCount.value < 4) {
@@ -73,17 +97,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
     if (screenWidth < 350) {
       isAppInSplitScreen.value = true;
-      closeOpenDialogs();
-      Get.dialog(
-        AlertDialog(
-          title: const Text("Warning!"),
-          content: const Text(
-              "This app is not accessible in split-screen or floating window mode."),
-          actions: [
-            TextButton(onPressed: () => Get.back(), child: const Text("OK")),
-          ],
-        ),
-        barrierDismissible: false,
+      AppDialog().show(
+        title: "Warning!",
+        content: const Text(
+            "This app is not accessible in split-screen or floating window mode."),
+        buttonText: "OK",
+        onPressed: () {
+          Get.back();
+        },
+        restrictBack: true,
+        isDismissible: false,
       );
     } else {
       isAppInSplitScreen.value = false;
@@ -101,6 +124,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         }
       } else {
         timer.cancel();
+
         showExamSubumitConfirmationDialog(
             isDismissable: false,
             message: 'Time Up,\n click OK to continue Submitting...\n');
@@ -116,7 +140,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     Get.offAllNamed('/home');
   }
 
-  void autoSubmitExam() {
+  void goToCompletedScreen() {
     Get.offAll(() => TestCompletedScreen(
           list: questionList
               .map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
@@ -138,12 +162,14 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void previousQuestion() {
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
+      scrollToCurrentIndex();
     }
   }
 
   void nextQuestion() {
     if (currentQuestionIndex.value < questionList.length - 1) {
       currentQuestionIndex.value++;
+      scrollToCurrentIndex();
     } else {
       showExamSubumitConfirmationDialog();
     }
@@ -151,144 +177,81 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   void showExamSubumitConfirmationDialog(
       {String? message, bool isDismissable = true}) {
-    Get.dialog(
-        AlertDialog(
-          title: const Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.warning,
-                  color: Colors.amber,
-                ),
-                SizedBox(
-                  width: 16,
-                ),
-                Text(
-                  "Alert !",
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
+    AppDialog().show(
+      title: "Alert !",
+      content: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          style: const TextStyle(color: Colors.black, fontSize: 16),
+          children: [
+            TextSpan(
+              style: TextStyle(fontWeight: FontWeight.w400),
+              text: message ?? 'Do you want to submit the TEST?\n\n',
             ),
-          ),
-          content: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: const TextStyle(color: Colors.black, fontSize: 16),
-              children: [
-                TextSpan(
-                  style: TextStyle(fontWeight: FontWeight.w400),
-                  text: message ?? 'Do you want to submit the TEST?\n\n',
-                ),
-                const TextSpan(
-                  text: 'Attempted Questions: ',
-                ),
-                TextSpan(
-                  text:
-                      '${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}\n\n',
-                  // style: const TextStyle(color: Colors.blue),
-                ),
-                const TextSpan(
-                  text: 'Instruction: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const TextSpan(
-                  text: 'Kindly enable your internet in your next step.',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ],
+            const TextSpan(
+              text: 'Attempted Questions: ',
             ),
-          ),
-          actions: [
-            Center(
-              child: Material(
-                elevation: 2,
-                borderRadius: BorderRadius.circular(8),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  onTap: () {
-                    autoSubmitExam();
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 32),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF9181F4), Color(0xFF5038ED)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "OK",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            TextSpan(
+              text:
+                  '${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}\n\n',
+              // style: const TextStyle(color: Colors.blue),
+            ),
+            const TextSpan(
+              text: 'Instruction: ',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
+            const TextSpan(
+              text: 'Kindly enable your internet in your next step.',
+              style: TextStyle(color: Colors.red),
             ),
           ],
         ),
-        barrierDismissible: isDismissable);
+      ),
+      buttonText: "Submit",
+      onPressed: () {
+        goToCompletedScreen();
+      },
+      showButton: true,
+      restrictBack: !isDismissable,
+      isDismissible: isDismissable,
+    );
   }
 
   void showTimerWarning({required int minute}) {
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Alert !"),
-        content: Text('$minute Minute Remaining...'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Get.back();
-            },
-            child: const Text("OK"),
-          ),
-        ],
-      ),
+    AppDialog().show(
+      title: "Alert !",
+      content: Text('$minute Minute Remaining...'),
+      buttonText: "OK",
+      onPressed: () {
+        Get.back();
+      },
     );
   }
 
   void showBackgroundWarning() {
-    closeOpenDialogs();
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Warning!"),
-        content: Text(
-            "You switched apps or minimized the exam.\nWarning: ${warningCount.value}/3"),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("OK")),
-        ],
-      ),
-      barrierDismissible: false,
+    AppDialog().show(
+      title: "Warning!",
+      content: Text(
+          "You switched apps or minimized the exam.\nWarning: ${warningCount.value}/3"),
+      buttonText: "OK",
+      onPressed: () {
+        Get.back();
+      },
+      restrictBack: true,
+      isDismissible: false,
     );
   }
 
   void showInternetWarning() {
-    closeOpenDialogs();
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Warning!"),
-        content: const Text(
-            "You cannot use the internet while attempting the exam."),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("OK")),
-        ],
-      ),
-      barrierDismissible: false,
+    AppDialog().show(
+      title: "Warning!",
+      content:
+          const Text("You cannot use the internet while attempting the exam."),
+      buttonText: "OK",
+      onPressed: () {
+        Get.back();
+      },
     );
-  }
-
-  void closeOpenDialogs() {
-    while (Get.isDialogOpen ?? false) {
-      Get.back();
-    }
   }
 
   String formatTime(int seconds) {

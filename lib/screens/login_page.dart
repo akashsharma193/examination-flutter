@@ -127,7 +127,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                                     textStyle: const TextStyle(
                                         fontWeight: FontWeight.w500),
                                   ),
-                                  child: const Text('Forgot Password'),
+                                  child: const Text('Forgot Password ?'),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -192,7 +192,6 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                                           style: TextStyle(
                                             color: Color(0xFF5E48EF),
                                             fontWeight: FontWeight.bold,
-                                            decoration: TextDecoration.underline,
                                           ),
                                         ),
                                       ],

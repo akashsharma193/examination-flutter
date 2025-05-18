@@ -13,6 +13,7 @@ class AppTextField extends StatefulWidget {
   final String? hintText;
   final Widget? prefixIcon;
   final TextFieldType type;
+  final FormFieldValidator<String>? validator;
 
   const AppTextField({
     Key? key,
@@ -20,6 +21,7 @@ class AppTextField extends StatefulWidget {
     this.hintText,
     this.prefixIcon,
     this.type = TextFieldType.text,
+    this.validator,
   }) : super(key: key);
 
   @override
@@ -78,11 +80,13 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return  TextField(
+    return  TextFormField(
         controller: widget.controller,
         obscureText: widget.type == TextFieldType.password ? _obscureText : false,
         keyboardType: _keyboardType,
         inputFormatters: _inputFormatters,
+              validator: widget.validator ?? (value) => AppValidators.validate(widget.type, value),
+
         onChanged: _validate,
         decoration: InputDecoration(
           filled: true,
@@ -123,3 +127,32 @@ class _AppTextFieldState extends State<AppTextField> {
     ;
   }
 } 
+
+
+class AppValidators {
+  static String? validate(TextFieldType type, String? value) {
+    switch (type) {
+      case TextFieldType.email:
+        if (value == null || value.isEmpty) return 'Email is required';
+        final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+        if (!emailRegex.hasMatch(value)) return 'Invalid email address';
+        return null;
+
+      case TextFieldType.password:
+        if (value == null || value.isEmpty) return 'Password is required';
+        if (value.length < 6) return 'Password must be at least 6 characters';
+        return null;
+
+      case TextFieldType.number:
+        if (value == null || value.isEmpty) return 'Number is required';
+        if (!RegExp(r'^\d+$').hasMatch(value)) return 'Only digits allowed';
+        if (value.length > 10) return 'Max 10 digits allowed';
+        return null;
+
+      case TextFieldType.text:
+      default:
+        if (value == null || value.isEmpty) return 'This field is required';
+        return null;
+    }
+  }
+}

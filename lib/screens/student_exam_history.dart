@@ -362,7 +362,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
               ),
             ),
             child: Text(
-              '${singleItem.subjectName ?? ''} Scored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
+              '${singleItem.subjectName ?? ''} \nScored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,

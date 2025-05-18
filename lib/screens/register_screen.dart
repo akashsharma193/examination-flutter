@@ -135,6 +135,15 @@ class RegistrationPageState extends State<RegistrationPage> {
                           prefixIcon: Icon(Icons.lock, color: purple),
                           type: TextFieldType.password,
                         ),
+                          const SizedBox(height: 16),
+                        // Password
+                        AppTextField(
+                          controller: authController.confirmPassController,
+                          hintText: 'Confirm Password',
+                          prefixIcon: Icon(Icons.lock, color: purple),
+                          type: TextFieldType.password,
+                          validator: (value) => authController.registerPassController.text == authController.confirmPassController.text ? null : 'Passwords do not match',
+                        ),
                         const SizedBox(height: 28),
                         // Gradient Submit Button
                         Obx(() => Material(
