@@ -27,10 +27,7 @@ class RegistrationPageState extends State<RegistrationPage> {
   @override
   void initState() {
     super.initState();
-    final authController = Get.find<AppAuthController>();
-    ever(authController.isUserAuthenticated, (isAuthenticated) {
-      if (isAuthenticated) Get.offAllNamed('/home');
-    });
+
   }
 
   @override
