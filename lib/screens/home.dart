@@ -1,7 +1,6 @@
 import 'package:crackitx/core/constants/color_constants.dart';
-import 'package:crackitx/services/firebase_services_app.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/controllers/home_controller.dart';
 import 'package:crackitx/core/theme/app_theme.dart';
@@ -55,16 +54,15 @@ class StudentHomePage extends StatelessWidget {
           ],
         ),
         body: Padding(
-          padding: EdgeInsets.all(AppTheme.spacingM),
+          padding: const EdgeInsets.all(AppTheme.spacingM),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: AppTheme.spacingL),
+              const SizedBox(height: AppTheme.spacingL),
               Text(
                 'Hello, ${AppLocalStorage.instance.user.name}',
                 style: AppTheme.headingLarge.copyWith(
                   color: Colors.black,
-                
                 ),
               ),
               const SizedBox(height: AppTheme.spacingL),
@@ -77,8 +75,6 @@ class StudentHomePage extends StatelessWidget {
   }
 
   Widget getExamListWidget(HomeController controller) {
-
-
     if (AppLocalStorage.instance.user.isAdmin) {
       return const SizedBox.shrink();
     }
@@ -100,12 +96,15 @@ class StudentHomePage extends StatelessWidget {
             itemBuilder: (context, index) {
               final singleItem = controller.allExams[index];
               return Padding(
-                padding: EdgeInsets.all(AppTheme.spacingS),
+                padding: const EdgeInsets.all(AppTheme.spacingS),
                 child: InkWell(
-                  onTap: () {
+                  onTap: () async {
                     if (isExamLive(singleItem)) {
                       controller.selectedExam = controller.allExams[index];
-                      controller.showAcknowledgementDialogPopUp();
+
+                      await controller.getConfiguration();
+
+                      controller.showConfigBasedAcknowledgementDialog();
                     } else {
                       controller.showExamNotLiveDialog(
                           isExamEnded: isExamEnded(singleItem));
@@ -116,35 +115,33 @@ class StudentHomePage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
                     color: AppColors.cardBackground,
                     shadowColor: AppTheme.shadowSmall[0].color,
-                    child:  Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 300,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFD3D3D3), // Light gray
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  bottomRight:
-                                      Radius.circular(40), // Large curve
-                                ),
-                              ),
-                              child: Text(
-                                singleItem.subjectName,
-                                style: AppTheme.bodyMedium.copyWith(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 300,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD3D3D3), // Light gray
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomRight: Radius.circular(40), // Large curve
                               ),
                             ),
-                         Padding (
-                          padding:const EdgeInsets.all(16),
-                          child:
-                            Row(
+                            child: Text(
+                              singleItem.subjectName,
+                              style: AppTheme.bodyMedium.copyWith(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Left section
@@ -222,9 +219,8 @@ class StudentHomePage extends StatelessWidget {
                                 ),
                               ],
                             ),
-                        ),
-                          ]),
-                    
+                          ),
+                        ]),
                   ),
                 ),
               );

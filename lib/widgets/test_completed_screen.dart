@@ -126,7 +126,7 @@ class TestCompletedScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [Color(0xFF9181F4), Color(0xFF5038ED)], // Your gradient
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,

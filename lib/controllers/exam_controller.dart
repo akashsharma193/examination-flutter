@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/controllers/home_controller.dart';
+import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
 import 'package:crackitx/services/internet_service_checker.dart';
 import 'package:crackitx/widgets/app_dialog.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,11 +32,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   Timer? _timer;
   StreamSubscription<bool>? _internetSubscription;
+  late HomeController homeController;
 
   @override
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
+    homeController = Get.put(HomeController());
 
     questionList.value = questions.map((e) => e.toJson()).toList();
     questionList.shuffle();
@@ -44,7 +49,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _internetSubscription = InternetServiceChecker()
         .checkIfInternetIsConnected()
         .listen((isConnected) {
-      if (isConnected) showInternetWarning();
+      if (isConnected && homeController.configuration.isInternetDisabled) {
+        showInternetWarning();
+      }
     });
   }
 
@@ -133,11 +140,25 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void submitExam() {
-    ExamRepo().submitExam(
+    ExamRepo()
+        .submitExam(
       questionList.map((e) => QuestionModel.fromJson(e)).toList(),
       testId,
-    );
-    Get.offAllNamed('/home');
+    )
+        .then((v) {
+      switch (v) {
+        case AppSuccess(value: bool v):
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: v,
+              subTitle: 'Exam submitted status : ${v ? 'Success' : 'Failed'}');
+
+          Get.offAllNamed('/home');
+          break;
+        case AppFailure():
+          AppSnackbarWidget.showSnackBar(
+              isSuccess: false, subTitle: v.errorMessage);
+      }
+    });
   }
 
   void goToCompletedScreen() {
@@ -185,7 +206,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
           style: const TextStyle(color: Colors.black, fontSize: 16),
           children: [
             TextSpan(
-              style: TextStyle(fontWeight: FontWeight.w400),
+              style: const TextStyle(fontWeight: FontWeight.w400),
               text: message ?? 'Do you want to submit the TEST?\n\n',
             ),
             const TextSpan(
@@ -209,7 +230,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       ),
       buttonText: "Submit",
       onPressed: () {
-        goToCompletedScreen();
+        homeController.configuration.isInternetDisabled
+            ? goToCompletedScreen()
+            : submitExam();
       },
       showButton: true,
       restrictBack: !isDismissable,

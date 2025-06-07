@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
 import 'package:crackitx/app_models/test_result_detail_model.dart';
@@ -41,6 +42,24 @@ class ExamRepo {
       switch (response) {
         case AppSuccess():
           return AppSuccess((response.value['data'] as List<dynamic>).toList());
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<ConfigurationModel>> getConfiguration() async {
+    try {
+      final response = await dioService.getDio(
+        endpoint: 'configuration/getConfiguration',
+      );
+      switch (response) {
+        case AppSuccess():
+          return AppSuccess(
+              ConfigurationModel.fromJson(response.value['data']));
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
