@@ -15,8 +15,8 @@ class ConfigurationModel {
     return ConfigurationModel(
       id: json['id'] ?? '',
       activationMode: json['activationMode'] ?? '',
-      // isInternetDisabled: json['isInternetDisabled'] ?? false,
-      isInternetDisabled: false,
+      isInternetDisabled: json['isInternetDisabled'] ?? false,
+      // isInternetDisabled: false,
       isTabSwitchDisabled: json['isTabSwitchDisabled'] ?? false,
     );
   }
