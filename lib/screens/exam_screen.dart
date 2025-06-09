@@ -111,13 +111,76 @@ class ExamScreen extends StatelessWidget {
     );
   }
 
+  // Widget _buildQuestionIndicator(
+  //     ExamController controller, BuildContext context) {
+  //   return Container(
+  //     constraints: BoxConstraints(maxHeight: Get.height * 0.2),
+  //     // height: Get.height * 0.2,
+  //     child: SingleChildScrollView(
+  //       scrollDirection: Axis.horizontal,
+  //       controller: controller.scrollController,
+  //       child: Wrap(
+  //         spacing: 8,
+  //         runSpacing: 4,
+  //         children: List.generate(controller.questionList.length, (index) {
+  //           final isSelected = index == controller.currentQuestionIndex.value;
+  //           final isMarked =
+  //               controller.questionList[index]['isMarked'] ?? false;
+  //           final answered =
+  //               (controller.questionList[index]['userAnswer'] as String?)
+  //                       ?.isNotEmpty ??
+  //                   false;
+  //           return InkWell(
+  //             onTap: () => controller.currentQuestionIndex.value = index,
+  //             borderRadius: BorderRadius.circular(12),
+  //             child: Container(
+  //               width: 48,
+  //               height: 48,
+  //               decoration: BoxDecoration(
+  //                 color: isMarked
+  //                     ? Colors.purple
+  //                     : answered
+  //                         ? Colors.green
+  //                         : isSelected
+  //                             ? Theme.of(context).primaryColor
+  //                             : Colors.grey.shade100,
+  //                 borderRadius: BorderRadius.circular(24),
+  //                 border: Border.all(
+  //                     color: answered
+  //                         ? Colors.grey.shade300
+  //                         : AppColors.cardBackground),
+  //               ),
+  //               alignment: Alignment.center,
+  //               child: Text(
+  //                 "${index + 1}",
+  //                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
+  //                           fontWeight: FontWeight.w600,
+  //                           color: isSelected || isMarked || answered
+  //                               ? Colors.white
+  //                               : Colors.black87,
+  //                         ) ??
+  //                     TextStyle(
+  //                       fontSize: 16,
+  //                       fontWeight: FontWeight.w600,
+  //                       color: isSelected || isMarked || answered
+  //                           ? Colors.white
+  //                           : Colors.black87,
+  //                     ),
+  //               ),
+  //             ),
+  //           );
+  //         }),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   Widget _buildQuestionIndicator(
       ExamController controller, BuildContext context) {
     return Container(
       constraints: BoxConstraints(maxHeight: Get.height * 0.2),
       // height: Get.height * 0.2,
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
         controller: controller.scrollController,
         child: Wrap(
           spacing: 8,
@@ -253,7 +316,7 @@ class ExamScreen extends StatelessWidget {
               : MainAxisAlignment.spaceBetween,
           children: [
             if (controller.currentQuestionIndex.value != 0)
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: controller.previousQuestion,
                 style: ElevatedButton.styleFrom(
                   padding:
@@ -261,11 +324,14 @@ class ExamScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_outlined),
+                icon: const Icon(Icons.arrow_back),
+                label: const Text('Previous',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
               ),
             if (controller.currentQuestionIndex.value !=
                 controller.questionList.length - 1)
-              ElevatedButton(
+              ElevatedButton.icon(
+                iconAlignment: IconAlignment.end,
                 onPressed: controller.nextQuestion,
                 style: ElevatedButton.styleFrom(
                   padding:
@@ -273,7 +339,9 @@ class ExamScreen extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Icon(Icons.arrow_forward_ios_outlined),
+                label: const Text('Next',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                icon: const Icon(Icons.arrow_forward),
               ),
           ],
         ),

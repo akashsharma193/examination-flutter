@@ -31,8 +31,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   var isAppInSplitScreen = false.obs;
 
   Timer? _timer;
+  Timer? _questionTimer;
   StreamSubscription<bool>? _internetSubscription;
   late HomeController homeController;
+
+  Map<int, int> questionTimeSpent = {};
+  DateTime? currentQuestionStartTime;
+  bool isTimerPaused = false;
 
   @override
   void onInit() {
@@ -43,8 +48,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     questionList.value = questions.map((e) => e.toJson()).toList();
     questionList.shuffle();
 
+    for (int i = 0; i < questionList.length; i++) {
+      questionTimeSpent[i] = 0;
+    }
+
     remainingSeconds.value = (int.tryParse(examDurationMinutes) ?? 0) * 60;
     startTimer();
+    startQuestionTimeTracking();
 
     _internetSubscription = InternetServiceChecker()
         .checkIfInternetIsConnected()
@@ -53,6 +63,35 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         showInternetWarning();
       }
     });
+
+    ever(currentQuestionIndex, (int newIndex) {
+      _onQuestionChanged(newIndex);
+    });
+  }
+
+  void startQuestionTimeTracking() {
+    currentQuestionStartTime = DateTime.now();
+
+    _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!isTimerPaused && currentQuestionStartTime != null) {
+        int currentIndex = currentQuestionIndex.value;
+        questionTimeSpent[currentIndex] =
+            (questionTimeSpent[currentIndex] ?? 0) + 1;
+      }
+    });
+  }
+
+  void _onQuestionChanged(int newIndex) {
+    scrollToCurrentIndex();
+  }
+
+  void pauseQuestionTimer() {
+    isTimerPaused = true;
+  }
+
+  void resumeQuestionTimer() {
+    isTimerPaused = false;
+    currentQuestionStartTime = DateTime.now();
   }
 
   void scrollToCurrentIndex() {
@@ -79,6 +118,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   @override
   void onClose() {
     _timer?.cancel();
+    _questionTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _internetSubscription?.cancel();
     super.onClose();
@@ -88,12 +128,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
+      pauseQuestionTimer();
+
       warningCount.value++;
       if (warningCount.value >= 4) goToCompletedScreen();
-    } else if (state == AppLifecycleState.resumed &&
-        warningCount.value > 0 &&
-        warningCount.value < 4) {
-      showBackgroundWarning();
+    } else if (state == AppLifecycleState.resumed) {
+      resumeQuestionTimer();
+
+      if (warningCount.value > 0 && warningCount.value < 4) {
+        showBackgroundWarning();
+      }
     }
   }
 
@@ -104,6 +148,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
     if (screenWidth < 350) {
       isAppInSplitScreen.value = true;
+      pauseQuestionTimer();
+
       AppDialog().show(
         title: "Warning!",
         content: const Text(
@@ -111,12 +157,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         buttonText: "OK",
         onPressed: () {
           Get.back();
+          resumeQuestionTimer();
         },
         restrictBack: true,
         isDismissible: false,
       );
     } else {
       isAppInSplitScreen.value = false;
+      if (isTimerPaused) {
+        resumeQuestionTimer(); // Resume if it was paused due to split screen
+      }
     }
   }
 
@@ -131,6 +181,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         }
       } else {
         timer.cancel();
+        _questionTimer?.cancel(); // Stop question timer when exam time is up
 
         showExamSubumitConfirmationDialog(
             isDismissable: false,
@@ -140,12 +191,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void submitExam() {
-    ExamRepo()
-        .submitExam(
-      questionList.map((e) => QuestionModel.fromJson(e)).toList(),
-      testId,
-    )
-        .then((v) {
+    List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
+
+    ExamRepo().submitExam(questionsWithTime, testId).then((v) {
       switch (v) {
         case AppSuccess(value: bool v):
           AppSnackbarWidget.showSnackBar(
@@ -161,11 +209,27 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  List<QuestionModel> _prepareQuestionsWithTimeData() {
+    List<QuestionModel> questionsWithTime = [];
+
+    for (int i = 0; i < questionList.length; i++) {
+      Map<String, dynamic> questionData =
+          Map<String, dynamic>.from(questionList[i]);
+
+      questionData['timeTaken'] = questionTimeSpent[i] ?? 0;
+
+      QuestionModel question = QuestionModel.fromJson(questionData);
+      questionsWithTime.add(question);
+    }
+
+    return questionsWithTime;
+  }
+
   void goToCompletedScreen() {
+    List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
+
     Get.offAll(() => TestCompletedScreen(
-          list: questionList
-              .map((e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
-              .toList(),
+          list: questionsWithTime,
           testID: testId,
         ));
   }
@@ -183,14 +247,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void previousQuestion() {
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
-      scrollToCurrentIndex();
+      // The _onQuestionChanged method will be automatically called due to the 'ever' listener
     }
   }
 
   void nextQuestion() {
     if (currentQuestionIndex.value < questionList.length - 1) {
       currentQuestionIndex.value++;
-      scrollToCurrentIndex();
     } else {
       showExamSubumitConfirmationDialog();
     }
@@ -198,6 +261,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   void showExamSubumitConfirmationDialog(
       {String? message, bool isDismissable = true}) {
+    pauseQuestionTimer();
+
     AppDialog().show(
       title: "Alert !",
       content: RichText(
@@ -215,7 +280,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
             TextSpan(
               text:
                   '${questionList.where((e) => e['userAnswer'] != null && e['userAnswer'].isNotEmpty).length}/${questionList.length}\n\n',
-              // style: const TextStyle(color: Colors.blue),
             ),
             const TextSpan(
               text: 'Instruction: ',
@@ -238,20 +302,33 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       restrictBack: !isDismissable,
       isDismissible: isDismissable,
     );
+
+    if (isDismissable) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (Get.isDialogOpen != true) {
+          resumeQuestionTimer();
+        }
+      });
+    }
   }
 
   void showTimerWarning({required int minute}) {
+    pauseQuestionTimer();
+
     AppDialog().show(
       title: "Alert !",
       content: Text('$minute Minute Remaining...'),
       buttonText: "OK",
       onPressed: () {
         Get.back();
+        resumeQuestionTimer();
       },
     );
   }
 
   void showBackgroundWarning() {
+    pauseQuestionTimer();
+
     AppDialog().show(
       title: "Warning!",
       content: Text(
@@ -259,6 +336,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       buttonText: "OK",
       onPressed: () {
         Get.back();
+        resumeQuestionTimer();
       },
       restrictBack: true,
       isDismissible: false,
@@ -266,6 +344,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showInternetWarning() {
+    pauseQuestionTimer();
+
     AppDialog().show(
       title: "Warning!",
       content:
@@ -273,6 +353,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       buttonText: "OK",
       onPressed: () {
         Get.back();
+        resumeQuestionTimer();
       },
     );
   }

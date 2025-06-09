@@ -38,7 +38,10 @@ class _TestResultScreenState extends State<TestResultScreen> {
                   widget.model.questionId ?? '', widget.userId);
             },
             backgroundColor: AppColors.cardBackground,
-            child: const Icon(Icons.refresh,color: Colors.white,),
+            child: const Icon(
+              Icons.refresh,
+              color: Colors.white,
+            ),
           ),
           appBar: GradientAppBar(
             title: Text(
@@ -219,10 +222,23 @@ class _TestResultScreenState extends State<TestResultScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  question.question,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    SizedBox(
+                      width: Get.width * 0.55,
+                      child: Text(
+                        question.question,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Text(
+                      "Time: ${question.timeTaken ?? 0} sec",
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Column(

@@ -69,6 +69,7 @@ class FinalResult {
   String correctAnswer;
   String userAnswer;
   String color;
+  int? timeTaken;
 
   FinalResult({
     required this.question,
@@ -76,6 +77,7 @@ class FinalResult {
     required this.correctAnswer,
     required this.userAnswer,
     required this.color,
+    this.timeTaken = 0,
   });
 
   factory FinalResult.fromJson(Map<String, dynamic> json) {
@@ -85,6 +87,7 @@ class FinalResult {
       correctAnswer: json['correctAnswer'] ?? '',
       userAnswer: json['userAnswer'] ?? '',
       color: json['color'] ?? '',
+      timeTaken: json['timeTaken'] ?? 0,
     );
   }
 
@@ -95,11 +98,12 @@ class FinalResult {
       'correctAnswer': correctAnswer,
       'userAnswer': userAnswer,
       'color': color,
+      'timeTaken': timeTaken ?? 0,
     };
   }
 
   @override
   String toString() {
-    return 'FinalResult(question: $question, option: $option, correctAnswer: $correctAnswer, userAnswer: $userAnswer, color: $color)';
+    return 'FinalResult(question: $question, option: $option, correctAnswer: $correctAnswer, userAnswer: $userAnswer, color: $color, timeTaken: $timeTaken)';
   }
 }

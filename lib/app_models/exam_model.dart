@@ -106,6 +106,8 @@ class QuestionModel {
   final String correctAnswer;
   final String? userAnswer;
   final String? color;
+  int timeTaken;
+  bool isMarked;
 
   QuestionModel({
     required this.question,
@@ -113,6 +115,8 @@ class QuestionModel {
     required this.correctAnswer,
     this.userAnswer,
     this.color,
+    this.timeTaken = 0,
+    this.isMarked = false,
   });
 
   /// Convert JSON String to `QuestionModel`
@@ -133,6 +137,8 @@ class QuestionModel {
       correctAnswer: json["correctAnswer"] ?? "",
       userAnswer: json["userAnswer"],
       color: json["color"],
+      timeTaken: json['timeTaken'] ?? 0,
+      isMarked: json['isMarked'] ?? false,
     );
   }
 
@@ -143,6 +149,8 @@ class QuestionModel {
         "correctAnswer": correctAnswer,
         "userAnswer": userAnswer,
         "color": color,
+        'timeTaken': timeTaken,
+        'isMarked': isMarked,
       };
 
   /// Returns an **empty QuestionModel** (Safe Default)
@@ -152,6 +160,8 @@ class QuestionModel {
         correctAnswer: "",
         userAnswer: null,
         color: null,
+        timeTaken: 0,
+        isMarked: false,
       );
 
   /// Checks if the object is empty
@@ -163,6 +173,6 @@ class QuestionModel {
   /// Debugging: Convert `QuestionModel` to String
   @override
   String toString() {
-    return "QuestionModel(question: $question, correctAnswer: $correctAnswer, userAnswer: $userAnswer)";
+    return "QuestionModel(question: $question, correctAnswer: $correctAnswer, userAnswer: $userAnswer, timeTaken: $timeTaken, isMarked: $isMarked)";
   }
 }

@@ -11,7 +11,7 @@ import 'package:crackitx/widgets/app_snackbar_widget.dart';
 class ExamRepo {
   final dioService = AppDioService.instance;
 
-  /// call  login api
+  /// call login api
   Future<AppResult<List<ExamModel>>> getAllExams(
       {required String orgCode, required String batchId}) async {
     try {
@@ -73,11 +73,19 @@ class ExamRepo {
       {int? timestamp}) async {
     try {
       bool isOnline = await _checkInternet();
+
+      List<Map<String, dynamic>> answerPaper = paper.map((question) {
+        Map<String, dynamic> questionData = question.toJson();
+        questionData['timeTaken'] = question.timeTaken;
+        return questionData;
+      }).toList();
+
       Map<String, dynamic> examData = {
-        "answerPaper": paper.map((e) => e.toJson()).toList(),
+        "answerPaper": answerPaper,
         "userId": AppLocalStorage.instance.user.userId,
         "questionId": testID,
       };
+
       if (timestamp != null && timestamp > 0) {
         examData['timestamp'] = timestamp;
       }
@@ -208,5 +216,62 @@ class ExamRepo {
     } catch (e) {
       return AppResult.failure(const AppFailure());
     }
+  }
+
+  int calculateTotalExamTime(List<QuestionModel> questions) {
+    return questions.fold(0, (total, question) => total + question.timeTaken);
+  }
+
+  Map<String, dynamic> getTimeStatistics(List<QuestionModel> questions) {
+    final times =
+        questions.map((q) => q.timeTaken).where((t) => t > 0).toList();
+
+    if (times.isEmpty) {
+      return {
+        'totalTime': 0,
+        'averageTime': 0,
+        'maxTime': 0,
+        'minTime': 0,
+        'questionsAttempted': 0,
+      };
+    }
+
+    times.sort();
+
+    return {
+      'totalTime': times.reduce((a, b) => a + b),
+      'averageTime': times.reduce((a, b) => a + b) / times.length,
+      'maxTime': times.last,
+      'minTime': times.first,
+      'questionsAttempted': times.length,
+    };
+  }
+
+  String formatTime(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
+  List<Map<String, dynamic>> getDetailedTimeAnalysis(
+      List<QuestionModel> questions) {
+    return questions.asMap().entries.map((entry) {
+      final index = entry.key;
+      final question = entry.value;
+
+      return {
+        'questionNumber': index + 1,
+        'question': question.question,
+        'timeTaken': question.timeTaken,
+        'formattedTime': formatTime(question.timeTaken),
+        'answered': (question.userAnswer?.isNotEmpty ?? false),
+        'correct': question.userAnswer == question.correctAnswer,
+        'timeEfficiency': question.timeTaken > 0
+            ? (question.userAnswer == question.correctAnswer
+                ? 'Efficient'
+                : 'Needs Improvement')
+            : 'Not Attempted',
+      };
+    }).toList();
   }
 }
