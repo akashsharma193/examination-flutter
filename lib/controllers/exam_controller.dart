@@ -264,6 +264,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     pauseQuestionTimer();
 
     AppDialog().show(
+      showCancel: true,
       title: "Alert !",
       content: RichText(
         textAlign: TextAlign.center,

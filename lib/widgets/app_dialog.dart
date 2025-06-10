@@ -1,5 +1,6 @@
 // lib/widgets/app_dialog.dart
 import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,32 +17,41 @@ class AppDialog {
       String? buttonText,
       bool showButton = true,
       bool restrictBack = false,
-      bool isDismissible = true}) {
+      bool isDismissible = true, bool showCancel = false}) {
     Get.until((route) => !Get.isDialogOpen!);
 
     Get.dialog(
       PopScope(
         canPop: !restrictBack,
         child: AlertDialog(
-          title: Center(child: Text(title,textAlign: TextAlign.center)),
+          title: Center(child: Text(title, textAlign: TextAlign.center)),
           content: content,
           actions: [
             if (showButton)
-              Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: ElevatedButton(
-                        onPressed: onPressed,
-                        // Disabled if checkbox is unchecked
-                        style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.cardBackground,
-                        foregroundColor: Colors.white),
-                    child: Text(buttonText ?? "Continue"),
-                      )
-                  ),
-                  ),
-                ],
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: onPressed,
+                      // Disabled if checkbox is unchecked
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.cardBackground,
+                          foregroundColor: Colors.white),
+                      child: Text(buttonText ?? "Continue"),
+                    ),
+                    const SizedBox(width: 12),
+                    if(showCancel) TextButton(
+                      onPressed: () => Get.back(),
+                      child: Text(
+                        "Cancel",
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
