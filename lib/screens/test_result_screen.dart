@@ -279,7 +279,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         value: model.correctAnswer.toDouble(),
                         color: Colors.green,
                         title: "${model.correctAnswer}",
-                        radius: 50,
+                        radius: currentFilter == 'correct' ? 60 : 50,
                         titleStyle:
                             const TextStyle(fontSize: 16, color: Colors.white),
                       ),
@@ -287,7 +287,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         value: model.unAttemptedCount.toDouble(),
                         color: Colors.grey,
                         title: "${model.unAttemptedCount}",
-                        radius: 50,
+                        radius: currentFilter == 'unattempted' ? 60 : 50,
                         titleStyle:
                             const TextStyle(fontSize: 16, color: Colors.white),
                       ),
@@ -295,7 +295,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                         value: model.incorrectAnswer.toDouble(),
                         color: Colors.red,
                         title: "${model.incorrectAnswer}",
-                        radius: 50,
+                        radius: currentFilter == 'incorrect' ? 60 : 50,
                         titleStyle:
                             const TextStyle(fontSize: 16, color: Colors.white),
                       ),
