@@ -1,10 +1,8 @@
 import 'package:crackitx/controllers/auth_controller.dart';
-import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/screens/forgot_password.dart';
 import 'package:crackitx/screens/register_screen.dart';
 import 'package:crackitx/widgets/curvy_left_clipper.dart';
-import 'package:crackitx/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -52,29 +50,29 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          body: SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
-            child:Stack(
+            body: SizedBox(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Stack(
             children: [
               // Wavy gradient background
-              Positioned.fill(
+              const Positioned.fill(
                 child: WavyGradientBackground(),
               ),
               SingleChildScrollView(
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16.0, vertical: 32),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 32),
                   child: Column(
                     children: [
                       const SizedBox(height: 32),
                       // Avatar
                       Center(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: Image.asset('assets/app_logo.png',
-                            width: 100, height: 100),)
-                      ),
+                          child: ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: Image.asset('assets/app_logo.png',
+                            width: 100, height: 100),
+                      )),
                       const SizedBox(height: 32),
                       // Login Card
                       Card(
@@ -144,8 +142,8 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                                         },
                                   child: Container(
                                     width: double.infinity,
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 16),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
                                     decoration: BoxDecoration(
                                       gradient: AppTheme.primaryGradient,
                                       borderRadius: BorderRadius.circular(16),
@@ -209,7 +207,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
               ),
             ],
           ),
-      )),
+        )),
       );
     });
   }
@@ -328,6 +326,7 @@ Widget _buildLoginForm(AppAuthController authController, BuildContext context) {
                 width: textFieldWidth,
                 child: AppTextField(
                   controller: authController.emailController,
+                  hintText: 'Email',
                   type: TextFieldType.email,
                   prefixIcon:
                       const Icon(Icons.person_outline, color: Colors.black54),
@@ -355,24 +354,30 @@ Widget _buildLoginForm(AppAuthController authController, BuildContext context) {
                 ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: authController.isLoading.value
+              GestureDetector(
+                onTap: authController.isLoading.value
                     ? null
                     : () {
                         authController.login();
                       },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.button,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: authController.isLoading.value
+                        ? null
+                        : AppTheme.primaryGradient,
+                    color: authController.isLoading.value
+                        ? Colors.grey.shade300
+                        : null, // Disabled state color
                     borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Center(
+                    child: authController.isLoading.value
+                        ? const CircularProgressIndicator.adaptive()
+                        : const Text('Login', style: AppTextStyles.button),
+                  ),
                 ),
-                child: authController.isLoading.value
-                    ? const Center(
-                        child: CircularProgressIndicator.adaptive(),
-                      )
-                    : const Text('Login', style: AppTextStyles.button),
               ),
               const SizedBox(height: 10),
               TextButton(

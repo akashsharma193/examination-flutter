@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
@@ -29,9 +30,10 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
     });
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: kIsWeb ? Colors.white : AppColors.cardBackground,
         appBar: GradientAppBar(
-          title: const Text('Active Exams', style: TextStyle(color: Colors.white)),
+          title:
+              const Text('Active Exams', style: TextStyle(color: Colors.white)),
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         body: examHistoryController.isLoading.value
@@ -116,17 +118,17 @@ class _ActiveExamScreenState extends State<ActiveExamScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(singleItem.subjectName ?? '-',
-                  style: AppTextStyles.subheading
-                      .copyWith(fontWeight: FontWeight.bold)),
+                  style: AppTextStyles.subheading.copyWith(
+                      fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 8),
               Text('by ${singleItem.teacherName ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               Text('Started on: ${singleItem.startTime?.formatTime ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               Text('End: ${singleItem.endTime?.formatTime ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               // Align(
               //   alignment: Alignment.bottomRight,

@@ -163,7 +163,7 @@ class EditUserScreen extends StatelessWidget {
             label,
             style: const TextStyle(
               fontSize: 16,
-              color: AppColors.textPrimary, // Deep Brown
+              color: AppColors.cardBackground, // Deep Brown
             ),
           ),
           const Spacer(),
@@ -173,7 +173,7 @@ class EditUserScreen extends StatelessWidget {
               onChanged: (newValue) {
                 value.value = newValue;
               },
-              activeColor: AppColors.primary, // Brown
+              activeColor: AppColors.cardBackground, // Brown
               activeTrackColor: AppColors.secondary, // Light Beige
             ),
           ),
@@ -189,7 +189,7 @@ class EditUserScreen extends StatelessWidget {
       child: ElevatedButton(
         onPressed: controller.updateUserDetails,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.button, // Warm Tan
+          backgroundColor: AppColors.cardBackground, // Warm Tan
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -199,7 +199,7 @@ class EditUserScreen extends StatelessWidget {
           'Save Changes',
           style: TextStyle(
             fontSize: 16,
-            color: AppColors.textPrimary, // Deep Brown
+            color: Colors.white, // Deep Brown
           ),
         ),
       ),

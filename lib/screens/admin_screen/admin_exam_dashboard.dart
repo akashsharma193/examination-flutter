@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
@@ -23,7 +24,7 @@ class AdminExamDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: kIsWeb ? Colors.white : AppColors.cardBackground,
       appBar: isEdit
           ? GradientAppBar(
               title: const Text(
@@ -213,7 +214,7 @@ class ExamFormState extends State<ExamForm> {
                         ElevatedButton(
                           onPressed: _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.button,
+                            backgroundColor: AppColors.cardBackground,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 40, vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -221,8 +222,9 @@ class ExamFormState extends State<ExamForm> {
                           ),
                           child: isExamSubmitting
                               ? const CircularProgressIndicator.adaptive()
-                              : const Text("Submit Exam",
-                                  style: AppTextStyles.button),
+                              : Text("Submit Exam",
+                                  style: AppTextStyles.button
+                                      .copyWith(color: Colors.white)),
                         ),
                         InkWell(
                           onTap: () => downloadSampleExcelFromAssets(

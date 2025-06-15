@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/controllers/exam_history_controller.dart';
@@ -69,7 +70,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: kIsWeb ? Colors.white : AppColors.cardBackground,
       body: Row(
         children: [
           _buildSidebar(),
@@ -89,8 +90,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget _buildSidebar() {
     return Container(
       width: 250,
-      color: AppColors.appBar,
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/splash_bg.png'), fit: BoxFit.cover)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -216,8 +219,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Widget _buildAppBar() {
-    return GradientAppBar(
-      title: const Text(
+    return const GradientAppBar(
+      title: Text(
         "Admin Panel",
         style: TextStyle(
           color: Colors.white,
@@ -225,7 +228,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           fontWeight: FontWeight.bold,
         ),
       ),
-      iconTheme: const IconThemeData(color: Colors.white),
+      iconTheme: IconThemeData(color: Colors.white),
     );
   }
 
@@ -258,7 +261,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         children: [
           const Text("Overview",
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: AppColors.cardBackground,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               )),
@@ -308,7 +311,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.dialogBackground,
+          color: AppColors.cardBackground,
           borderRadius: BorderRadius.circular(10),
           boxShadow: const [
             BoxShadow(color: Colors.black12, blurRadius: 6, spreadRadius: 2),
@@ -317,20 +320,20 @@ class _AdminDashboardState extends State<AdminDashboard> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: AppColors.textPrimary),
+            Icon(icon, size: 40, color: Colors.white),
             const SizedBox(height: 10),
             Text(title,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                 )),
             const SizedBox(height: 5),
             Text(count,
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
+                  color: Colors.white,
                 )),
           ],
         ),

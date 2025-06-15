@@ -170,7 +170,7 @@ class _UserListScreenState extends State<UserListScreen> {
                         Text(
                           user.name,
                           style: const TextStyle(
-                            color: AppColors.textPrimary,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -180,12 +180,12 @@ class _UserListScreenState extends State<UserListScreen> {
                     const SizedBox(height: 10),
                     Text(
                       'Email: ${user.email}',
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: const TextStyle(color: Colors.white),
                     ),
                     if (user.batch.isNotEmpty)
                       Text(
                         'Batch: ${user.batch}',
-                        style: const TextStyle(color: AppColors.textPrimary),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     // const Spacer(),
                     const SizedBox(
@@ -198,8 +198,7 @@ class _UserListScreenState extends State<UserListScreen> {
                             Get.toNamed(AppRoutesNames.editUserScreen,
                                 arguments: {"user": user});
                           },
-                          icon: const Icon(Icons.edit,
-                              color: AppColors.textPrimary)),
+                          icon: const Icon(Icons.edit, color: Colors.white)),
                     ),
                   ],
                 ),

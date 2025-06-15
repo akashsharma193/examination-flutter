@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
@@ -34,15 +35,15 @@ class _PastExamScreenState extends State<PastExamScreen> {
     });
     return GetBuilder<ExamHistoryController>(builder: (examHistoryController) {
       return Scaffold(
-        backgroundColor: AppColors.cardBackground,
+        backgroundColor: kIsWeb ? Colors.white : AppColors.cardBackground,
         appBar: widget.userId.isEmpty
             ? null
-            : GradientAppBar(
-                title: const Text(
+            : const GradientAppBar(
+                title: Text(
                   'Past Exams',
                   style: TextStyle(color: Colors.white),
                 ),
-                iconTheme: const IconThemeData(color: Colors.white),
+                iconTheme: IconThemeData(color: Colors.white),
               ),
         body: examHistoryController.isLoading.value
             ? const Center(child: CircularProgressIndicator.adaptive())
@@ -129,17 +130,17 @@ class _PastExamScreenState extends State<PastExamScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(singleItem.subjectName ?? '-',
-                  style: AppTextStyles.subheading
-                      .copyWith(fontWeight: FontWeight.bold)),
+                  style: AppTextStyles.subheading.copyWith(
+                      fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 8),
               Text('by ${singleItem.teacherName ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               Text('Started on: ${singleItem.startTime?.formatTime ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               Text('End: ${singleItem.endTime?.formatTime ?? '-'}',
-                  style: AppTextStyles.body),
+                  style: AppTextStyles.body.copyWith(color: Colors.white)),
               const SizedBox(height: 8),
               Text(
                   widget.userId.isEmpty

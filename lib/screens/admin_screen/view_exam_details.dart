@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
@@ -52,7 +53,7 @@ class _ViewExamDetailsState extends State<ViewExamDetails> {
               : Column(
                   children: _children,
                 )),
-      backgroundColor: AppColors.cardBackground,
+      backgroundColor: kIsWeb ? Colors.white : AppColors.cardBackground,
     );
   }
 }
