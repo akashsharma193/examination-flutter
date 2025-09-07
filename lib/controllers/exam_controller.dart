@@ -10,6 +10,7 @@ import 'package:crackitx/widgets/app_dialog.dart';
 import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 class ExamController extends GetxController with WidgetsBindingObserver {
@@ -34,6 +35,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   Timer? _timer;
   Timer? _questionTimer;
   Timer? _internetCheckTimer;
+  Timer? _lifecycleCheckTimer;
   StreamSubscription<bool>? _internetSubscription;
   late HomeController homeController;
 
@@ -43,6 +45,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   bool isExamActive = true;
   AppLifecycleState? _lastKnownState;
   bool _dialogShown = false;
+  DateTime? _lastResumeTime;
+  DateTime? _lastPauseTime;
+  bool _appIsInBackground = false;
+  Timer? _backgroundCheckTimer;
 
   @override
   void onInit() {
@@ -60,16 +66,111 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     remainingSeconds.value = (int.tryParse(examDurationMinutes) ?? 0) * 60;
     startTimer();
     startQuestionTimeTracking();
-    _initializeInternetMonitoring();
+    _initializeMonitoring();
 
     ever(currentQuestionIndex, (int newIndex) {
       _onQuestionChanged(newIndex);
     });
   }
 
+  void _initializeMonitoring() {
+    _initializeInternetMonitoring();
+    _initializeLifecycleMonitoring();
+  }
+
+  void _initializeLifecycleMonitoring() {
+    _lifecycleCheckTimer =
+        Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      _checkAppState();
+    });
+
+    if (Platform.isAndroid) {
+      SystemChannels.lifecycle.setMessageHandler((message) async {
+        debugPrint('Lifecycle message: $message');
+        if (message == 'AppLifecycleState.paused' ||
+            message == 'AppLifecycleState.detached' ||
+            message == 'AppLifecycleState.hidden') {
+          _handleAppBackgroundDirect();
+        } else if (message == 'AppLifecycleState.resumed') {
+          _handleAppForegroundDirect();
+        }
+        return null;
+      });
+    }
+  }
+
+  void _checkAppState() {
+    if (!isExamActive) return;
+
+    final currentTime = DateTime.now();
+
+    if (_lastResumeTime != null &&
+        currentTime.difference(_lastResumeTime!).inSeconds > 2 &&
+        !_appIsInBackground) {
+      _appIsInBackground = true;
+      _lastPauseTime = currentTime;
+      _handleAppBackgroundDirect();
+    }
+  }
+
+  void _handleAppBackgroundDirect() {
+    if (_dialogShown || !isExamActive || _appIsInBackground) return;
+
+    _appIsInBackground = true;
+    pauseQuestionTimer();
+    warningCount.value++;
+
+    debugPrint(
+        'App backgrounded directly. Warning count: ${warningCount.value}');
+
+    if (warningCount.value >= 3) {
+      isExamActive = false;
+      Future.delayed(const Duration(milliseconds: 100), () {
+        goToCompletedScreen();
+      });
+      return;
+    }
+
+    _backgroundCheckTimer = Timer(const Duration(seconds: 2), () {
+      if (_appIsInBackground && isExamActive) {
+        _triggerBackgroundWarning();
+      }
+    });
+  }
+
+  void _handleAppForegroundDirect() {
+    if (!isExamActive) return;
+
+    _lastResumeTime = DateTime.now();
+    _backgroundCheckTimer?.cancel();
+
+    if (_appIsInBackground) {
+      _appIsInBackground = false;
+      resumeQuestionTimer();
+
+      if (warningCount.value > 0 && warningCount.value < 3 && !_dialogShown) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (!_dialogShown && isExamActive) {
+            _triggerBackgroundWarning();
+          }
+        });
+      }
+    }
+  }
+
+  void _triggerBackgroundWarning() {
+    if (_dialogShown || !isExamActive) return;
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!_dialogShown && isExamActive) {
+        showBackgroundWarning();
+      }
+    });
+  }
+
   void _initializeInternetMonitoring() {
     if (Platform.isAndroid) {
-      _internetCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _internetCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         _checkInternetConnection();
       });
     } else {
@@ -152,8 +253,11 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _timer?.cancel();
     _questionTimer?.cancel();
     _internetCheckTimer?.cancel();
+    _lifecycleCheckTimer?.cancel();
+    _backgroundCheckTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _internetSubscription?.cancel();
+    SystemChannels.lifecycle.setMessageHandler(null);
     super.onClose();
   }
 
@@ -170,48 +274,20 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
-        _handleAppBackground();
+        _handleAppBackgroundDirect();
         break;
       case AppLifecycleState.resumed:
-        _handleAppForeground();
+        _handleAppForegroundDirect();
         break;
       case AppLifecycleState.inactive:
         if (Platform.isAndroid) {
-          Future.delayed(const Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 800), () {
             if (_lastKnownState == AppLifecycleState.inactive && isExamActive) {
-              _handleAppBackground();
+              _handleAppBackgroundDirect();
             }
           });
         }
         break;
-    }
-  }
-
-  void _handleAppBackground() {
-    if (_dialogShown) return;
-
-    pauseQuestionTimer();
-    warningCount.value++;
-
-    debugPrint('App backgrounded. Warning count: ${warningCount.value}');
-
-    if (warningCount.value >= 4) {
-      isExamActive = false;
-      goToCompletedScreen();
-    }
-  }
-
-  void _handleAppForeground() {
-    if (!isExamActive) return;
-
-    resumeQuestionTimer();
-
-    if (warningCount.value > 0 && warningCount.value < 4 && !_dialogShown) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (!_dialogShown && isExamActive) {
-          showBackgroundWarning();
-        }
-      });
     }
   }
 
@@ -271,7 +347,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
         showExamSubumitConfirmationDialog(
             isDismissable: false,
-            message: 'Time Up,\n click OK to continue Submitting...\n');
+            message: 'Time Up,\n click OK to continue...\n');
       }
     });
   }
@@ -281,11 +357,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
     isExamActive = false;
     List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
-
-    if (homeController.configuration.isInternetDisabled) {
-      goToCompletedScreen();
-      return;
-    }
 
     ExamRepo().submitExam(questionsWithTime, testId).then((v) {
       switch (v) {
@@ -299,6 +370,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
               isSuccess: false, subTitle: v.errorMessage);
+          goToCompletedScreen();
       }
     });
   }
@@ -320,6 +392,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void goToCompletedScreen() {
+    if (!isExamActive) return;
     isExamActive = false;
     List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
 
@@ -398,11 +471,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       onPressed: () {
         Get.back();
         _dialogShown = false;
-        if (homeController.configuration.isInternetDisabled || !isDismissable) {
-          goToCompletedScreen();
-        } else {
-          submitExam();
-        }
+        goToCompletedScreen();
       },
       showButton: true,
       restrictBack: !isDismissable,
