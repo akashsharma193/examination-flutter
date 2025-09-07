@@ -35,7 +35,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   Timer? _timer;
   Timer? _questionTimer;
   Timer? _internetCheckTimer;
-  Timer? _lifecycleCheckTimer;
+  Timer? _focusCheckTimer;
+  Timer? _activityTimer;
   StreamSubscription<bool>? _internetSubscription;
   late HomeController homeController;
 
@@ -45,10 +46,12 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   bool isExamActive = true;
   AppLifecycleState? _lastKnownState;
   bool _dialogShown = false;
-  DateTime? _lastResumeTime;
-  DateTime? _lastPauseTime;
-  bool _appIsInBackground = false;
-  Timer? _backgroundCheckTimer;
+
+  bool _isAppVisible = true;
+  DateTime? _lastActivityTime;
+  DateTime? _lastVisibilityChange;
+  int _backgroundDetectionCount = 0;
+  bool _hasShownWarningForCurrentBackground = false;
 
   @override
   void onInit() {
@@ -75,97 +78,114 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   void _initializeMonitoring() {
     _initializeInternetMonitoring();
-    _initializeLifecycleMonitoring();
+    _initializeFocusMonitoring();
+    _lastActivityTime = DateTime.now();
+    _lastVisibilityChange = DateTime.now();
   }
 
-  void _initializeLifecycleMonitoring() {
-    _lifecycleCheckTimer =
-        Timer.periodic(const Duration(milliseconds: 500), (timer) {
-      _checkAppState();
+  void _initializeFocusMonitoring() {
+    _focusCheckTimer =
+        Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      _checkAppFocus();
+    });
+
+    _activityTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      _trackUserActivity();
     });
 
     if (Platform.isAndroid) {
       SystemChannels.lifecycle.setMessageHandler((message) async {
-        debugPrint('Lifecycle message: $message');
-        if (message == 'AppLifecycleState.paused' ||
-            message == 'AppLifecycleState.detached' ||
-            message == 'AppLifecycleState.hidden') {
-          _handleAppBackgroundDirect();
-        } else if (message == 'AppLifecycleState.resumed') {
-          _handleAppForegroundDirect();
-        }
+        debugPrint('Lifecycle channel message: $message');
+        _handleLifecycleMessage(message);
         return null;
       });
     }
   }
 
-  void _checkAppState() {
+  void _handleLifecycleMessage(String? message) {
     if (!isExamActive) return;
 
-    final currentTime = DateTime.now();
-
-    if (_lastResumeTime != null &&
-        currentTime.difference(_lastResumeTime!).inSeconds > 2 &&
-        !_appIsInBackground) {
-      _appIsInBackground = true;
-      _lastPauseTime = currentTime;
-      _handleAppBackgroundDirect();
+    switch (message) {
+      case 'AppLifecycleState.paused':
+      case 'AppLifecycleState.detached':
+      case 'AppLifecycleState.hidden':
+      case 'AppLifecycleState.inactive':
+        _handleAppLostFocus();
+        break;
+      case 'AppLifecycleState.resumed':
+        _handleAppGainedFocus();
+        break;
     }
   }
 
-  void _handleAppBackgroundDirect() {
-    if (_dialogShown || !isExamActive || _appIsInBackground) return;
-
-    _appIsInBackground = true;
-    pauseQuestionTimer();
-    warningCount.value++;
-
-    debugPrint(
-        'App backgrounded directly. Warning count: ${warningCount.value}');
-
-    if (warningCount.value >= 3) {
-      isExamActive = false;
-      Future.delayed(const Duration(milliseconds: 100), () {
-        goToCompletedScreen();
-      });
-      return;
-    }
-
-    _backgroundCheckTimer = Timer(const Duration(seconds: 2), () {
-      if (_appIsInBackground && isExamActive) {
-        _triggerBackgroundWarning();
-      }
-    });
-  }
-
-  void _handleAppForegroundDirect() {
+  void _checkAppFocus() {
     if (!isExamActive) return;
 
-    _lastResumeTime = DateTime.now();
-    _backgroundCheckTimer?.cancel();
+    final now = DateTime.now();
 
-    if (_appIsInBackground) {
-      _appIsInBackground = false;
-      resumeQuestionTimer();
+    if (_lastActivityTime != null &&
+        now.difference(_lastActivityTime!).inMilliseconds > 1000 &&
+        _isAppVisible) {
+      _isAppVisible = false;
+      _lastVisibilityChange = now;
+      _handleAppLostFocus();
+    }
+  }
 
-      if (warningCount.value > 0 && warningCount.value < 3 && !_dialogShown) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (!_dialogShown && isExamActive) {
-            _triggerBackgroundWarning();
-          }
+  void _trackUserActivity() {
+    if (!isExamActive) return;
+
+    final now = DateTime.now();
+
+    if (!_isAppVisible &&
+        _lastVisibilityChange != null &&
+        now.difference(_lastVisibilityChange!).inMilliseconds > 300) {
+      _lastActivityTime = now;
+      _isAppVisible = true;
+      _handleAppGainedFocus();
+    }
+  }
+
+  void _handleAppLostFocus() {
+    if (!isExamActive || _dialogShown) return;
+
+    debugPrint('App lost focus detected');
+    _backgroundDetectionCount++;
+
+    if (!_hasShownWarningForCurrentBackground) {
+      _hasShownWarningForCurrentBackground = true;
+      pauseQuestionTimer();
+      warningCount.value++;
+
+      debugPrint('Tab switch detected. Warning count: ${warningCount.value}');
+
+      if (warningCount.value >= 3) {
+        isExamActive = false;
+        Future.delayed(const Duration(milliseconds: 200), () {
+          goToCompletedScreen();
         });
+        return;
       }
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (!_dialogShown &&
+            isExamActive &&
+            _hasShownWarningForCurrentBackground) {
+          showBackgroundWarning();
+        }
+      });
     }
   }
 
-  void _triggerBackgroundWarning() {
-    if (_dialogShown || !isExamActive) return;
+  void _handleAppGainedFocus() {
+    if (!isExamActive) return;
 
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (!_dialogShown && isExamActive) {
-        showBackgroundWarning();
-      }
-    });
+    debugPrint('App gained focus');
+    _hasShownWarningForCurrentBackground = false;
+
+    if (isTimerPaused && !_dialogShown) {
+      resumeQuestionTimer();
+    }
   }
 
   void _initializeInternetMonitoring() {
@@ -209,12 +229,15 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         int currentIndex = currentQuestionIndex.value;
         questionTimeSpent[currentIndex] =
             (questionTimeSpent[currentIndex] ?? 0) + 1;
+
+        _lastActivityTime = DateTime.now();
       }
     });
   }
 
   void _onQuestionChanged(int newIndex) {
     scrollToCurrentIndex();
+    _lastActivityTime = DateTime.now();
   }
 
   void pauseQuestionTimer() {
@@ -224,6 +247,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void resumeQuestionTimer() {
     isTimerPaused = false;
     currentQuestionStartTime = DateTime.now();
+    _lastActivityTime = DateTime.now();
   }
 
   void scrollToCurrentIndex() {
@@ -253,8 +277,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _timer?.cancel();
     _questionTimer?.cancel();
     _internetCheckTimer?.cancel();
-    _lifecycleCheckTimer?.cancel();
-    _backgroundCheckTimer?.cancel();
+    _focusCheckTimer?.cancel();
+    _activityTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _internetSubscription?.cancel();
     SystemChannels.lifecycle.setMessageHandler(null);
@@ -274,16 +298,16 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
-        _handleAppBackgroundDirect();
+        _handleAppLostFocus();
         break;
       case AppLifecycleState.resumed:
-        _handleAppForegroundDirect();
+        _handleAppGainedFocus();
         break;
       case AppLifecycleState.inactive:
         if (Platform.isAndroid) {
-          Future.delayed(const Duration(milliseconds: 800), () {
+          Future.delayed(const Duration(milliseconds: 300), () {
             if (_lastKnownState == AppLifecycleState.inactive && isExamActive) {
-              _handleAppBackgroundDirect();
+              _handleAppLostFocus();
             }
           });
         }
@@ -406,12 +430,14 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     if (!isExamActive) return;
     questionList[currentQuestionIndex.value]["userAnswer"] = answer;
     questionList.refresh();
+    _lastActivityTime = DateTime.now();
   }
 
   void clearAnswer() {
     if (!isExamActive) return;
     questionList[currentQuestionIndex.value]["userAnswer"] = '';
     questionList.refresh();
+    _lastActivityTime = DateTime.now();
   }
 
   void previousQuestion() {
@@ -419,6 +445,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
     }
+    _lastActivityTime = DateTime.now();
   }
 
   void nextQuestion() {
@@ -428,6 +455,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     } else {
       showExamSubumitConfirmationDialog();
     }
+    _lastActivityTime = DateTime.now();
   }
 
   void showExamSubumitConfirmationDialog(
