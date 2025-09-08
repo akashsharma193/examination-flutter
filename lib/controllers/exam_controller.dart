@@ -160,10 +160,22 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       debugPrint('Tab switch detected. Warning count: ${warningCount.value}');
 
       if (warningCount.value >= 3) {
+        _dialogShown = true;
         isExamActive = false;
-        Future.delayed(const Duration(milliseconds: 200), () {
-          goToCompletedScreen();
-        });
+
+        AppDialog().show(
+          title: "Warning!",
+          content: Text(
+              "You have exceeded the maximum number of app switches.\nYour exam will now be submitted automatically."),
+          buttonText: "OK",
+          onPressed: () {
+            Get.back();
+            _dialogShown = false;
+            goToCompletedScreen();
+          },
+          restrictBack: true,
+          isDismissible: false,
+        );
         return;
       }
 
@@ -416,7 +428,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void goToCompletedScreen() {
-    if (!isExamActive) return;
     isExamActive = false;
     List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
 
