@@ -120,7 +120,7 @@ class ExamFormState extends State<ExamForm> {
               isSuccess: true, subTitle: "Exam created successfully");
           final controller = getController<ExamHistoryController>(
               () => ExamHistoryController());
-          controller.getHistory(null);
+          // controller.getHistory();
           Get.until((e) => Get.currentRoute == '/home');
           break;
         case AppFailure():

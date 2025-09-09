@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/app_user_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/theme/app_theme.dart';
@@ -17,35 +18,117 @@ import 'package:get/get.dart';
 
 class HomeController extends GetxController {
   RxBool isLoading = false.obs;
+  RxBool isLoadingMore = false.obs;
   RxBool isCompliencesLoading = false.obs;
   RxBool isConfigurationLoading = false.obs;
+  RxBool isUserProfileLoading = false.obs;
   RxBool isChecked = false.obs;
 
   RxList<ExamModel> allExams = <ExamModel>[].obs;
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
   ConfigurationModel configuration = ConfigurationModel.toEmpty();
   ExamModel selectedExam = ExamModel.toEmpty();
+  Rx<UserModel> userProfile = UserModel.toEmpty().obs;
 
-  // Stores remaining time for each exam (key: examId, value: remaining time)
   RxMap<String, String> examTimers = <String, String>{}.obs;
 
+  int currentPage = 0;
+  int pageSize = 10;
+  bool hasNextPage = false;
+  bool hasPreviousPage = false;
+  int totalElements = 0;
+  int totalPages = 0;
+
   final ExamRepo examRepo = ExamRepo();
+  final AuthRepo authRepo = AuthRepo();
+  final ScrollController scrollController = ScrollController();
+
+  bool isRequestInProgress = false;
 
   @override
   void onInit() {
     super.onInit();
+    scrollController.addListener(_scrollListener);
     refreshPage();
+
+    ever(isLoadingMore, (bool loading) {
+      print("isLoadingMore changed to: $loading");
+    });
+
+    ever(allExams, (List<ExamModel> exams) {
+      print("allExams length changed to: ${exams.length}");
+    });
+  }
+
+  void _scrollListener() {
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent * 0.8) {
+      if (!isLoadingMore.value && hasNextPage && !isRequestInProgress) {
+        loadMoreExams();
+      }
+    }
   }
 
   void refreshPage() {
+    currentPage = 0;
+    hasNextPage = false;
+    isRequestInProgress = false;
     getAndSubmitOfflinePendingExams();
     isLoading(false);
     isCompliencesLoading(false);
+    isUserProfileLoading(false);
     isChecked(false);
     allExams.clear();
     compliences.clear();
-    Future.delayed(Durations.medium3, getExams);
+    userProfile.value = UserModel.toEmpty();
+    Future.delayed(Durations.medium3, () {
+      getExams();
+      getUserProfile();
+    });
     update();
+  }
+
+  void loadMoreExams() async {
+    if (isLoadingMore.value || !hasNextPage || isRequestInProgress) return;
+
+    try {
+      isRequestInProgress = true;
+      isLoadingMore.value = true;
+      currentPage++;
+
+      final resp = await examRepo.getAllExams(
+          orgCode: AppLocalStorage.instance.user.orgCode,
+          batchId: AppLocalStorage.instance.user.batch,
+          pageNumber: currentPage,
+          pageSize: pageSize);
+
+      switch (resp) {
+        case AppSuccess():
+          final data = resp.value;
+          List<ExamModel> newExams = data['content'] ?? [];
+
+          if (newExams.isNotEmpty) {
+            allExams.addAll(newExams);
+          }
+
+          hasNextPage = data['hasNext'] ?? false;
+          hasPreviousPage = data['hasPrevious'] ?? false;
+          totalElements = data['totalElements'] ?? 0;
+          totalPages = data['totalPages'] ?? 0;
+
+          _initializeTimers();
+          break;
+        case AppFailure():
+          currentPage--;
+          Fluttertoast.showToast(
+              msg: 'Failed to load more exams: ${resp.errorMessage}');
+          break;
+      }
+    } finally {
+      isLoadingMore.value = false;
+      isRequestInProgress = false;
+      update();
+    }
   }
 
   getAndSubmitOfflinePendingExams() async {
@@ -68,23 +151,57 @@ class HomeController extends GetxController {
     }
   }
 
-  void getExams() async {
+  void getUserProfile() async {
     try {
-      isLoading.value = true;
+      isUserProfileLoading.value = true;
       update();
-      final resp = await examRepo.getAllExams(
-          orgCode: AppLocalStorage.instance.user.orgCode,
-          batchId: AppLocalStorage.instance.user.batch);
+      final resp = await authRepo.getUserProfile();
 
       switch (resp) {
         case AppSuccess():
-          if (resp.value.isEmpty) {
-            return;
-          }
-          allExams.value = resp.value;
+          userProfile.value = resp.value;
+          break;
+        case AppFailure():
+          Fluttertoast.showToast(
+              msg: 'Failed to fetch user profile: ${resp.errorMessage}');
+          userProfile.value = UserModel.toEmpty();
+          break;
+      }
+    } finally {
+      isUserProfileLoading.value = false;
+      update();
+    }
+  }
+
+  void getExams() async {
+    try {
+      isLoading.value = true;
+      isRequestInProgress = true;
+      update();
+      print(
+          "Getting initial exams - currentPage: $currentPage, pageSize: $pageSize");
+
+      final resp = await examRepo.getAllExams(
+          orgCode: AppLocalStorage.instance.user.orgCode,
+          batchId: AppLocalStorage.instance.user.batch,
+          pageNumber: currentPage,
+          pageSize: pageSize);
+
+      switch (resp) {
+        case AppSuccess():
+          final data = resp.value;
+          List<ExamModel> exams = data['content'] ?? [];
+          allExams.value = exams;
+
+          hasNextPage = data['hasNext'] ?? false;
+          hasPreviousPage = data['hasPrevious'] ?? false;
+          totalElements = data['totalElements'] ?? 0;
+          totalPages = data['totalPages'] ?? 0;
+
           _initializeTimers();
           break;
         case AppFailure():
+          print("Failed to fetch exams: ${resp.errorMessage}");
           Fluttertoast.showToast(
               msg: 'Failed to fetch exam : ${resp.errorMessage}');
           allExams.value = [];
@@ -92,6 +209,7 @@ class HomeController extends GetxController {
       }
     } finally {
       isLoading.value = false;
+      isRequestInProgress = false;
       update();
     }
   }
@@ -114,11 +232,10 @@ class HomeController extends GetxController {
         final hours = remaining.inHours;
         final minutes = remaining.inMinutes % 60;
         final seconds = remaining.inSeconds % 60;
-        examTimers[examId] =
-            "$hours h : $minutes m : $seconds s"; // Format as HH:MM:SS
+        examTimers[examId] = "$hours h : $minutes m : $seconds s";
       }
 
-      examTimers.refresh(); // Update the UI
+      examTimers.refresh();
     });
   }
 
@@ -194,7 +311,7 @@ class HomeController extends GetxController {
   void showConfigBasedAcknowledgementDialog() async {
     await getCompliances();
 
-    isChecked.value = false; // Reset checkbox state
+    isChecked.value = false;
 
     Get.dialog(
       Dialog(
@@ -209,7 +326,6 @@ class HomeController extends GetxController {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
                     Text(
                       "Test Acknowledgement",
                       style: AppTheme.headingMedium.copyWith(
@@ -218,8 +334,6 @@ class HomeController extends GetxController {
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Loading state for configuration
                     Obx(() {
                       if (isConfigurationLoading.value) {
                         return const Center(
@@ -233,7 +347,6 @@ class HomeController extends GetxController {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Internet requirement notice
                           if (configuration.isInternetDisabled == true)
                             Container(
                               padding: const EdgeInsets.all(12),
@@ -261,8 +374,6 @@ class HomeController extends GetxController {
                                 ],
                               ),
                             ),
-
-                          // Compliance instructions
                           if (compliences.isNotEmpty) ...[
                             Text(
                               "Instructions:",
@@ -276,8 +387,6 @@ class HomeController extends GetxController {
                                 compliance['compliance'] as String? ?? '')),
                             const SizedBox(height: 16),
                           ],
-
-                          // Acknowledgement checkbox
                           CheckboxListTile(
                             title: Text(
                               "I acknowledge the instructions and requirements.",
@@ -292,10 +401,7 @@ class HomeController extends GetxController {
                             controlAffinity: ListTileControlAffinity.leading,
                             contentPadding: EdgeInsets.zero,
                           ),
-
                           const SizedBox(height: 20),
-
-                          // Action buttons
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
@@ -340,12 +446,10 @@ class HomeController extends GetxController {
   }
 
   void _handleExamStart() async {
-    // Check internet connectivity requirement
     bool isInternetConnected =
         await InternetServiceChecker().isInternetConnected;
 
     if (configuration.isInternetDisabled == true) {
-      // Internet should be disabled for this exam
       if (isInternetConnected) {
         AppSnackbarWidget.showSnackBar(
           isSuccess: false,
@@ -354,12 +458,9 @@ class HomeController extends GetxController {
         );
         return;
       }
-    } else {
-      // Internet is allowed for this exam - no restriction
-      // User can proceed regardless of internet status
     }
 
-    Get.back(); // Close the dialog
+    Get.back();
     Get.toNamed('/exam-screen', arguments: {
       "questions": selectedExam.questionList ?? [],
       "testId": selectedExam.questionId ?? '',
@@ -385,5 +486,16 @@ class HomeController extends GetxController {
         ],
       ),
     );
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_scrollListener);
+    scrollController.dispose();
+    for (String examId in examTimers.keys) {
+      Timer? timer = Timer(Duration.zero, () {});
+      timer?.cancel();
+    }
+    super.onClose();
   }
 }

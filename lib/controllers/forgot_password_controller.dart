@@ -28,9 +28,29 @@ class ForgotPasswordController extends GetxController {
     );
   }
 
+  bool _validateEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  bool _validatePassword(String password) {
+    return password.length >= 6;
+  }
+
   Future<void> sendTempPassword() async {
+    final email = emailController.text.trim();
+
+    if (email.isEmpty) {
+      _showSnackbar("Please enter your email address", error: true);
+      return;
+    }
+
+    if (!_validateEmail(email)) {
+      _showSnackbar("Please enter a valid email address", error: true);
+      return;
+    }
+
     isLoading.value = true;
-    final response = await _repo.sendTempPassword(emailController.text.trim());
+    final response = await _repo.sendTempPassword(email);
     isLoading.value = false;
 
     switch (response) {
@@ -44,11 +64,36 @@ class ForgotPasswordController extends GetxController {
   }
 
   Future<void> resetPassword() async {
+    final email = emailController.text.trim();
+    final tempPassword = tempPasswordController.text.trim();
+    final newPassword = newPasswordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (email.isEmpty ||
+        tempPassword.isEmpty ||
+        newPassword.isEmpty ||
+        confirmPassword.isEmpty) {
+      _showSnackbar("Please fill in all fields", error: true);
+      return;
+    }
+
+    if (!_validatePassword(newPassword)) {
+      _showSnackbar("New password must be at least 6 characters long",
+          error: true);
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      _showSnackbar("New password and confirm password do not match",
+          error: true);
+      return;
+    }
+
     isResetLoading.value = true;
     final response = await _repo.resetPassword(
-      email: emailController.text.trim(),
-      tempPassword: tempPasswordController.text.trim(),
-      newPassword: newPasswordController.text.trim(),
+      email: email,
+      tempPassword: tempPassword,
+      newPassword: newPassword,
     );
     isResetLoading.value = false;
 
@@ -59,7 +104,8 @@ class ForgotPasswordController extends GetxController {
         emailController.clear();
         tempPasswordController.clear();
         newPasswordController.clear();
-        Get.toNamed('/login');
+        confirmPasswordController.clear();
+        Get.offAllNamed('/login');
       case AppFailure():
         _showSnackbar(response.errorMessage ?? "Failed to reset password.",
             error: true);

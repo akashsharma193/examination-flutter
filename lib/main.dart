@@ -16,8 +16,8 @@ void main() async {
 
   await AppFirebaseService.instance.initialize();
   await AppNotificationService.instance.initialize();
-  await AppDioService.instance
-      .initDioService(baseUrl: 'https://online-examination-xlcp.onrender.com/');
+  await AppDioService.instance.initDioService(
+      baseUrl: 'https://online-examination-secured.onrender.com/');
   runApp(const MyApp());
 }
 

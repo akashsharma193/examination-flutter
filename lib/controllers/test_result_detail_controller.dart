@@ -8,24 +8,34 @@ class TestResultDetailController extends GetxController {
   bool isLoading = false;
   TestResultDetailModel testResultDetailModel = TestResultDetailModel.toEmpty();
   ExamRepo repo = ExamRepo();
+
   void fetchData(String qId, String userId) async {
-    repo.getTestResultDetails(userId: userId, qID: qId).then((v) {
-      switch (v) {
+    isLoading = true;
+    update();
+
+    try {
+      final result = await repo.getTestResultDetails(userId: userId, qID: qId);
+
+      switch (result) {
         case AppSuccess():
-          testResultDetailModel = v.value;
-          update();
+          testResultDetailModel = result.value;
           break;
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
             isSuccess: false,
-            subTitle: v.errorMessage,
+            subTitle: result.errorMessage ?? 'Failed to fetch test results',
           );
-          update();
           break;
       }
-    });
-
-    update();
+    } catch (e) {
+      AppSnackbarWidget.showSnackBar(
+        isSuccess: false,
+        subTitle: 'An error occurred while fetching test results',
+      );
+    } finally {
+      isLoading = false;
+      update();
+    }
   }
 
   void refreshData(String qId, String userId) {

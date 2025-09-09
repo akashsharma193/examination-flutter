@@ -35,10 +35,16 @@ class StudentHomePage extends StatelessWidget {
     return GetBuilder<HomeController>(builder: (controller) {
       return Scaffold(
         drawer: const AppDrawer(),
-        floatingActionButton: FloatingActionButton.small(
-          backgroundColor: AppTheme.gradientStart,
-          onPressed: controller.refreshPage,
-          child: const Icon(Icons.refresh, color: Colors.white),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.small(
+              backgroundColor: AppTheme.gradientStart,
+              heroTag: "refresh",
+              onPressed: controller.refreshPage,
+              child: const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ],
         ),
         appBar: GradientAppBar(
           title: Text(
@@ -59,12 +65,28 @@ class StudentHomePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppTheme.spacingL),
-              Text(
-                'Hello, ${AppLocalStorage.instance.user.name}',
-                style: AppTheme.headingLarge.copyWith(
-                  color: Colors.black,
-                ),
-              ),
+              Obx(() {
+                if (controller.isUserProfileLoading.value) {
+                  return Text(
+                    'Loading...',
+                    style: AppTheme.headingLarge.copyWith(
+                      color: Colors.black,
+                    ),
+                  );
+                }
+                final userProfile = controller.userProfile.value;
+                final displayName =
+                    !userProfile.isEmpty && userProfile.name.isNotEmpty
+                        ? userProfile.name
+                        : AppLocalStorage.instance.user.name;
+
+                return Text(
+                  'Hello, $displayName',
+                  style: AppTheme.headingLarge.copyWith(
+                    color: Colors.black,
+                  ),
+                );
+              }),
               const SizedBox(height: AppTheme.spacingL),
               Expanded(child: getExamListWidget(controller))
             ],
@@ -78,118 +100,142 @@ class StudentHomePage extends StatelessWidget {
     if (AppLocalStorage.instance.user.isAdmin) {
       return const SizedBox.shrink();
     }
-    if (controller.isLoading.value) {
-      return Text('Fetching exam details...',
-          style: AppTheme.bodyLarge.copyWith(color: Colors.black));
-    }
-    return controller.allExams.isEmpty
-        ? Center(
-            child: Text(
-              'No Exams Scheduled for you as of now..',
-              style: AppTheme.headingMedium.copyWith(color: Colors.black),
+
+    return Obx(() {
+      if (controller.isLoading.value && controller.allExams.isEmpty) {
+        return Center(
+          child: Text(
+            'Fetching exam details...',
+            style: AppTheme.bodyLarge.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      if (controller.allExams.isEmpty && !controller.isLoading.value) {
+        return Center(
+          child: Text(
+            'No Exams Scheduled for you as of now..',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      return Column(
+        children: [
+          if (controller.totalElements > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Showing ${controller.allExams.length} of ${controller.totalElements} exams',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
             ),
-          )
-        : ListView.builder(
-            shrinkWrap: true,
-            physics: const BouncingScrollPhysics(),
-            itemCount: controller.allExams.length,
-            itemBuilder: (context, index) {
-              final singleItem = controller.allExams[index];
-              return Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingS),
-                child: InkWell(
-                  onTap: () async {
-                    if (isExamLive(singleItem)) {
-                      controller.selectedExam = controller.allExams[index];
-
-                      await controller.getConfiguration();
-
-                      controller.showConfigBasedAcknowledgementDialog();
-                    } else {
-                      controller.showExamNotLiveDialog(
-                          isExamEnded: isExamEnded(singleItem));
-                    }
-                  },
-                  child: Material(
-                    elevation: 2,
-                    borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
-                    color: AppColors.cardBackground,
-                    shadowColor: AppTheme.shadowSmall[0].color,
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: ListView.builder(
+              controller: controller.scrollController,
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: controller.allExams.length +
+                  (controller.hasNextPage || controller.isLoadingMore.value
+                      ? 1
+                      : 0),
+              itemBuilder: (context, index) {
+                if (index == controller.allExams.length) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: 300,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 12),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD3D3D3), // Light gray
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(40), // Large curve
-                              ),
-                            ),
-                            child: Text(
-                              singleItem.subjectName,
-                              style: AppTheme.bodyMedium.copyWith(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          const CircularProgressIndicator(),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Loading more exams...',
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Left section
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        'by ${singleItem.teacherName}',
-                                        style: AppTheme.bodyLarge.copyWith(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w400),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        'Start: ${singleItem.startTime.formatTime}',
-                                        style: AppTheme.normalText
-                                            .copyWith(color: Colors.white),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Text(
-                                        'End: ${singleItem.endTime.formatTime}',
-                                        style: AppTheme.normalText
-                                            .copyWith(color: Colors.white),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final singleItem = controller.allExams[index];
+                return Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacingS),
+                  child: InkWell(
+                    onTap: () async {
+                      if (isExamLive(singleItem)) {
+                        controller.selectedExam = controller.allExams[index];
+                        await controller.getConfiguration();
+                        controller.showConfigBasedAcknowledgementDialog();
+                      } else {
+                        controller.showExamNotLiveDialog(
+                            isExamEnded: isExamEnded(singleItem));
+                      }
+                    },
+                    child: Material(
+                      elevation: 2,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.borderRadiusM),
+                      color: AppColors.cardBackground,
+                      shadowColor: AppTheme.shadowSmall[0].color,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 300,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFD3D3D3),
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  bottomRight: Radius.circular(40),
                                 ),
-                                // Right section
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
+                              ),
+                              child: Text(
+                                singleItem.subjectName,
+                                style: AppTheme.bodyMedium.copyWith(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Icon(Icons.schedule,
-                                            color: Colors.white),
-                                        const SizedBox(width: 4),
+                                        const SizedBox(height: 6),
                                         Text(
-                                          '${singleItem.examDuration} mins',
+                                          'by ${singleItem.teacherName}',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          'Start: ${singleItem.startTime.formatTime}',
+                                          style: AppTheme.normalText
+                                              .copyWith(color: Colors.white),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          'End: ${singleItem.endTime.formatTime}',
                                           style: AppTheme.normalText
                                               .copyWith(color: Colors.white),
                                           maxLines: 1,
@@ -197,34 +243,58 @@ class StudentHomePage extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.timer_outlined,
-                                            color: Colors.white),
-                                        const SizedBox(width: 4),
-                                        Obx(() => Text(
-                                              controller.examTimers[
-                                                      singleItem.questionId] ??
-                                                  'Calculating...',
-                                              style: AppTheme.normalText
-                                                  .copyWith(
-                                                      color: Colors.white),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            )),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.schedule,
+                                              color: Colors.white),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${singleItem.examDuration} mins',
+                                            style: AppTheme.normalText
+                                                .copyWith(color: Colors.white),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.timer_outlined,
+                                              color: Colors.white),
+                                          const SizedBox(width: 4),
+                                          Obx(() => Text(
+                                                controller.examTimers[singleItem
+                                                        .questionId] ??
+                                                    'Calculating...',
+                                                style: AppTheme.normalText
+                                                    .copyWith(
+                                                        color: Colors.white),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              )),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ]),
+                          ]),
+                    ),
                   ),
-                ),
-              );
-            },
-          );
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    });
   }
 }

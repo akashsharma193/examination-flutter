@@ -27,7 +27,6 @@ class ForgotPasswordScreen extends StatelessWidget {
             type: TextFieldType.email,
           ),
           const SizedBox(height: 18),
-          // Send Temporary Password Button
           SizedBox(
             width: double.infinity,
             child: Material(
@@ -41,8 +40,10 @@ class ForgotPasswordScreen extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: controller.tempSent.value?Colors.grey:null,
-                    gradient:controller.tempSent.value?null: AppTheme.primaryGradient,
+                    color: controller.tempSent.value ? Colors.grey : null,
+                    gradient: controller.tempSent.value
+                        ? null
+                        : AppTheme.primaryGradient,
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Center(
@@ -50,9 +51,11 @@ class ForgotPasswordScreen extends StatelessWidget {
                         ? const CircularProgressIndicator.adaptive(
                             valueColor:
                                 AlwaysStoppedAnimation<Color>(Colors.white))
-                        : const Text(
-                            'Send Temporary Password',
-                            style: TextStyle(
+                        : Text(
+                            controller.tempSent.value
+                                ? 'Temporary Password Sent'
+                                : 'Send Temporary Password',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -69,7 +72,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               controller: controller.tempPasswordController,
               hintText: 'Temporary Password',
               prefixIcon: Icon(Icons.lock_open, color: purple),
-              type: TextFieldType.text,
+              type: TextFieldType.password,
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -121,6 +124,22 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                controller.tempSent.value = false;
+                controller.tempPasswordController.clear();
+                controller.newPasswordController.clear();
+                controller.confirmPasswordController.clear();
+              },
+              child: const Text(
+                'Resend Temporary Password',
+                style: TextStyle(
+                  color: Color(0xFF7460F1),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ]
         ],
       ),
@@ -134,7 +153,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: GradientAppBar(
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Forgot Password',
             style: TextStyle(
                 color: Colors.white,
@@ -145,13 +164,11 @@ class ForgotPasswordScreen extends StatelessWidget {
       body: Obx(() {
         final double illustrationHeight = controller.tempSent.value ? 110 : 140;
         return Padding(
-          padding:
-              const EdgeInsets.only(top: 16, left: 16, right: 16),
+          padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
           child: SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 32),
-                // Illustration
                 Image.asset(
                   'assets/forgot_pass_bg.png',
                   height: illustrationHeight,
@@ -165,14 +182,12 @@ class ForgotPasswordScreen extends StatelessWidget {
                   ),
                   color: Colors.white,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 24),
                     child: _buildForm(context),
                   ),
-
                 ),
-            const SizedBox(height: 24),
-
+                const SizedBox(height: 24),
               ],
             ),
           ),

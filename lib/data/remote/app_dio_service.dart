@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/state_manager.dart';
 import 'package:crackitx/core/constants/app_result.dart';
+import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/data/remote/network_log_interceptor.dart';
 import 'package:crackitx/services/device_service.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -16,13 +20,40 @@ class AppDioService {
   static Dio get dio => Dio();
 
   final Dio _serviceDio = dio;
+
+  Map<String, String> get _getHeaders {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      'encDisabled': 'false',
+    };
+
+    final token = AppLocalStorage.instance.accessToken;
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
+    return headers;
+  }
+
+  String _encryptData(Map<String, dynamic> data) {
+    final jsonString = jsonEncode(data);
+    return base64Encode(utf8.encode(jsonString));
+  }
+
+  Map<String, dynamic> _decryptData(String encryptedData) {
+    final decodedBytes = base64Decode(encryptedData);
+    final jsonString = utf8.decode(decodedBytes);
+    return jsonDecode(jsonString);
+  }
+
   Future<void> initDioService(
       {required String baseUrl, List<Interceptor>? interceptors}) async {
     _serviceDio.options = BaseOptions(
         baseUrl: baseUrl,
         headers: {
           'Content-Type': 'application/json',
-          'deviceId': await DeviceService.instance.uniqueDeviceId
+          'deviceId': await DeviceService.instance.uniqueDeviceId,
+          'encDisabled': 'false',
         },
         connectTimeout: const Duration(minutes: 2),
         sendTimeout: const Duration(minutes: 2),
@@ -31,23 +62,39 @@ class AppDioService {
           return code != null && code >= 200 && code <= 503;
         },
         contentType: 'application/json');
-    // if (kDebugMode) {
-    //   _serviceDio.interceptors.add(PrettyDioLogger(
-    //       request: true, requestBody: true, responseBody: true));
-    // }
+    if (kDebugMode) {
+      _serviceDio.interceptors.add(PrettyDioLogger(
+          request: true, requestBody: true, responseBody: true));
+    }
     _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
 
     _serviceDio.interceptors.add(NetworkLogInterceptor());
   }
 
-  /// Get Request DIO
   Future<AppResult> getDio(
       {required String endpoint,
       Map<String, dynamic>? queryParams,
       Map<String, dynamic>? headers}) async {
     try {
-      return _serviceDio.get(endpoint, queryParameters: queryParams).then((v) {
+      final mergedHeaders = {..._getHeaders, ...?headers};
+      Map<String, dynamic> encryptedQueryParams = {};
+
+      if (queryParams != null) {
+        final encryptedData = _encryptData(queryParams);
+        encryptedQueryParams = {'encPayload': encryptedData};
+      }
+
+      return _serviceDio
+          .get(endpoint,
+              queryParameters: encryptedQueryParams,
+              options: Options(headers: mergedHeaders))
+          .then((v) {
         if (v.statusCode == 200) {
+          if (v.data is Map<String, dynamic> &&
+              v.data.containsKey('encPayloadRes')) {
+            final decryptedData = _decryptData(v.data['encPayloadRes']);
+            return AppSuccess(decryptedData);
+          }
           return AppSuccess(v.data);
         } else {
           return _handleOtherStatusCodeResponse(v);
@@ -58,10 +105,8 @@ class AppDioService {
     } catch (e, s) {
       return _handleCaughtError(e, s);
     }
-    // return AppResult.failure(AppFailure());
   }
 
-  /// POST Request DIO
   Future<AppResult> postDio({
     required String endpoint,
     required Map<String, dynamic> body,
@@ -69,10 +114,21 @@ class AppDioService {
     Map<String, dynamic>? headers,
   }) async {
     try {
+      final mergedHeaders = {..._getHeaders, ...?headers};
+      final encryptedData = _encryptData(body);
+      final encryptedBody = {'encPayload': encryptedData};
+
       final response = await _serviceDio.post(endpoint,
-          data: body, queryParameters: queryParams);
+          data: encryptedBody,
+          queryParameters: queryParams,
+          options: Options(headers: mergedHeaders));
 
       if (response.statusCode == 201 || response.statusCode == 200) {
+        if (response.data is Map<String, dynamic> &&
+            response.data.containsKey('encPayloadRes')) {
+          final decryptedData = _decryptData(response.data['encPayloadRes']);
+          return AppSuccess(decryptedData);
+        }
         return AppSuccess(response.data);
       } else {
         return _handleOtherStatusCodeResponse(response);
@@ -88,19 +144,30 @@ class AppDioService {
     }
   }
 
-  /// Delete Request DIO
   Future<AppResult> deleteDio(
       {required String endpoint,
       required Map<String, dynamic> body,
       Map<String, dynamic>? queryParams,
       Map<String, dynamic>? headers}) async {
     try {
+      final mergedHeaders = {..._getHeaders, ...?headers};
+      final encryptedData = _encryptData(body);
+      final encryptedBody = {'encPayload': encryptedData};
+
       return _serviceDio
-          .delete(endpoint, data: body, queryParameters: queryParams)
+          .delete(endpoint,
+              data: encryptedBody,
+              queryParameters: queryParams,
+              options: Options(headers: mergedHeaders))
           .then((v) {
         if (v.statusCode == 204) {
           return const AppSuccess(null);
         } else {
+          if (v.data is Map<String, dynamic> &&
+              v.data.containsKey('encPayloadRes')) {
+            final decryptedData = _decryptData(v.data['encPayloadRes']);
+            return AppSuccess(decryptedData);
+          }
           return _handleOtherStatusCodeResponse(v);
         }
       });

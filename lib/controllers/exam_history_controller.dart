@@ -5,28 +5,39 @@ import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/repositories/admin_repo.dart';
 import 'package:crackitx/repositories/exam_repo.dart';
+import 'package:crackitx/widgets/app_snackbar_widget.dart';
 
 class ExamHistoryController extends GetxController {
-  List<SingleExamHistoryModel> allAttemptedExamsList =
-      <SingleExamHistoryModel>[];
   RxBool isLoading = false.obs;
+  RxBool isLoadingMore = false.obs;
+  RxList<SingleExamHistoryModel> allAttemptedExamsList =
+      <SingleExamHistoryModel>[].obs;
+
+  int currentPage = 0;
+  int pageSize = 10;
+  bool hasNextPage = false;
+  bool hasPreviousPage = false;
+  int totalElements = 0;
+  int totalPages = 0;
+
   bool isFromGetAllExamTab = false;
+  bool showOnlyActiveExams = false;
+  String currentUserId = '';
+  bool _isInitialized = false;
+  bool isRequestInProgress = false;
+
   final ExamRepo examRepo = ExamRepo();
   final AdminRepo adminRepo = AdminRepo();
-  bool showOnlyActiveExams = false;
+  final ScrollController scrollController = ScrollController();
 
   RxString searchQuery = ''.obs;
-
   RxString selectedBatch = ''.obs;
-
   RxString selectedOrganization = ''.obs;
 
   List<String> get batches => allAttemptedExamsList
       .map((e) => (e.batch ?? '').trim())
       .toSet()
       .where((e) => e.isNotEmpty)
-      .toList()
-      .toSet()
       .toList();
 
   List<SingleExamHistoryModel> get filteredExams {
@@ -45,56 +56,209 @@ class ExamHistoryController extends GetxController {
     }).toList();
   }
 
-  void setup({required String? userId, bool showActiveExam = false}) {
-    isFromGetAllExamTab = userId == null;
-    showOnlyActiveExams = showActiveExam;
-    print("is active exam : $showOnlyActiveExams");
-    getHistory(userId);
+  @override
+  void onInit() {
+    super.onInit();
+    _setupScrollListener();
   }
 
-  _filterActiveExam() {
-    debugPrint(
-        "filtering exams, cureent exam : ${allAttemptedExamsList.length}");
-    allAttemptedExamsList =
-        List<SingleExamHistoryModel>.from(allAttemptedExamsList)
-            .where((e) => e.endTime?.isAfter(DateTime.now()) ?? false)
-            .toList();
-  }
+  void _setupScrollListener() {
+    scrollController.addListener(() {
+      if (!_isInitialized ||
+          isLoading.value ||
+          isLoadingMore.value ||
+          isRequestInProgress) return;
 
-  void getHistory(String? userId) async {
-    try {
-      isLoading.value = true;
+      if (!scrollController.hasClients) return;
 
-      update();
-      AppResult<List<SingleExamHistoryModel>>? resp;
+      final maxScrollExtent = scrollController.position.maxScrollExtent;
+      final currentScrollPosition = scrollController.position.pixels;
 
-      if (isFromGetAllExamTab) {
-        resp = await adminRepo
-            .getAllExamsList(AppLocalStorage.instance.user.orgCode);
-      } else {
-        resp = await examRepo.getExamHistory(
-            userId: userId ?? AppLocalStorage.instance.user.userId);
+      if (maxScrollExtent > 0 &&
+          currentScrollPosition >= maxScrollExtent - 50) {
+        if (hasNextPage && !isFromGetAllExamTab) {
+          loadMoreExamHistory();
+        }
       }
+    });
+  }
+
+  void setup({required String? userId, bool showActiveExam = false}) {
+    if (_isInitialized) return;
+
+    isFromGetAllExamTab = userId == null;
+    currentUserId = userId ?? AppLocalStorage.instance.user.userId;
+    showOnlyActiveExams = showActiveExam;
+    currentPage = 0;
+    hasNextPage = false;
+    isRequestInProgress = false;
+    allAttemptedExamsList.clear();
+    _isInitialized = true;
+    _loadInitialData();
+  }
+
+  void refresh() {
+    currentPage = 0;
+    hasNextPage = false;
+    isRequestInProgress = false;
+    allAttemptedExamsList.clear();
+    _loadInitialData();
+  }
+
+  void _filterActiveExam() {
+    if (showOnlyActiveExams) {
+      final filtered = allAttemptedExamsList
+          .where((e) => e.endTime?.isAfter(DateTime.now()) ?? false)
+          .toList();
+      allAttemptedExamsList.value = filtered;
+    }
+  }
+
+  void loadMoreExamHistory() async {
+    if (isLoadingMore.value ||
+        !hasNextPage ||
+        isFromGetAllExamTab ||
+        isLoading.value ||
+        isRequestInProgress) return;
+
+    try {
+      isRequestInProgress = true;
+      isLoadingMore.value = true;
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      final nextPage = currentPage + 1;
+      print("Loading more exam history - requesting page: $nextPage");
+
+      final resp = await examRepo.getExamHistory(
+        userId: currentUserId,
+        pageNumber: nextPage,
+        pageSize: pageSize,
+      );
 
       switch (resp) {
-        case AppSuccess(value: List<SingleExamHistoryModel> v):
-          allAttemptedExamsList = v;
+        case AppSuccess():
+          final data = resp.value;
+          List<SingleExamHistoryModel> newHistory = data['content'] ?? [];
 
-          if (showOnlyActiveExams) {
-            print("filter active exam:");
-            _filterActiveExam();
+          print("Received ${newHistory.length} new history items");
+
+          if (newHistory.isNotEmpty) {
+            allAttemptedExamsList.addAll(newHistory);
+            currentPage = nextPage;
           }
-          update();
+
+          hasNextPage = data['hasNext'] ?? false;
+          hasPreviousPage = data['hasPrevious'] ?? false;
+          totalElements = data['totalElements'] ?? 0;
+          totalPages = data['totalPages'] ?? 0;
+
+          print(
+              "Updated exam history pagination: hasNextPage=$hasNextPage, totalElements=$totalElements");
           break;
         case AppFailure():
-          allAttemptedExamsList = [];
+          print("Failed to load more exam history: ${resp.errorMessage}");
+          AppSnackbarWidget.showSnackBar(
+            isSuccess: false,
+            subTitle: 'Failed to load more exam history',
+          );
+          break;
       }
     } catch (e) {
-      debugPrint(
-          "error caught in examhistory  controller in getHistory func : $e");
+      print("Exception in loadMoreExamHistory: $e");
     } finally {
-      isLoading.value = false;
+      await Future.delayed(const Duration(milliseconds: 500));
+      isLoadingMore.value = false;
+      isRequestInProgress = false;
       update();
     }
+  }
+
+  void _loadInitialData() async {
+    if (isLoading.value) return;
+
+    try {
+      isLoading.value = true;
+      isRequestInProgress = true;
+
+      if (isFromGetAllExamTab) {
+        await _loadAdminData();
+      } else {
+        await _loadStudentData();
+      }
+
+      _filterActiveExam();
+    } catch (e) {
+      debugPrint("Error in _loadInitialData: $e");
+      allAttemptedExamsList.value = [];
+    } finally {
+      isLoading.value = false;
+      isRequestInProgress = false;
+    }
+  }
+
+  Future<void> _loadAdminData() async {
+    final resp =
+        await adminRepo.getAllExamsList(AppLocalStorage.instance.user.orgCode);
+
+    switch (resp) {
+      case AppSuccess():
+        allAttemptedExamsList.value = resp.value;
+        totalElements = resp.value.length;
+        hasNextPage = false;
+        hasPreviousPage = false;
+        totalPages = 1;
+        break;
+      case AppFailure():
+        allAttemptedExamsList.value = [];
+        break;
+      case null:
+        allAttemptedExamsList.value = [];
+        break;
+    }
+  }
+
+  Future<void> _loadStudentData() async {
+    print(
+        "Loading initial exam history data - currentPage: $currentPage, pageSize: $pageSize");
+
+    final resp = await examRepo.getExamHistory(
+      userId: currentUserId,
+      pageNumber: currentPage,
+      pageSize: pageSize,
+    );
+
+    switch (resp) {
+      case AppSuccess():
+        final data = resp.value;
+        List<SingleExamHistoryModel> history = data['content'] ?? [];
+        allAttemptedExamsList.value = history;
+
+        hasNextPage = data['hasNext'] ?? false;
+        hasPreviousPage = data['hasPrevious'] ?? false;
+        totalElements = data['totalElements'] ?? 0;
+        totalPages = data['totalPages'] ?? 0;
+
+        print("Initial exam history load complete:");
+        print("- Loaded ${history.length} history items");
+        print("- hasNextPage: $hasNextPage");
+        print("- totalElements: $totalElements");
+        print("- totalPages: $totalPages");
+        break;
+      case AppFailure():
+        print("Failed to load exam history: ${resp.errorMessage}");
+        allAttemptedExamsList.value = [];
+        break;
+      case null:
+        allAttemptedExamsList.value = [];
+        break;
+    }
+  }
+
+  @override
+  void onClose() {
+    scrollController.removeListener(_setupScrollListener);
+    scrollController.dispose();
+    super.onClose();
   }
 }

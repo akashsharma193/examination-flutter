@@ -19,12 +19,38 @@ class AppLocalStorage {
     if (userData != null) {
       return UserModel.fromJson(jsonDecode(userData));
     } else {
-      return UserModel.toEmpty(); // Return an empty or default UserModel
+      return UserModel.toEmpty();
     }
   }
 
   void setUserData(UserModel user) {
     _prefs.setString('user-data', jsonEncode(user.toJson()));
+  }
+
+  String? get accessToken {
+    return _prefs.getString('access-token');
+  }
+
+  void setAccessToken(String token) {
+    _prefs.setString('access-token', token);
+  }
+
+  String? get refreshToken {
+    return _prefs.getString('refresh-token');
+  }
+
+  void setRefreshToken(String token) {
+    _prefs.setString('refresh-token', token);
+  }
+
+  void setTokens(String accessToken, String refreshToken) {
+    _prefs.setString('access-token', accessToken);
+    _prefs.setString('refresh-token', refreshToken);
+  }
+
+  void clearTokens() {
+    _prefs.remove('access-token');
+    _prefs.remove('refresh-token');
   }
 
   bool get isLoggedIn {
@@ -46,7 +72,6 @@ class AppLocalStorage {
   }
 
   Future<void> storeExamOffline(Map<String, dynamic> examData) async {
-    // Retrieve the stored exams
     final String? storedExams = _prefs.getString('pending_exams');
     List<Map<String, dynamic>> pendingExams = [];
 
@@ -56,10 +81,8 @@ class AppLocalStorage {
           decodedList.map((e) => Map<String, dynamic>.from(e)).toList();
     }
 
-    // Add the new exam data
     pendingExams.add(examData);
 
-    // Remove duplicates (if any) and store back
     pendingExams = pendingExams.toSet().toList();
     await _prefs.setString('pending_exams', jsonEncode(pendingExams));
   }

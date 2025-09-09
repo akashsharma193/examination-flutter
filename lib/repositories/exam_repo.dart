@@ -11,25 +11,65 @@ import 'package:crackitx/widgets/app_snackbar_widget.dart';
 class ExamRepo {
   final dioService = AppDioService.instance;
 
-  /// call login api
-  Future<AppResult<List<ExamModel>>> getAllExams(
-      {required String orgCode, required String batchId}) async {
+  Future<AppResult<Map<String, dynamic>>> getAllExams({
+    required String orgCode,
+    required String batchId,
+    int pageNumber = 0,
+    int pageSize = 10,
+  }) async {
     try {
-      final response =
-          await dioService.postDio(endpoint: 'questionPaper/getExam', body: {
-        "orgCode": orgCode,
-        "batch": batchId,
-        "userId": AppLocalStorage.instance.user.userId
-      });
+      final response = await dioService.postDio(
+          endpoint: 'user-activity/getAllActiveTest',
+          body: {"pageSize": pageSize, "pageNumber": pageNumber, "filter": {}});
+
       switch (response) {
         case AppSuccess():
-          return AppSuccess((response.value['data'] as List<dynamic>)
-              .map((e) => ExamModel.fromJson(e))
-              .toList());
+          final data = response.value['data'];
+
+          if (data != null) {
+            final pageInfo = data['page'];
+            final content = data['content'];
+
+            int totalElements = pageInfo?['totalElements'] ?? 0;
+            int totalPages = pageInfo?['totalPages'] ?? 0;
+            int currentPageNumber = pageInfo?['number'] ?? 0;
+
+            bool hasNext = currentPageNumber < (totalPages - 1);
+            bool hasPrevious = currentPageNumber > 0;
+
+            print("Pagination Info:");
+            print("- Current page: $currentPageNumber");
+            print("- Total pages: $totalPages");
+            print("- Total elements: $totalElements");
+            print("- Has next: $hasNext");
+            print("- Has previous: $hasPrevious");
+            print("- Content length: ${content?.length ?? 0}");
+
+            return AppSuccess({
+              'content': content != null
+                  ? (content as List<dynamic>)
+                      .map((e) => ExamModel.fromJson(e))
+                      .toList()
+                  : <ExamModel>[],
+              'totalElements': totalElements,
+              'totalPages': totalPages,
+              'hasNext': hasNext,
+              'hasPrevious': hasPrevious,
+            });
+          } else {
+            return const AppSuccess({
+              'content': <ExamModel>[],
+              'totalElements': 0,
+              'totalPages': 0,
+              'hasNext': false,
+              'hasPrevious': false,
+            });
+          }
         case AppFailure():
           return AppResult.failure(response);
       }
     } catch (e) {
+      print("Exception in getAllExams: $e");
       return AppResult.failure(const AppFailure());
     }
   }
@@ -97,7 +137,7 @@ class ExamRepo {
       }
 
       final response = await dioService.postDio(
-          endpoint: 'answerPaper/saveAnswePaper', body: examData);
+          endpoint: 'user-activity/saveAnswePaper', body: examData);
       switch (response) {
         case AppSuccess():
           AppLocalStorage.instance.removeSingleExamFromStorage(examData);
@@ -111,18 +151,49 @@ class ExamRepo {
     }
   }
 
-  Future<AppResult<List<SingleExamHistoryModel>>> getExamHistory(
-      {required String userId}) async {
+  Future<AppResult<Map<String, dynamic>>> getExamHistory({
+    required String userId,
+    int pageNumber = 0,
+    int pageSize = 10,
+  }) async {
     try {
-      final response = await dioService
-          .postDio(endpoint: 'report/getAllExamByUserId', body: {
-        "userId": userId,
-      });
+      final response = await dioService.postDio(
+          endpoint: 'user-activity/getAllCompletedTest',
+          body: {"pageSize": pageSize, "pageNumber": pageNumber, "filter": {}});
       switch (response) {
         case AppSuccess():
-          return AppSuccess((response.value['data'] as List<dynamic>)
-              .map((e) => SingleExamHistoryModel.fromJson(e))
-              .toList());
+          final data = response.value['data'];
+          if (data != null) {
+            final pageInfo = data['page'];
+            final content = data['content'];
+
+            int totalElements = pageInfo?['totalElements'] ?? 0;
+            int totalPages = pageInfo?['totalPages'] ?? 0;
+            int currentPageNumber = pageInfo?['number'] ?? 0;
+
+            bool hasNext = currentPageNumber < (totalPages - 1);
+            bool hasPrevious = currentPageNumber > 0;
+
+            return AppSuccess({
+              'content': content != null
+                  ? (content as List<dynamic>)
+                      .map((e) => SingleExamHistoryModel.fromJson(e))
+                      .toList()
+                  : <SingleExamHistoryModel>[],
+              'totalElements': totalElements,
+              'totalPages': totalPages,
+              'hasNext': hasNext,
+              'hasPrevious': hasPrevious,
+            });
+          } else {
+            return const AppSuccess({
+              'content': <SingleExamHistoryModel>[],
+              'totalElements': 0,
+              'totalPages': 0,
+              'hasNext': false,
+              'hasPrevious': false,
+            });
+          }
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
@@ -140,11 +211,8 @@ class ExamRepo {
   Future<AppResult<TestResultDetailModel>> getTestResultDetails(
       {required String userId, required String qID}) async {
     try {
-      final response =
-          await dioService.postDio(endpoint: 'answerPaper/getResult', body: {
-        "userId": userId,
-        "questionId": qID,
-      });
+      final response = await dioService.getDio(
+          endpoint: 'user-activity/getAnswerPaper/$qID');
 
       switch (response) {
         case AppSuccess():

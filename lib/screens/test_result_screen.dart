@@ -10,10 +10,14 @@ import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
-
-  const TestResultScreen(
-      {super.key, required this.model, required this.userId});
   final String userId;
+
+  const TestResultScreen({
+    super.key,
+    required this.model,
+    required this.userId,
+  });
+
   @override
   State<TestResultScreen> createState() => _TestResultScreenState();
 }
@@ -24,8 +28,8 @@ class _TestResultScreenState extends State<TestResultScreen> {
 
   @override
   void initState() {
-    controller.fetchData(widget.model.questionId ?? '', widget.userId);
     super.initState();
+    controller.fetchData(widget.model.questionId ?? '', widget.userId);
   }
 
   Future<void> _onRefresh() async {
@@ -35,7 +39,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
     controller.refreshData(widget.model.questionId ?? '', widget.userId);
   }
 
-  List<dynamic> _getFilteredQuestions(TestResultDetailModel model) {
+  List<FinalResult> _getFilteredQuestions(TestResultDetailModel model) {
     switch (currentFilter) {
       case 'correct':
         return model.finalResult
@@ -180,7 +184,9 @@ class _TestResultScreenState extends State<TestResultScreen> {
   }
 
   Widget _buildScoreSection(TestResultDetailModel model) {
-    double percentage = (model.correctAnswer / model.totalQuestion) * 100;
+    double percentage = model.totalQuestion > 0
+        ? (model.correctAnswer / model.totalQuestion) * 100
+        : 0.0;
     bool isPassed = percentage >= 50;
 
     return Padding(
@@ -331,7 +337,6 @@ class _TestResultScreenState extends State<TestResultScreen> {
     );
   }
 
-  /// List of Questions with User Answers - FIXED VERSION
   List<Widget> _buildQuestionList(TestResultDetailModel model) {
     final filteredQuestions = _getFilteredQuestions(model);
 

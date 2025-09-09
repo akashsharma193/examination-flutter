@@ -11,10 +11,9 @@ class AppAuthController extends GetxController {
   RxBool isLoading = false.obs;
   RxBool isRegisterLoading = false.obs;
 
-  //Repos
   final AuthRepo repo = AuthRepo();
   AppLocalStorage localStorage = AppLocalStorage.instance;
-  // text controllers
+
   final emailController = TextEditingController();
   final passController = TextEditingController();
 
@@ -24,8 +23,6 @@ class AppAuthController extends GetxController {
     super.onReady();
   }
 
-  // register
-  // Text controllers
   final nameController = TextEditingController();
   final mobileController = TextEditingController();
   final registerEmailController = TextEditingController();
@@ -35,19 +32,19 @@ class AppAuthController extends GetxController {
   final orgCodeController = TextEditingController();
 
   void checkIfAlreadyLoggedIn() {
-    if (AppLocalStorage.instance.isLoggedIn) {
+    if (AppLocalStorage.instance.isLoggedIn &&
+        AppLocalStorage.instance.accessToken != null) {
       isUserAuthenticated.value = true;
     }
   }
 
-  // api calls
   void login() async {
     isLoading.value = true;
     update();
     try {
       if (!emailController.text.isEmail) {
         AppSnackbarWidget.showSnackBar(
-            isSuccess: false, subTitle: 'Enail is not valid');
+            isSuccess: false, subTitle: 'Email is not valid');
         return;
       }
       if (!RegExp(r'^(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$')
@@ -65,7 +62,6 @@ class AppAuthController extends GetxController {
         case AppSuccess():
           isUserAuthenticated.value = true;
           localStorage.setIsUserLoggedIn(true);
-
           localStorage.setUserData(response.value);
           repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
           break;
@@ -80,7 +76,6 @@ class AppAuthController extends GetxController {
     }
   }
 
-  // Register API Call
   void register() async {
     isRegisterLoading.value = true;
     update();
@@ -117,6 +112,13 @@ class AppAuthController extends GetxController {
       isRegisterLoading.value = false;
       update();
     }
+  }
+
+  void logout() {
+    localStorage.clearTokens();
+    localStorage.setIsUserLoggedIn(false);
+    isUserAuthenticated.value = false;
+    update();
   }
 
   void forgotPassword() {

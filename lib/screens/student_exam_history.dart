@@ -56,7 +56,8 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
               decoration: const BoxDecoration(
                 gradient: AppTheme.secondaryGradient,
               ),
-              padding: const EdgeInsets.only(top: 36, left: 16, right: 16, bottom: 12),
+              padding: const EdgeInsets.only(
+                  top: 36, left: 16, right: 16, bottom: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -91,10 +92,12 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                             decoration: InputDecoration(
                               hintText: 'Search',
                               hintStyle: const TextStyle(color: Colors.black38),
-                              prefixIcon: const Icon(Icons.search, color: Colors.black),
+                              prefixIcon:
+                                  const Icon(Icons.search, color: Colors.black),
                               filled: true,
                               fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 0),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide.none,
@@ -110,7 +113,8 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.filter_alt_rounded, color: Colors.black),
+                          icon: const Icon(Icons.filter_alt_rounded,
+                              color: Colors.black),
                           onPressed: () {
                             _showFilterDialog(context);
                           },
@@ -122,40 +126,105 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
               ),
             ),
           ),
-          body: examHistoryController.isLoading.value
-              ? const Center(
-                  child: CircularProgressIndicator.adaptive(),
-                )
-              : examHistoryController.allAttemptedExamsList.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "User hasn't given any exam yet.",
-                        style: AppTextStyles.body,
-                      ),
-                    )
-                  : Obx(() {
-                      final filteredList = controller.allAttemptedExamsList.where((exam) {
-                        final name = (exam.subjectName ?? '').toLowerCase();
-                        final teacher = (exam.teacherName ?? '').toLowerCase();
-                        final query = searchQuery.value.toLowerCase();
-                        final matchesSearch = name.contains(query) || teacher.contains(query);
-                        final matchesTeacher = selectedTeacher == null || selectedTeacher == '' || teacher == selectedTeacher!.toLowerCase();
-                        final matchesTest = selectedTestName == null || selectedTestName == '' || name == selectedTestName!.toLowerCase();
-                        final matchesStart = selectedStartDate == null || (exam.startTime != null && !exam.startTime!.isBefore(selectedStartDate!));
-                        final matchesEnd = selectedEndDate == null || (exam.endTime != null && !exam.endTime!.isAfter(selectedEndDate!));
-                        return matchesSearch && matchesTeacher && matchesTest && matchesStart && matchesEnd;
-                      }).toList();
-                      return ListView.separated(
-                        padding: const EdgeInsets.all(16),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: filteredList.length,
-                        separatorBuilder: (context, index) => const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          final singleItem = filteredList[index];
-                          return _buildExamCard(singleItem, controller);
-                        },
-                      );
-                    }));
+          floatingActionButton: FloatingActionButton.small(
+            backgroundColor: AppColors.cardBackground,
+            onPressed: controller.refresh,
+            child: const Icon(Icons.refresh, color: Colors.white),
+          ),
+          body: Obx(() {
+            if (examHistoryController.isLoading.value) {
+              return const Center(
+                child: CircularProgressIndicator.adaptive(),
+              );
+            }
+
+            final filteredList = controller.allAttemptedExamsList.where((exam) {
+              final name = (exam.subjectName ?? '').toLowerCase();
+              final teacher = (exam.teacherName ?? '').toLowerCase();
+              final query = searchQuery.value.toLowerCase();
+              final matchesSearch =
+                  name.contains(query) || teacher.contains(query);
+              final matchesTeacher = selectedTeacher == null ||
+                  selectedTeacher == '' ||
+                  teacher == selectedTeacher!.toLowerCase();
+              final matchesTest = selectedTestName == null ||
+                  selectedTestName == '' ||
+                  name == selectedTestName!.toLowerCase();
+              final matchesStart = selectedStartDate == null ||
+                  (exam.startTime != null &&
+                      !exam.startTime!.isBefore(selectedStartDate!));
+              final matchesEnd = selectedEndDate == null ||
+                  (exam.endTime != null &&
+                      !exam.endTime!.isAfter(selectedEndDate!));
+              return matchesSearch &&
+                  matchesTeacher &&
+                  matchesTest &&
+                  matchesStart &&
+                  matchesEnd;
+            }).toList();
+
+            if (filteredList.isEmpty && !controller.isLoading.value) {
+              return const Center(
+                child: Text(
+                  "User hasn't given any exam yet.",
+                  style: AppTextStyles.body,
+                ),
+              );
+            }
+
+            return Column(
+              children: [
+                if (controller.totalElements > 0)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Showing ${controller.allAttemptedExamsList.length} of ${controller.totalElements} exam results',
+                      style: AppTextStyles.body.copyWith(color: Colors.grey),
+                    ),
+                  ),
+                Expanded(
+                  child: ListView.separated(
+                    controller: controller.scrollController,
+                    padding: const EdgeInsets.all(16),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: filteredList.length +
+                        (controller.hasNextPage ||
+                                controller.isLoadingMore.value
+                            ? 1
+                            : 0),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
+                    itemBuilder: (context, index) {
+                      if (index == filteredList.length) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 20.0),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const CircularProgressIndicator(),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Loading more results...',
+                                  style: AppTextStyles.body.copyWith(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      final singleItem = filteredList[index];
+                      return _buildExamCard(singleItem, controller);
+                    },
+                  ),
+                ),
+              ],
+            );
+          }));
     });
   }
 
@@ -178,14 +247,18 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Filter by', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const Text('Filter by',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   const SizedBox(height: 16),
-               
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     value: tempTeacher,
                     hint: const Text('Teacher Name'),
-                    items: teacherNames.map((name) => DropdownMenuItem(value: name, child: Text(name))).toList(),
+                    items: teacherNames
+                        .map((name) =>
+                            DropdownMenuItem(value: name, child: Text(name)))
+                        .toList(),
                     onChanged: (val) => setState(() => tempTeacher = val),
                     isExpanded: true,
                   ),
@@ -201,14 +274,17 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null) setState(() => tempStart = picked);
+                            if (picked != null)
+                              setState(() => tempStart = picked);
                           },
                           child: InputDecorator(
                             decoration: const InputDecoration(
                               labelText: 'Start Date',
                               border: OutlineInputBorder(),
                             ),
-                            child: Text(tempStart == null ? '' : DateFormat('dd MMM yyyy').format(tempStart!)),
+                            child: Text(tempStart == null
+                                ? ''
+                                : DateFormat('dd MMM yyyy').format(tempStart!)),
                           ),
                         ),
                       ),
@@ -222,14 +298,17 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                               firstDate: DateTime(2000),
                               lastDate: DateTime(2100),
                             );
-                            if (picked != null) setState(() => tempEnd = picked);
+                            if (picked != null)
+                              setState(() => tempEnd = picked);
                           },
                           child: InputDecorator(
                             decoration: const InputDecoration(
                               labelText: 'End Date',
                               border: OutlineInputBorder(),
                             ),
-                            child: Text(tempEnd == null ? '' : DateFormat('dd MMM yyyy').format(tempEnd!)),
+                            child: Text(tempEnd == null
+                                ? ''
+                                : DateFormat('dd MMM yyyy').format(tempEnd!)),
                           ),
                         ),
                       ),
@@ -256,7 +335,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                             selectedEndDate = null;
                           });
                           Navigator.pop(context);
-                          setState(() {}); // Refresh the filtered list
+                          setState(() {});
                         },
                         child: const Text('Clear'),
                       ),
@@ -286,51 +365,9 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
         );
       },
     );
-    setState(() {}); // Refresh the filtered list
+    setState(() {});
   }
 
-  // Mobile Layout
-  Widget _buildMobileLayout(
-    ExamHistoryController controller,
-  ) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      physics: const BouncingScrollPhysics(),
-      itemCount: controller.allAttemptedExamsList.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final SingleExamHistoryModel singleItem =
-            controller.allAttemptedExamsList[index];
-        return _buildExamCard(singleItem, controller);
-      },
-    );
-  }
-
-  // Web Layout
-  Widget _buildWebLayout(
-      ExamHistoryController controller, bool isPastExamsScreen) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, // 3 cards per row
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 3 / 2, // Card aspect ratio
-      ),
-      itemCount: controller.allAttemptedExamsList.length,
-      itemBuilder: (context, index) {
-        final SingleExamHistoryModel singleItem =
-            controller.allAttemptedExamsList[index];
-        return _buildExamCard(
-          singleItem,
-          controller,
-        );
-      },
-    );
-  }
-
-  // Reusable Exam Card Widget
   Widget _buildExamCard(
       SingleExamHistoryModel singleItem, ExamHistoryController controller) {
     return InkWell(
@@ -338,83 +375,79 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
         Get.to(() => TestResultScreen(
               model: singleItem,
               userId: widget.userId,
-            
             ));
       },
       child: Card(
         elevation: 5,
         color: AppColors.cardBackground,
         shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 300,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD3D3D3),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: Text(
+                '${singleItem.subjectName ?? ''} \nScored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'by ${singleItem.teacherName ?? ''}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Started on: ${singleItem.startTime?.formatTime ?? '-'} ',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Ended on: ${singleItem.endTime?.formatTime ?? '-'}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top title/score bar
-          Container(
-            width: 300,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFD3D3D3), // Light gray
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomRight: Radius.circular(40), // Large curve
-              ),
-            ),
-            child: Text(
-              '${singleItem.subjectName ?? ''} \nScored: ${singleItem.totalMarks}/${singleItem.totalQuestion}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                color: Colors.black,
-              ),
-            ),
-          ),
-          // Main content
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'by ${singleItem.teacherName ?? ''}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12 ,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Started on: ${singleItem.startTime?.formatTime ?? '-'} ',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ended on: ${singleItem.endTime?.formatTime ?? '-'}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
     );
   }
 }
-
