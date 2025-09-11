@@ -28,7 +28,6 @@ class ExamHistoryController extends GetxController {
 
   final ExamRepo examRepo = ExamRepo();
   final AdminRepo adminRepo = AdminRepo();
-  final ScrollController scrollController = ScrollController();
 
   RxString searchQuery = ''.obs;
   RxString selectedBatch = ''.obs;
@@ -59,28 +58,6 @@ class ExamHistoryController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    _setupScrollListener();
-  }
-
-  void _setupScrollListener() {
-    scrollController.addListener(() {
-      if (!_isInitialized ||
-          isLoading.value ||
-          isLoadingMore.value ||
-          isRequestInProgress) return;
-
-      if (!scrollController.hasClients) return;
-
-      final maxScrollExtent = scrollController.position.maxScrollExtent;
-      final currentScrollPosition = scrollController.position.pixels;
-
-      if (maxScrollExtent > 0 &&
-          currentScrollPosition >= maxScrollExtent - 50) {
-        if (hasNextPage && !isFromGetAllExamTab) {
-          loadMoreExamHistory();
-        }
-      }
-    });
   }
 
   void setup({required String? userId, bool showActiveExam = false}) {
@@ -170,7 +147,6 @@ class ExamHistoryController extends GetxController {
       await Future.delayed(const Duration(milliseconds: 500));
       isLoadingMore.value = false;
       isRequestInProgress = false;
-      update();
     }
   }
 
@@ -257,8 +233,6 @@ class ExamHistoryController extends GetxController {
 
   @override
   void onClose() {
-    scrollController.removeListener(_setupScrollListener);
-    scrollController.dispose();
     super.onClose();
   }
 }

@@ -32,68 +32,97 @@ class StudentHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetBuilder<HomeController>(builder: (controller) {
-      return Scaffold(
-        drawer: const AppDrawer(),
-        floatingActionButton: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FloatingActionButton.small(
-              backgroundColor: AppTheme.gradientStart,
-              heroTag: "refresh",
-              onPressed: controller.refreshPage,
-              child: const Icon(Icons.refresh, color: Colors.white),
-            ),
-          ],
-        ),
-        appBar: GradientAppBar(
-          title: Text(
-            'Home',
-            style: AppTheme.headingLarge.copyWith(color: Colors.white),
-          ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: [
-            IconButton(
-              onPressed: controller.initialized ? controller.logOut : null,
-              icon: const Icon(Icons.logout_outlined, color: Colors.white),
-            ),
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(AppTheme.spacingM),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppTheme.spacingL),
-              Obx(() {
-                if (controller.isUserProfileLoading.value) {
-                  return Text(
-                    'Loading...',
-                    style: AppTheme.headingLarge.copyWith(
-                      color: Colors.black,
-                    ),
-                  );
-                }
-                final userProfile = controller.userProfile.value;
-                final displayName =
-                    !userProfile.isEmpty && userProfile.name.isNotEmpty
-                        ? userProfile.name
-                        : AppLocalStorage.instance.user.name;
+    final controller = HomeController.init();
 
-                return Text(
-                  'Hello, $displayName',
-                  style: AppTheme.headingLarge.copyWith(
-                    color: Colors.black,
-                  ),
-                );
-              }),
-              const SizedBox(height: AppTheme.spacingL),
-              Expanded(child: getExamListWidget(controller))
-            ],
-          ),
-        ),
-      );
-    });
+    return GetBuilder<HomeController>(
+        init: controller,
+        builder: (controller) {
+          return Scaffold(
+            drawer: const AppDrawer(),
+            floatingActionButton: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton.small(
+                  backgroundColor: AppTheme.gradientStart,
+                  heroTag: "refresh",
+                  onPressed: controller.refreshPage,
+                  child: const Icon(Icons.refresh, color: Colors.white),
+                ),
+              ],
+            ),
+            appBar: PreferredSize(
+              preferredSize: const Size.fromHeight(kToolbarHeight),
+              child: Obx(() => GradientAppBar(
+                    title: controller.isSearching.value
+                        ? TextField(
+                            controller: controller.searchController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: 'Search by subject name...',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                            ),
+                            autofocus: true,
+                          )
+                        : Text(
+                            'Home',
+                            style: AppTheme.headingLarge
+                                .copyWith(color: Colors.white),
+                          ),
+                    iconTheme: const IconThemeData(color: Colors.white),
+                    actions: [
+                      Obx(() => IconButton(
+                            onPressed: controller.toggleSearch,
+                            icon: Icon(
+                              controller.isSearching.value
+                                  ? Icons.close
+                                  : Icons.search,
+                              color: Colors.white,
+                            ),
+                          )),
+                      IconButton(
+                        onPressed: controller.logOut,
+                        icon: const Icon(Icons.logout_outlined,
+                            color: Colors.white),
+                      ),
+                    ],
+                  )),
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacingM),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: AppTheme.spacingL),
+                  Obx(() {
+                    if (controller.isUserProfileLoading.value) {
+                      return Text(
+                        'Loading...',
+                        style: AppTheme.headingLarge.copyWith(
+                          color: Colors.black,
+                        ),
+                      );
+                    }
+                    final userProfile = controller.userProfile.value;
+                    final displayName =
+                        !userProfile.isEmpty && userProfile.name.isNotEmpty
+                            ? userProfile.name
+                            : AppLocalStorage.instance.user.name;
+
+                    return Text(
+                      'Hello, $displayName',
+                      style: AppTheme.headingLarge.copyWith(
+                        color: Colors.black,
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: AppTheme.spacingL),
+                  Expanded(child: getExamListWidget(controller))
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   Widget getExamListWidget(HomeController controller) {
@@ -120,9 +149,26 @@ class StudentHomePage extends StatelessWidget {
         );
       }
 
+      if (controller.isSearching.value &&
+          controller.filteredExams.isEmpty &&
+          controller.searchQuery.value.isNotEmpty) {
+        return Center(
+          child: Text(
+            'No exams found matching "${controller.searchQuery.value}"',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      final examsToShow = controller.isSearching.value
+          ? controller.filteredExams
+          : controller.allExams;
+      final showLoadMore =
+          !controller.isSearching.value && controller.hasNextPage;
+
       return Column(
         children: [
-          if (controller.totalElements > 0)
+          if (controller.totalElements > 0 && !controller.isSearching.value)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
@@ -130,45 +176,79 @@ class StudentHomePage extends StatelessWidget {
                 style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
               ),
             ),
+          if (controller.isSearching.value &&
+              controller.filteredExams.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Found ${controller.filteredExams.length} exam(s)',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
+            ),
           Expanded(
             child: ListView.builder(
-              controller: controller.scrollController,
               shrinkWrap: true,
               physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: controller.allExams.length +
-                  (controller.hasNextPage || controller.isLoadingMore.value
-                      ? 1
-                      : 0),
+              itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == controller.allExams.length) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(vertical: 20.0),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Loading more exams...',
-                            style: AppTheme.bodyMedium.copyWith(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
+                if (index == examsToShow.length && showLoadMore) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Obx(() => Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: controller.isLoadingMore.value
+                                ? null
+                                : controller.loadMoreExams,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF9181F4),
+                                    Color(0xFF5038ED)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: controller.isLoadingMore.value
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Load More Exams',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                              ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
+                        )),
                   );
                 }
-
-                final singleItem = controller.allExams[index];
+                final singleItem = examsToShow[index];
+                final originalIndex = controller.allExams.indexOf(singleItem);
                 return Padding(
                   padding: const EdgeInsets.all(AppTheme.spacingS),
                   child: InkWell(
                     onTap: () async {
                       if (isExamLive(singleItem)) {
-                        controller.selectedExam = controller.allExams[index];
+                        controller.selectedExam = controller.allExams[
+                            originalIndex != -1 ? originalIndex : index];
                         await controller.getConfiguration();
                         controller.showConfigBasedAcknowledgementDialog();
                       } else {

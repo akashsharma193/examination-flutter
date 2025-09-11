@@ -49,7 +49,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          body: Container(
+          body: SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: Stack(

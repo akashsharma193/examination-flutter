@@ -17,20 +17,34 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
+  static HomeController get to => Get.find<HomeController>();
+
+  static HomeController init() {
+    if (!Get.isRegistered<HomeController>()) {
+      Get.put(HomeController(), permanent: true);
+    }
+    return Get.find<HomeController>();
+  }
+
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
   RxBool isCompliencesLoading = false.obs;
   RxBool isConfigurationLoading = false.obs;
   RxBool isUserProfileLoading = false.obs;
   RxBool isChecked = false.obs;
+  RxBool isSearching = false.obs;
 
   RxList<ExamModel> allExams = <ExamModel>[].obs;
+  RxList<ExamModel> filteredExams = <ExamModel>[].obs;
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
   ConfigurationModel configuration = ConfigurationModel.toEmpty();
   ExamModel selectedExam = ExamModel.toEmpty();
   Rx<UserModel> userProfile = UserModel.toEmpty().obs;
 
   RxMap<String, String> examTimers = <String, String>{}.obs;
+
+  TextEditingController searchController = TextEditingController();
+  RxString searchQuery = ''.obs;
 
   int currentPage = 0;
   int pageSize = 10;
@@ -41,15 +55,17 @@ class HomeController extends GetxController {
 
   final ExamRepo examRepo = ExamRepo();
   final AuthRepo authRepo = AuthRepo();
-  final ScrollController scrollController = ScrollController();
 
   bool isRequestInProgress = false;
+  bool _isInitialized = false;
 
   @override
   void onInit() {
     super.onInit();
-    scrollController.addListener(_scrollListener);
-    refreshPage();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      refreshPage();
+    }
 
     ever(isLoadingMore, (bool loading) {
       print("isLoadingMore changed to: $loading");
@@ -57,15 +73,35 @@ class HomeController extends GetxController {
 
     ever(allExams, (List<ExamModel> exams) {
       print("allExams length changed to: ${exams.length}");
+      if (!isSearching.value) {
+        filteredExams.value = exams;
+      }
+    });
+
+    searchController.addListener(() {
+      searchQuery.value = searchController.text;
+      filterExams();
     });
   }
 
-  void _scrollListener() {
-    if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent * 0.8) {
-      if (!isLoadingMore.value && hasNextPage && !isRequestInProgress) {
-        loadMoreExams();
-      }
+  void toggleSearch() {
+    isSearching.value = !isSearching.value;
+    if (!isSearching.value) {
+      searchController.clear();
+      searchQuery.value = '';
+      filteredExams.value = allExams;
+    }
+  }
+
+  void filterExams() {
+    if (searchQuery.value.isEmpty) {
+      filteredExams.value = allExams;
+    } else {
+      filteredExams.value = allExams.where((exam) {
+        return exam.subjectName
+            .toLowerCase()
+            .contains(searchQuery.value.toLowerCase());
+      }).toList();
     }
   }
 
@@ -78,7 +114,11 @@ class HomeController extends GetxController {
     isCompliencesLoading(false);
     isUserProfileLoading(false);
     isChecked(false);
+    isSearching(false);
+    searchController.clear();
+    searchQuery.value = '';
     allExams.clear();
+    filteredExams.clear();
     compliences.clear();
     userProfile.value = UserModel.toEmpty();
     Future.delayed(Durations.medium3, () {
@@ -127,7 +167,6 @@ class HomeController extends GetxController {
     } finally {
       isLoadingMore.value = false;
       isRequestInProgress = false;
-      update();
     }
   }
 
@@ -490,12 +529,11 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
-    scrollController.removeListener(_scrollListener);
-    scrollController.dispose();
     for (String examId in examTimers.keys) {
       Timer? timer = Timer(Duration.zero, () {});
       timer?.cancel();
     }
+    searchController.dispose();
     super.onClose();
   }
 }

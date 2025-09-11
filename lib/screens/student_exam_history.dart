@@ -6,8 +6,6 @@ import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/core/extensions/datetime_extension.dart';
 import 'package:crackitx/screens/test_result_screen.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
-import '../controllers/test_result_detail_controller.dart';
-import 'package:crackitx/widgets/gradient_app_bar.dart';
 import 'package:crackitx/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
@@ -184,39 +182,65 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
                   ),
                 Expanded(
                   child: ListView.separated(
-                    controller: controller.scrollController,
                     padding: const EdgeInsets.all(16),
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: filteredList.length +
-                        (controller.hasNextPage ||
-                                controller.isLoadingMore.value
+                        (controller.hasNextPage &&
+                                !controller.isFromGetAllExamTab
                             ? 1
                             : 0),
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
-                      if (index == filteredList.length) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(vertical: 20.0),
-                          child: Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const CircularProgressIndicator(),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Loading more results...',
-                                  style: AppTextStyles.body.copyWith(
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
+                      if (index == filteredList.length &&
+                          controller.hasNextPage &&
+                          !controller.isFromGetAllExamTab) {
+                        return Obx(() => Material(
+                              elevation: 4,
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: controller.isLoadingMore.value
+                                    ? null
+                                    : controller.loadMoreExamHistory,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF9181F4),
+                                        Color(0xFF5038ED)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Center(
+                                    child: controller.isLoadingMore.value
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Load More Results',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        );
+                              ),
+                            ));
                       }
-
                       final singleItem = filteredList[index];
                       return _buildExamCard(singleItem, controller);
                     },
