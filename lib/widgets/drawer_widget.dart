@@ -8,11 +8,7 @@ import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/screens/student_exam_history.dart';
-import 'package:crackitx/services/app_package_service.dart';
-import 'package:crackitx/widgets/wavy_gradient_background.dart';
-import 'package:crackitx/widgets/curvy_left_clipper.dart';
 import 'package:feather_icons/feather_icons.dart';
-import 'package:crackitx/widgets/wavy_gradient_container.dart';
 
 class AppDrawer extends StatefulWidget {
   const AppDrawer({super.key});
@@ -146,6 +142,7 @@ class _AppDrawerState extends State<AppDrawer> {
                         title: Text(entry.key, style: AppTextStyles.body),
                         trailing: Icon(entry.value, color: Colors.black87),
                         onTap: () {
+                          Get.back();
                           switch (entry.key) {
                             case 'Exam History':
                               Get.to(() => StudentExamHistory(
