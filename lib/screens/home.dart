@@ -1,4 +1,5 @@
 import 'package:crackitx/core/constants/color_constants.dart';
+import 'package:crackitx/widgets/banner_ad_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
@@ -115,38 +116,45 @@ class StudentHomePage extends StatelessWidget {
                     ],
                   )),
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(AppTheme.spacingM),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppTheme.spacingL),
-                  Obx(() {
-                    if (controller.isUserProfileLoading.value) {
-                      return Text(
-                        'Loading...',
-                        style: AppTheme.headingLarge.copyWith(
-                          color: Colors.black,
-                        ),
-                      );
-                    }
-                    final userProfile = controller.userProfile.value;
-                    final displayName =
-                        !userProfile.isEmpty && userProfile.name.isNotEmpty
-                            ? userProfile.name
-                            : AppLocalStorage.instance.user.name;
+            body: Column(
+              children: [
+                const BannerAdWidget(),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacingM),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: AppTheme.spacingL),
+                        Obx(() {
+                          if (controller.isUserProfileLoading.value) {
+                            return Text(
+                              'Loading...',
+                              style: AppTheme.headingLarge.copyWith(
+                                color: Colors.black,
+                              ),
+                            );
+                          }
+                          final userProfile = controller.userProfile.value;
+                          final displayName = !userProfile.isEmpty &&
+                                  userProfile.name.isNotEmpty
+                              ? userProfile.name
+                              : AppLocalStorage.instance.user.name;
 
-                    return Text(
-                      'Hello, $displayName',
-                      style: AppTheme.headingLarge.copyWith(
-                        color: Colors.black,
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: AppTheme.spacingL),
-                  Expanded(child: getExamListWidget(controller))
-                ],
-              ),
+                          return Text(
+                            'Hello, $displayName',
+                            style: AppTheme.headingLarge.copyWith(
+                              color: Colors.black,
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: AppTheme.spacingL),
+                        Expanded(child: getExamListWidget(controller))
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         });
@@ -219,57 +227,64 @@ class StudentHomePage extends StatelessWidget {
               itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == examsToShow.length && showLoadMore) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Obx(() => Material(
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(16),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: controller.isLoadingMore.value
-                                ? null
-                                : controller.loadMoreExams,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF9181F4),
-                                    Color(0xFF5038ED)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Obx(() => Material(
+                              elevation: 4,
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
+                                onTap: controller.isLoadingMore.value
+                                    ? null
+                                    : controller.loadMoreExams,
+                                child: Container(
+                                  width: double.infinity,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFF9181F4),
+                                        Color(0xFF5038ED)
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Center(
+                                    child: controller.isLoadingMore.value
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Text(
+                                            'Load More Exams',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                  ),
+                                ),
                               ),
-                              child: Center(
-                                child: controller.isLoadingMore.value
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Load More Exams',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        )),
+                            )),
+                      ),
+                      const BannerAdWidget(),
+                    ],
                   );
                 }
                 final singleItem = examsToShow[index];
                 final originalIndex = controller.allExams.indexOf(singleItem);
-                return Padding(
+
+                Widget examCard = Padding(
                   padding: const EdgeInsets.all(AppTheme.spacingS),
                   child: Obx(() => InkWell(
                         onTap: controller.isExamCardLoading.value
@@ -413,6 +428,17 @@ class StudentHomePage extends StatelessWidget {
                         ),
                       )),
                 );
+
+                if ((index + 1) % 3 == 0 && index != examsToShow.length - 1) {
+                  return Column(
+                    children: [
+                      examCard,
+                      const BannerAdWidget(),
+                    ],
+                  );
+                }
+
+                return examCard;
               },
             ),
           ),

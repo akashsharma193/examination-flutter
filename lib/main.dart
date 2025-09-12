@@ -1,3 +1,4 @@
+import 'package:crackitx/ad_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
@@ -18,6 +19,7 @@ void main() async {
   await AppNotificationService.instance.initialize();
   await AppDioService.instance.initDioService(
       baseUrl: 'https://online-examination-secured.onrender.com/');
+  await AdHelper.initializeAds();
   runApp(const MyApp());
 }
 
