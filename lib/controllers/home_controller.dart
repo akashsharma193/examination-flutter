@@ -33,6 +33,7 @@ class HomeController extends GetxController {
   RxBool isUserProfileLoading = false.obs;
   RxBool isChecked = false.obs;
   RxBool isSearching = false.obs;
+  RxBool isExamCardLoading = false.obs;
 
   RxList<ExamModel> allExams = <ExamModel>[].obs;
   RxList<ExamModel> filteredExams = <ExamModel>[].obs;
@@ -115,6 +116,7 @@ class HomeController extends GetxController {
     isUserProfileLoading(false);
     isChecked(false);
     isSearching(false);
+    isExamCardLoading(false);
     searchController.clear();
     searchQuery.value = '';
     allExams.clear();
@@ -292,6 +294,7 @@ class HomeController extends GetxController {
 
   getConfiguration() async {
     try {
+      isExamCardLoading.value = true;
       isConfigurationLoading.value = true;
       update();
       final resp = await examRepo.getConfiguration();
@@ -326,6 +329,7 @@ class HomeController extends GetxController {
           compliences.value = [];
       }
     } finally {
+      isExamCardLoading.value = false;
       isCompliencesLoading.value = false;
       update();
     }
@@ -349,6 +353,7 @@ class HomeController extends GetxController {
 
   void showConfigBasedAcknowledgementDialog() async {
     await getCompliances();
+    Get.back();
 
     isChecked.value = false;
 
@@ -501,10 +506,10 @@ class HomeController extends GetxController {
 
     Get.back();
     Get.toNamed('/exam-screen', arguments: {
-      "questions": selectedExam.questionList ?? [],
-      "testId": selectedExam.questionId ?? '',
+      "questions": selectedExam.questionList,
+      "testId": selectedExam.questionId,
       'name': selectedExam.subjectName,
-      'time': selectedExam.examDuration ?? '0',
+      'time': selectedExam.examDuration,
     });
   }
 
