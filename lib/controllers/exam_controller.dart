@@ -52,6 +52,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   DateTime? _lastVisibilityChange;
   int _backgroundDetectionCount = 0;
   bool _hasShownWarningForCurrentBackground = false;
+  bool _isSubmitDialogShown = false;
 
   @override
   void onInit() {
@@ -84,6 +85,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _initializeFocusMonitoring() {
+    _focusCheckTimer?.cancel();
+    _activityTimer?.cancel();
+
     _focusCheckTimer =
         Timer.periodic(const Duration(milliseconds: 200), (timer) {
       _checkAppFocus();
@@ -147,7 +151,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleAppLostFocus() {
-    if (!isExamActive || _dialogShown) return;
+    if (!isExamActive || _dialogShown || _isSubmitDialogShown) return;
 
     debugPrint('App lost focus detected');
     _backgroundDetectionCount++;
@@ -181,6 +185,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!_dialogShown &&
+            !_isSubmitDialogShown &&
             isExamActive &&
             _hasShownWarningForCurrentBackground) {
           showBackgroundWarning();
@@ -195,23 +200,27 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     debugPrint('App gained focus');
     _hasShownWarningForCurrentBackground = false;
 
-    if (isTimerPaused && !_dialogShown) {
+    if (isTimerPaused && !_dialogShown && !_isSubmitDialogShown) {
       resumeQuestionTimer();
     }
   }
 
   void _initializeInternetMonitoring() {
     if (Platform.isAndroid) {
+      _internetCheckTimer?.cancel();
       _internetCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
         _checkInternetConnection();
       });
     } else {
+      _internetSubscription?.cancel();
       _internetSubscription = InternetServiceChecker()
           .checkIfInternetIsConnected()
           .listen((isConnected) {
         if (isConnected &&
             homeController.configuration.isInternetDisabled &&
-            isExamActive) {
+            isExamActive &&
+            !_dialogShown &&
+            !_isSubmitDialogShown) {
           showInternetWarning();
         }
       });
@@ -225,7 +234,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       final isConnected = await InternetServiceChecker().isInternetConnected;
       if (isConnected &&
           homeController.configuration.isInternetDisabled &&
-          !_dialogShown) {
+          !_dialogShown &&
+          !_isSubmitDialogShown) {
         showInternetWarning();
       }
     } catch (e) {
@@ -236,6 +246,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void startQuestionTimeTracking() {
     currentQuestionStartTime = DateTime.now();
 
+    _questionTimer?.cancel();
     _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isTimerPaused && currentQuestionStartTime != null && isExamActive) {
         int currentIndex = currentQuestionIndex.value;
@@ -338,7 +349,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       isAppInSplitScreen.value = true;
       pauseQuestionTimer();
 
-      if (!_dialogShown) {
+      if (!_dialogShown && !_isSubmitDialogShown) {
         _dialogShown = true;
         AppDialog().show(
           title: "Warning!",
@@ -356,13 +367,14 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       }
     } else {
       isAppInSplitScreen.value = false;
-      if (isTimerPaused && !_dialogShown) {
+      if (isTimerPaused && !_dialogShown && !_isSubmitDialogShown) {
         resumeQuestionTimer();
       }
     }
   }
 
   void startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isExamActive) {
         timer.cancel();
@@ -473,6 +485,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       {String? message, bool isDismissable = true}) {
     if (_dialogShown || !isExamActive) return;
 
+    _isSubmitDialogShown = true;
     _dialogShown = true;
     pauseQuestionTimer();
 
@@ -510,6 +523,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       onPressed: () {
         Get.back();
         _dialogShown = false;
+        _isSubmitDialogShown = false;
         goToCompletedScreen();
       },
       showButton: true,
@@ -518,17 +532,37 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     );
 
     if (isDismissable) {
+      Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        if (!Get.isDialogOpen!) {
+          timer.cancel();
+          if (_isSubmitDialogShown && isExamActive) {
+            _resetAfterCancelDialog();
+          }
+        }
+      });
+    }
+  }
+
+  void _resetAfterCancelDialog() {
+    _dialogShown = false;
+    _isSubmitDialogShown = false;
+    _hasShownWarningForCurrentBackground = false;
+
+    if (isExamActive) {
+      resumeQuestionTimer();
+      _lastActivityTime = DateTime.now();
+      _isAppVisible = true;
+
       Future.delayed(const Duration(milliseconds: 100), () {
-        if (Get.isDialogOpen != true && isExamActive) {
-          _dialogShown = false;
-          resumeQuestionTimer();
+        if (isExamActive && !_dialogShown && !_isSubmitDialogShown) {
+          _initializeFocusMonitoring();
         }
       });
     }
   }
 
   void showTimerWarning({required int minute}) {
-    if (_dialogShown || !isExamActive) return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
 
     _dialogShown = true;
     pauseQuestionTimer();
@@ -548,7 +582,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showBackgroundWarning() {
-    if (_dialogShown || !isExamActive) return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
 
     _dialogShown = true;
     pauseQuestionTimer();
@@ -571,7 +605,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showInternetWarning() {
-    if (_dialogShown || !isExamActive) return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
 
     _dialogShown = true;
     pauseQuestionTimer();
