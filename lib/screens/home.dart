@@ -227,64 +227,58 @@ class StudentHomePage extends StatelessWidget {
               itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == examsToShow.length && showLoadMore) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Obx(() => Material(
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(16),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: controller.isLoadingMore.value
-                                    ? null
-                                    : controller.loadMoreExams,
-                                child: Container(
-                                  width: double.infinity,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF9181F4),
-                                        Color(0xFF5038ED)
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Center(
-                                    child: controller.isLoadingMore.value
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Load More Exams',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                  ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Obx(() => Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: controller.isLoadingMore.value
+                                ? null
+                                : controller.loadMoreExams,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF9181F4),
+                                    Color(0xFF5038ED)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            )),
-                      ),
-                      const BannerAdWidget(),
-                    ],
+                              child: Center(
+                                child: controller.isLoadingMore.value
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Load More Exams',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        )),
                   );
                 }
                 final singleItem = examsToShow[index];
                 final originalIndex = controller.allExams.indexOf(singleItem);
 
-                Widget examCard = Padding(
+                return Padding(
                   padding: const EdgeInsets.all(AppTheme.spacingS),
                   child: Obx(() => InkWell(
                         onTap: controller.isExamCardLoading.value
@@ -428,17 +422,6 @@ class StudentHomePage extends StatelessWidget {
                         ),
                       )),
                 );
-
-                if ((index + 1) % 3 == 0 && index != examsToShow.length - 1) {
-                  return Column(
-                    children: [
-                      examCard,
-                      const BannerAdWidget(),
-                    ],
-                  );
-                }
-
-                return examCard;
               },
             ),
           ),

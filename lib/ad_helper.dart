@@ -13,12 +13,12 @@ class AdHelper {
   static String get testBannerAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-3940256099942544/6300978111';
-    }else {
+    } else {
       throw UnsupportedError('Unsupported platform');
     }
   }
 
-  static const bool useTestAds = true; //TODO: Set to false for production
+  static const bool useTestAds = false; //TODO: Set to false for production
 
   static String getBannerAdUnitId() {
     return useTestAds ? testBannerAdUnitId : bannerAdUnitId;
