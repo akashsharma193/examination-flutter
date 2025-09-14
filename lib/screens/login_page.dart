@@ -74,10 +74,17 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                             children: [
                               const SizedBox(height: 32),
                               Center(
-                                  child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: Image.asset('assets/app_logo.png',
-                                    width: 100, height: 100),
+                                  child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: Image.asset(
+                                  'assets/examdy_icon.png',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                               )),
                               const SizedBox(height: 32),
                               Card(
@@ -259,7 +266,7 @@ class _WebLoginPageState extends State<WebLoginPage> {
         },
         child: Scaffold(
           backgroundColor: Colors.white,
-          body: Container(
+          body: SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: Row(
@@ -268,7 +275,7 @@ class _WebLoginPageState extends State<WebLoginPage> {
                   flex: 3,
                   child: ClipPath(
                     clipper: CurvyLeftClipper(),
-                    child: Container(
+                    child: SizedBox(
                       height: double.infinity,
                       child: WavyGradientBackground(
                         width: double.infinity,

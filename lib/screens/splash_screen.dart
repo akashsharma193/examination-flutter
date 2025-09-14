@@ -34,38 +34,36 @@ class SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-      Container(
-        decoration:const  BoxDecoration(
+      body: Container(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/splash_bg.png'),
             fit: BoxFit.cover,
           ),
         ),
-        child: 
-       Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // App Logo
-            Image.asset(
-              'assets/app_logo.png', // Add your logo in assets folder
-              width: 150,
-            ),
-            const SizedBox(height: 40),
-            // Tagline
-            Text(
-              "Exam without internet, focus without distraction.",
-              textAlign: TextAlign.center,
-              style: AppTextStyles.subheading.copyWith(
-                color: Colors.white,
-                fontSize: 16,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App Logo
+              Image.asset(
+                'assets/examdy_splash_icon.png', // Add your logo in assets folder
+                width: 250,
               ),
-            ),
-            const SizedBox(height: 30),
-          ],
+              const SizedBox(height: 20),
+              // Tagline
+              Text(
+                "Exam without internet, focus without distraction.",
+                textAlign: TextAlign.center,
+                style: AppTextStyles.subheading.copyWith(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
