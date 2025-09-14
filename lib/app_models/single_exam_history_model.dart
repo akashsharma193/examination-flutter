@@ -60,9 +60,7 @@ class SingleExamHistoryModel {
         minusMarks: json["minusMarks"] as String?,
         studentCount: json["studentCount"] as int?,
         totalMarks: json['totalMarks'] ?? 0,
-        totalQuestion: json['questionList'] != null
-            ? (json['questionList'] as List).length
-            : 0,
+        totalQuestion: json['totalQuestion'],
         questionList: json['questionList'] != null
             ? (json['questionList'] as List)
                 .map(

@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-6836526074800523/8692203491'; // Replace with your actual banner ad unit ID
+      return 'ca-app-pub-6836526074800523/8692203491';
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -18,7 +18,7 @@ class AdHelper {
     }
   }
 
-  static const bool useTestAds = true; // Set to false for production
+  static const bool useTestAds = true; //TODO: Set to false for production
 
   static String getBannerAdUnitId() {
     return useTestAds ? testBannerAdUnitId : bannerAdUnitId;

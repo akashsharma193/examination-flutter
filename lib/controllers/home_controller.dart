@@ -59,6 +59,7 @@ class HomeController extends GetxController {
 
   bool isRequestInProgress = false;
   bool _isInitialized = false;
+  bool complianceLoadError = false;
 
   @override
   void onInit() {
@@ -110,6 +111,7 @@ class HomeController extends GetxController {
     currentPage = 0;
     hasNextPage = false;
     isRequestInProgress = false;
+    complianceLoadError = false;
     getAndSubmitOfflinePendingExams();
     isLoading(false);
     isCompliencesLoading(false);
@@ -316,6 +318,7 @@ class HomeController extends GetxController {
 
   getCompliances() async {
     try {
+      complianceLoadError = false;
       isCompliencesLoading.value = true;
       update();
       final resp = await examRepo.getCompliance();
@@ -326,7 +329,10 @@ class HomeController extends GetxController {
               resp.value.map((e) => e as Map<String, dynamic>).toList();
           break;
         case AppFailure():
+          complianceLoadError = true;
           compliences.value = [];
+        // Fluttertoast.showToast(
+        //     msg: 'Failed to fetch compliance details: ${resp.errorMessage}');
       }
     } finally {
       isExamCardLoading.value = false;
@@ -354,6 +360,22 @@ class HomeController extends GetxController {
   void showConfigBasedAcknowledgementDialog() async {
     await getCompliances();
     Get.back();
+
+    if (complianceLoadError) {
+      AppDialog().show(
+        title: 'Unable to Load Exam Requirements',
+        content: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+              'Failed to load exam compliance details. Please check your internet connection and try again, or contact support if the problem persists.'),
+        ),
+        buttonText: 'Ok',
+        onPressed: () => Get.back(),
+        restrictBack: false,
+        isDismissible: true,
+      );
+      return;
+    }
 
     isChecked.value = false;
 
