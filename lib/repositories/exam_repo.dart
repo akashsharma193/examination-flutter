@@ -66,7 +66,8 @@ class ExamRepo {
             });
           }
         case AppFailure():
-          return AppResult.failure(response);
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
       print("Exception in getAllExams: $e");
@@ -236,8 +237,8 @@ class ExamRepo {
         case AppSuccess():
           return AppResult.success(true);
         case AppFailure():
-          return AppResult.failure(AppFailure(
-              errorMessage: response.errorMessage, code: response.code));
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
       return AppResult.failure(const AppFailure());
@@ -279,7 +280,8 @@ class ExamRepo {
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
               isSuccess: false, subTitle: response.errorMessage);
-          return const AppFailure();
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
       return AppResult.failure(const AppFailure());

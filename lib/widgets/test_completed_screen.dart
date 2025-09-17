@@ -7,12 +7,19 @@ import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class TestCompletedScreen extends StatelessWidget {
+class TestCompletedScreen extends StatefulWidget {
   final List<QuestionModel> list;
   final String testID;
 
   const TestCompletedScreen(
       {super.key, required this.list, required this.testID});
+
+  @override
+  State<TestCompletedScreen> createState() => _TestCompletedScreenState();
+}
+
+class _TestCompletedScreenState extends State<TestCompletedScreen> {
+  bool _isSubmitting = false;
 
   Future<bool> _checkInternet() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -23,34 +30,46 @@ class TestCompletedScreen extends StatelessWidget {
 
   void _goToHome() async {
     if (await _checkInternet()) {
-      Get.offAllNamed('/home'); // Navigate to home page
+      Get.offAllNamed('/home');
     }
   }
 
   void submitExam() async {
+    if (_isSubmitting) return;
+
     if (!await _checkInternet()) {
       AppSnackbarWidget.showSnackBar(
           isSuccess: false, subTitle: 'No internet Connection available');
       return;
     }
-    ExamRepo()
-        .submitExam(
-      list,
-      testID,
-    )
-        .then((v) {
-      switch (v) {
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final result = await ExamRepo().submitExam(widget.list, widget.testID);
+
+      switch (result) {
         case AppSuccess(value: bool v):
           AppSnackbarWidget.showSnackBar(
               isSuccess: v,
               subTitle: 'exam submitted status : ${v ? 'Success' : 'Failed'}');
-          _goToHome();
+          if (v) {
+            _goToHome();
+          }
           break;
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
-              isSuccess: false, subTitle: v.errorMessage);
+              isSuccess: false, subTitle: result.errorMessage);
       }
-    });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -58,12 +77,11 @@ class TestCompletedScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
-        if (await _checkInternet()) {
+        if (!_isSubmitting && await _checkInternet()) {
           Get.offAllNamed('/home');
         }
       },
       child: Scaffold(
-        // appBar: AppBar(title: Text("Test Completed")),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -73,7 +91,7 @@ class TestCompletedScreen extends StatelessWidget {
                 const Icon(Icons.emoji_events, size: 80, color: Colors.amber),
                 const SizedBox(height: 20),
                 const Text(
-                "Thanks Note",
+                  "Thanks Note",
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -90,7 +108,8 @@ class TestCompletedScreen extends StatelessWidget {
                       TextSpan(
                         text: "Note: ",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: AppColors.textSecondaryColor),
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondaryColor),
                       ),
                       TextSpan(
                         text: "To submit your exam, please ",
@@ -107,7 +126,8 @@ class TestCompletedScreen extends StatelessWidget {
                         text:
                             "Do not close or kill the app during this process",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: AppColors.textSecondaryColor),
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondaryColor),
                       ),
                       TextSpan(
                         text:
@@ -122,26 +142,42 @@ class TestCompletedScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
-                    onTap: submitExam,
+                    onTap: _isSubmitting ? null : submitExam,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 32),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF9181F4), Color(0xFF5038ED)], // Your gradient
+                        gradient: LinearGradient(
+                          colors: _isSubmitting
+                              ? [Colors.grey.shade400, Colors.grey.shade500]
+                              : [
+                                  const Color(0xFF9181F4),
+                                  const Color(0xFF5038ED)
+                                ],
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                         ),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Center(
-                        child: Text(
-                          "Go to Home",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                      child: Center(
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
+                              )
+                            : const Text(
+                                "Go to Home",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                       ),
                     ),
                   ),
