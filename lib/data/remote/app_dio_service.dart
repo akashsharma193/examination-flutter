@@ -54,7 +54,7 @@ class AppDioService {
           'Content-Type': 'application/json',
           'deviceId': await DeviceService.instance.uniqueDeviceId,
           'encDisabled': 'false',
-          'Origin': 'https://examdy.in',
+          'Origin': 'https://crackitx.contentive.in',
         },
         connectTimeout: const Duration(minutes: 2),
         sendTimeout: const Duration(minutes: 2),
@@ -90,16 +90,7 @@ class AppDioService {
               queryParameters: encryptedQueryParams,
               options: Options(headers: mergedHeaders))
           .then((v) {
-        if (v.statusCode == 200) {
-          if (v.data is Map<String, dynamic> &&
-              v.data.containsKey('encPayloadRes')) {
-            final decryptedData = _decryptData(v.data['encPayloadRes']);
-            return AppSuccess(decryptedData);
-          }
-          return AppSuccess(v.data);
-        } else {
-          return _handleOtherStatusCodeResponse(v);
-        }
+        return _handleResponse(v);
       });
     } on DioException catch (e) {
       return _handleDioExceptionError(e);
@@ -124,16 +115,7 @@ class AppDioService {
           queryParameters: queryParams,
           options: Options(headers: mergedHeaders));
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('encPayloadRes')) {
-          final decryptedData = _decryptData(response.data['encPayloadRes']);
-          return AppSuccess(decryptedData);
-        }
-        return AppSuccess(response.data);
-      } else {
-        return _handleOtherStatusCodeResponse(response);
-      }
+      return _handleResponse(response);
     } on SocketException {
       return AppResult.failure(const AppNoInternetFailure());
     } on DioException catch (e) {
@@ -164,113 +146,122 @@ class AppDioService {
         if (v.statusCode == 204) {
           return const AppSuccess(null);
         } else {
-          if (v.data is Map<String, dynamic> &&
-              v.data.containsKey('encPayloadRes')) {
-            final decryptedData = _decryptData(v.data['encPayloadRes']);
-            return AppSuccess(decryptedData);
-          }
-          return _handleOtherStatusCodeResponse(v);
+          return _handleResponse(v);
         }
       });
     } on DioException catch (e) {
-      _handleDioExceptionError(e);
+      return _handleDioExceptionError(e);
     } catch (e, s) {
       return _handleCaughtError(e, s);
     }
-    return AppResult.failure(const AppFailure());
   }
-}
 
-_handleCaughtError(Object e, StackTrace s) {
-  log('\n<---------------- \n Error Caught in Dio Service File \n',
-      name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
+  AppResult _handleResponse(Response response) {
+    Map<String, dynamic> responseData = {};
 
-  return AppResult.failure(const AppFailure());
-}
-
-AppResult _handleDioExceptionError(DioException e) {
-  if (e.type == DioExceptionType.connectionError) {
-    return AppResult.failure(const AppNoInternetFailure());
-  } else if (e.type == DioExceptionType.connectionTimeout) {
-    return AppResult.failure(const AppConnectionTimeOutFailure());
-  } else if (e.type == DioExceptionType.sendTimeout) {
-    return AppResult.failure(const AppRequestTimeOutFailure());
-  } else if (e.type == DioExceptionType.receiveTimeout) {
-    return AppResult.failure(const AppRequestTimeOutFailure());
-  } else if (e.type == DioExceptionType.badResponse) {
-    return AppResult.failure(const AppRequestTimeOutFailure());
-  } else if (e.response?.statusCode != null) {
-    if ((e.response?.statusCode ?? 0) >= 400) {
-      return _handleClientSideError(e.response);
+    if (response.data is Map<String, dynamic> &&
+        response.data.containsKey('encPayloadRes')) {
+      responseData = _decryptData(response.data['encPayloadRes']);
+    } else if (response.data is Map<String, dynamic>) {
+      responseData = response.data;
     } else {
-      return _handleServerSideError(e.response);
+      responseData = {'data': response.data};
     }
-  } else {
+
+    if (response.statusCode! >= 200 && response.statusCode! <= 299) {
+      if (responseData.containsKey('success') &&
+          responseData['success'] == false) {
+        return AppResult.failure(AppFailure(
+          errorMessage: responseData['message'] ?? 'Request failed',
+          code: responseData['errorCode'] ?? response.statusCode.toString(),
+        ));
+      }
+      return AppSuccess(responseData);
+    } else {
+      return _handleErrorResponse(response, responseData);
+    }
+  }
+
+  AppResult _handleErrorResponse(
+      Response response, Map<String, dynamic> responseData) {
+    final errorMessage = responseData['message'] ??
+        _getDefaultErrorMessage(response.statusCode!);
+    final errorCode =
+        responseData['errorCode'] ?? response.statusCode.toString();
+
+    return AppResult.failure(AppFailure(
+      errorMessage: errorMessage,
+      code: errorCode,
+    ));
+  }
+
+  String _getDefaultErrorMessage(int statusCode) {
+    switch (statusCode) {
+      case 400:
+        return 'Bad request. Please check your input.';
+      case 401:
+        return 'Authentication failed. Please login again.';
+      case 403:
+        return 'Access forbidden. You don\'t have permission.';
+      case 404:
+        return 'Resource not found.';
+      case 422:
+        return 'Validation error. Please check your input.';
+      case 500:
+        return 'Internal server error. Please try again later.';
+      case 502:
+        return 'Bad gateway. Server is temporarily unavailable.';
+      case 503:
+        return 'Service unavailable. Please try again later.';
+      default:
+        return 'Something went wrong. Please try again.';
+    }
+  }
+
+  AppResult _handleCaughtError(Object e, StackTrace s) {
+    log('\n<---------------- \n Error Caught in Dio Service File \n',
+        name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
+
     return AppResult.failure(const AppFailure());
   }
-}
 
-AppResult _handleOtherStatusCodeResponse(Response r) {
-  switch (r.statusCode ?? 0) {
-    case > 100 && <= 201:
-      return AppSuccess(r.data);
-    case > 201 && < 300:
-      return AppClientSuccessStatus(
-          code: '${r.statusCode ?? 0}',
-          errorMessage: 'statusCode :${r.statusCode}',
-          data: r.data);
-    case >= 400 && < 500:
-      return _handleClientSideError(r);
-    case > 500:
-      return _handleServerSideError(r);
-    default:
-      return AppFailure(
-          errorMessage: 'Something Went Wrong... ${r.statusCode}');
-  }
-}
+  AppResult _handleDioExceptionError(DioException e) {
+    if (e.type == DioExceptionType.connectionError) {
+      return AppResult.failure(const AppNoInternetFailure());
+    } else if (e.type == DioExceptionType.connectionTimeout) {
+      return AppResult.failure(const AppConnectionTimeOutFailure());
+    } else if (e.type == DioExceptionType.sendTimeout) {
+      return AppResult.failure(const AppRequestTimeOutFailure());
+    } else if (e.type == DioExceptionType.receiveTimeout) {
+      return AppResult.failure(const AppRequestTimeOutFailure());
+    } else if (e.type == DioExceptionType.badResponse) {
+      if (e.response?.data != null) {
+        Map<String, dynamic> responseData = {};
 
-AppResult _handleClientSideError(Response? r) {
-  if (r == null) {
-    return AppResult.failure(const AppClientSideStautsError());
-  }
-  switch (r.statusCode ?? 0) {
-    case 400:
-      return AppResult.failure(
-          AppBadRequestFailure(errorMessage: r.data['message']));
-    case 401:
-      return AppResult.failure(
-          ApUnAuthorizedFailure(errorMessage: r.data['message']));
-    case 403:
-      return AppResult.failure(
-          AppForbidFailuure(errorMessage: r.data['message']));
-    case 404:
-      return AppResult.failure(
-          AppDataNotFoundFailure(errorMessage: r.data['message']));
-    default:
-      return AppResult.failure(
-          AppClientSideStautsError(errorMessage: r.data['message']));
-  }
-}
+        if (e.response!.data is Map<String, dynamic> &&
+            e.response!.data.containsKey('encPayloadRes')) {
+          try {
+            responseData = _decryptData(e.response!.data['encPayloadRes']);
+          } catch (_) {
+            responseData = e.response!.data;
+          }
+        } else if (e.response!.data is Map<String, dynamic>) {
+          responseData = e.response!.data;
+        }
 
-_handleServerSideError(Response? r) {
-  if (r == null) {
-    return AppResult.failure(const AppServerSideError());
-  }
-  switch (r.statusCode ?? 0) {
-    case 500:
-      return AppResult.failure(
-          AppBadRequestFailure(errorMessage: r.data['message']));
-    case 501:
-      return AppResult.failure(
-          ApUnAuthorizedFailure(errorMessage: r.data['message']));
-    case 502:
-      return AppResult.failure(
-          AppForbidFailuure(errorMessage: r.data['message']));
-    case 503:
-      return AppResult.failure(
-          AppDataNotFoundFailure(errorMessage: r.data['message']));
-    default:
-      return AppResult.failure(
-          AppServerSideError(errorMessage: r.data['message']));
+        final errorMessage = responseData['message'] ??
+            _getDefaultErrorMessage(e.response!.statusCode!);
+        final errorCode =
+            responseData['errorCode'] ?? e.response!.statusCode.toString();
+
+        return AppResult.failure(AppFailure(
+          errorMessage: errorMessage,
+          code: errorCode,
+        ));
+      }
+      return AppResult.failure(const AppFailure());
+    } else {
+      return AppResult.failure(const AppFailure());
+    }
   }
 }
