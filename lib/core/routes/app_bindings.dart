@@ -15,7 +15,8 @@ class AppBindings extends Bindings {
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => HomeController());
+    Get.delete<HomeController>();
+    Get.put(HomeController(), permanent: true);
   }
 }
 
@@ -39,3 +40,4 @@ class EditUserBinding extends Bindings {
     Get.lazyPut(() => EditUserDetailController());
   }
 }
+

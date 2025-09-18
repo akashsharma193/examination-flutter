@@ -19,13 +19,6 @@ import 'package:get/get.dart';
 class HomeController extends GetxController {
   static HomeController get to => Get.find<HomeController>();
 
-  static HomeController init() {
-    if (!Get.isRegistered<HomeController>()) {
-      Get.put(HomeController(), permanent: true);
-    }
-    return Get.find<HomeController>();
-  }
-
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
   RxBool isCompliencesLoading = false.obs;
@@ -66,7 +59,9 @@ class HomeController extends GetxController {
     super.onInit();
     if (!_isInitialized) {
       _isInitialized = true;
-      refreshPage();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        refreshPage();
+      });
     }
 
     ever(isLoadingMore, (bool loading) {
@@ -84,6 +79,15 @@ class HomeController extends GetxController {
       searchQuery.value = searchController.text;
       filterExams();
     });
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    if (!_isInitialized) {
+      _isInitialized = true;
+      refreshPage();
+    }
   }
 
   void toggleSearch() {
@@ -285,7 +289,7 @@ class HomeController extends GetxController {
   void logOut() async {
     try {
       final AuthRepo repo = AuthRepo();
-      repo.logOut(userId: AppLocalStorage.instance.user.userId);
+      repo.logOut(userId: AppLocalStorage.instance.userId);
       AppLocalStorage.instance.clearStorage();
       Get.offAllNamed('/login');
     } finally {
@@ -331,8 +335,6 @@ class HomeController extends GetxController {
         case AppFailure():
           complianceLoadError = true;
           compliences.value = [];
-        // Fluttertoast.showToast(
-        //     msg: 'Failed to fetch compliance details: ${resp.errorMessage}');
       }
     } finally {
       isExamCardLoading.value = false;
@@ -564,3 +566,4 @@ class HomeController extends GetxController {
     super.onClose();
   }
 }
+

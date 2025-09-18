@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdHelper {
@@ -19,27 +18,57 @@ class AdHelper {
     }
   }
 
+  static String get interstitialVideoAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-6836526074800523/7714620590';
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
+  static String get testInterstitialVideoAdUnitId {
+    if (Platform.isAndroid) {
+      return 'ca-app-pub-3940256099942544/1033173712';
+    } else {
+      throw UnsupportedError('Unsupported platform');
+    }
+  }
+
   static const bool useTestAds = false;
 
   static String getBannerAdUnitId() {
     final adUnitId = useTestAds ? testBannerAdUnitId : bannerAdUnitId;
-    print('🎯 Ad Unit ID: $adUnitId');
-    print('🎯 Using ${useTestAds ? "TEST" : "PRODUCTION"} ads');
+    print('🎯 Banner Ad Unit ID: $adUnitId');
+    print('🎯 Using ${useTestAds ? "TEST" : "PRODUCTION"} banner ads');
     return adUnitId;
   }
 
-  // Add this method to check what type of ad is being used
+  static String getInterstitialVideoAdUnitId() {
+    final adUnitId =
+        useTestAds ? testInterstitialVideoAdUnitId : interstitialVideoAdUnitId;
+    print('🎯 Interstitial Video Ad Unit ID: $adUnitId');
+    print(
+        '🎯 Using ${useTestAds ? "TEST" : "PRODUCTION"} interstitial video ads');
+    return adUnitId;
+  }
+
   static bool isUsingTestAds() => useTestAds;
   static String getCurrentAdType() => useTestAds ? "TEST" : "PRODUCTION";
 
   static Future<void> initializeAds() async {
-    await MobileAds.instance.initialize();
-    await MobileAds.instance.updateRequestConfiguration(
-      RequestConfiguration(
-        testDeviceIds: [],
-        tagForChildDirectedTreatment: TagForChildDirectedTreatment.unspecified,
-        tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.unspecified,
-      ),
-    );
+    try {
+      await MobileAds.instance.initialize();
+      await MobileAds.instance.updateRequestConfiguration(
+        RequestConfiguration(
+          testDeviceIds: [],
+          tagForChildDirectedTreatment:
+              TagForChildDirectedTreatment.unspecified,
+          tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.unspecified,
+        ),
+      );
+      print('🎯 Request configuration updated');
+    } catch (e) {
+      print('🎯 Error initializing Mobile Ads: $e');
+    }
   }
 }

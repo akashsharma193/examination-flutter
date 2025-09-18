@@ -34,8 +34,54 @@ class AppAuthController extends GetxController {
   void checkIfAlreadyLoggedIn() {
     if (AppLocalStorage.instance.isLoggedIn &&
         AppLocalStorage.instance.accessToken != null) {
-      isUserAuthenticated.value = true;
+      String userRole = AppLocalStorage.instance.userRole;
+      if (userRole.toLowerCase() == 'admin') {
+        _showUnauthorizedDialog();
+      } else {
+        isUserAuthenticated.value = true;
+      }
     }
+  }
+
+  String? validatePassword(String password) {
+    if (password.isEmpty) {
+      return 'Password is required';
+    }
+    if (password.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+      return 'Password must contain at least one special character';
+    }
+    return null;
+  }
+
+  void _showUnauthorizedDialog() {
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Access Denied'),
+        content: const Text('You are not authorized to use this application.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              logout();
+              Get.back();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void login() async {
@@ -47,23 +93,29 @@ class AppAuthController extends GetxController {
             isSuccess: false, subTitle: 'Email is not valid');
         return;
       }
-      if (!RegExp(r'^(?=.*[!@#$%^&*(),.?":{}|<>]).{6,}$')
-          .hasMatch(passController.text)) {
+
+      String? passwordError = validatePassword(passController.text);
+      if (passwordError != null) {
         AppSnackbarWidget.showSnackBar(
-            isSuccess: false,
-            subTitle:
-                'Password should contain 1 special symbol and atleast 6 char long...');
+            isSuccess: false, subTitle: passwordError);
         return;
       }
+
       final response = await repo.login(
           user: emailController.text, pass: passController.text);
 
       switch (response) {
         case AppSuccess():
-          isUserAuthenticated.value = true;
-          localStorage.setIsUserLoggedIn(true);
-          localStorage.setUserData(response.value);
-          repo.saveFCMToken(userId: AppLocalStorage.instance.user.userId);
+          String userRole = AppLocalStorage.instance.userRole;
+
+          if (userRole.toLowerCase() == 'admin') {
+            _showUnauthorizedDialog();
+          } else {
+            isUserAuthenticated.value = true;
+            localStorage.setIsUserLoggedIn(true);
+            localStorage.setUserData(response.value);
+            repo.saveFCMToken(userId: AppLocalStorage.instance.userId);
+          }
           break;
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
@@ -80,6 +132,19 @@ class AppAuthController extends GetxController {
     isRegisterLoading.value = true;
     update();
     try {
+      String? passwordError = validatePassword(registerPassController.text);
+      if (passwordError != null) {
+        AppSnackbarWidget.showSnackBar(
+            isSuccess: false, subTitle: passwordError);
+        return;
+      }
+
+      if (registerPassController.text != confirmPassController.text) {
+        AppSnackbarWidget.showSnackBar(
+            isSuccess: false, subTitle: 'Passwords do not match');
+        return;
+      }
+
       final response = await repo.register({
         "name": nameController.text.trim(),
         "mobile": mobileController.text.trim(),

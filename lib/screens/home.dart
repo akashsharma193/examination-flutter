@@ -1,5 +1,6 @@
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/widgets/banner_ad_widget.dart';
+import 'package:crackitx/widgets/interstitial_ad.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/app_models/exam_model.dart';
@@ -15,13 +16,28 @@ Widget homePage() {
   if (AppLocalStorage.instance.user.isAdmin) {
     return const AdminDashboard();
   } else {
-    return const StudentHomePage();
+    return InterstitialVideoAdManager(
+      onAdClosed: () {
+        final controller = Get.find<HomeController>();
+        controller.showConfigBasedAcknowledgementDialog();
+      },
+      onAdFailedToLoad: () {
+        final controller = Get.find<HomeController>();
+        controller.showConfigBasedAcknowledgementDialog();
+      },
+      child: const StudentHomePage(),
+    );
   }
 }
 
-class StudentHomePage extends StatelessWidget {
+class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
 
+  @override
+  State<StudentHomePage> createState() => _StudentHomePageState();
+}
+
+class _StudentHomePageState extends State<StudentHomePage> {
   bool isExamLive(ExamModel model) {
     return DateTime.now().isAfter(model.startTime) &&
         DateTime.now().isBefore(model.endTime);
@@ -58,106 +74,140 @@ class StudentHomePage extends StatelessWidget {
     );
   }
 
+  void _handleExamCardTap(
+      ExamModel singleItem, HomeController controller) async {
+    if (isExamLive(singleItem)) {
+      InterstitialVideoAdManagerState? adManagerState =
+          context.findAncestorStateOfType<InterstitialVideoAdManagerState>();
+      adManagerState ??= InterstitialVideoAdManager.current;
+
+      if (adManagerState != null) {
+        if (adManagerState.isAdReady) {
+          final originalIndex = controller.allExams.indexOf(singleItem);
+          controller.selectedExam =
+              controller.allExams[originalIndex != -1 ? originalIndex : 0];
+          await controller.getConfiguration();
+
+          adManagerState.showAd();
+        } else {
+          _showLoadingDialog();
+          final originalIndex = controller.allExams.indexOf(singleItem);
+          controller.selectedExam =
+              controller.allExams[originalIndex != -1 ? originalIndex : 0];
+          await controller.getConfiguration();
+          Get.back();
+          controller.showConfigBasedAcknowledgementDialog();
+        }
+      } else {
+        _showLoadingDialog();
+        final originalIndex = controller.allExams.indexOf(singleItem);
+        controller.selectedExam =
+            controller.allExams[originalIndex != -1 ? originalIndex : 0];
+        await controller.getConfiguration();
+        Get.back();
+        controller.showConfigBasedAcknowledgementDialog();
+      }
+    } else {
+      controller.showExamNotLiveDialog(isExamEnded: isExamEnded(singleItem));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = HomeController.init();
-
-    return GetBuilder<HomeController>(
-        init: controller,
-        builder: (controller) {
-          return Scaffold(
-            drawer: const AppDrawer(),
-            floatingActionButton: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                FloatingActionButton.small(
-                  backgroundColor: AppTheme.gradientStart,
-                  heroTag: "refresh",
-                  onPressed: controller.refreshPage,
-                  child: const Icon(Icons.refresh, color: Colors.white),
-                ),
-              ],
+    return GetBuilder<HomeController>(builder: (controller) {
+      return Scaffold(
+        drawer: const AppDrawer(),
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.small(
+              backgroundColor: AppTheme.gradientStart,
+              heroTag: "refresh",
+              onPressed: controller.refreshPage,
+              child: const Icon(Icons.refresh, color: Colors.white),
             ),
-            appBar: PreferredSize(
-              preferredSize: const Size.fromHeight(kToolbarHeight),
-              child: Obx(() => GradientAppBar(
-                    title: controller.isSearching.value
-                        ? TextField(
-                            controller: controller.searchController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              hintText: 'Search by subject name...',
-                              hintStyle: TextStyle(color: Colors.white70),
-                              border: InputBorder.none,
-                            ),
-                            autofocus: true,
-                          )
-                        : Text(
-                            'Home',
-                            style: AppTheme.headingLarge
-                                .copyWith(color: Colors.white),
-                          ),
-                    iconTheme: const IconThemeData(color: Colors.white),
-                    actions: [
-                      Obx(() => IconButton(
-                            onPressed: controller.toggleSearch,
-                            icon: Icon(
-                              controller.isSearching.value
-                                  ? Icons.close
-                                  : Icons.search,
-                              color: Colors.white,
-                            ),
-                          )),
-                      IconButton(
-                        onPressed: controller.logOut,
-                        icon: const Icon(Icons.logout_outlined,
-                            color: Colors.white),
+          ],
+        ),
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: Obx(() => GradientAppBar(
+                title: controller.isSearching.value
+                    ? TextField(
+                        controller: controller.searchController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          hintText: 'Search by subject name...',
+                          hintStyle: TextStyle(color: Colors.white70),
+                          border: InputBorder.none,
+                        ),
+                        autofocus: true,
+                      )
+                    : Text(
+                        'Home',
+                        style:
+                            AppTheme.headingLarge.copyWith(color: Colors.white),
                       ),
-                    ],
-                  )),
-            ),
-            body: Column(
-              children: [
-                const BannerAdWidget(),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.spacingM),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: AppTheme.spacingL),
-                        Obx(() {
-                          if (controller.isUserProfileLoading.value) {
-                            return Text(
-                              'Loading...',
-                              style: AppTheme.headingLarge.copyWith(
-                                color: Colors.black,
-                              ),
-                            );
-                          }
-                          final userProfile = controller.userProfile.value;
-                          final displayName = !userProfile.isEmpty &&
-                                  userProfile.name.isNotEmpty
+                iconTheme: const IconThemeData(color: Colors.white),
+                actions: [
+                  Obx(() => IconButton(
+                        onPressed: controller.toggleSearch,
+                        icon: Icon(
+                          controller.isSearching.value
+                              ? Icons.close
+                              : Icons.search,
+                          color: Colors.white,
+                        ),
+                      )),
+                  IconButton(
+                    onPressed: controller.logOut,
+                    icon:
+                        const Icon(Icons.logout_outlined, color: Colors.white),
+                  ),
+                ],
+              )),
+        ),
+        body: Column(
+          children: [
+            const BannerAdWidget(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppTheme.spacingM),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppTheme.spacingL),
+                    Obx(() {
+                      if (controller.isUserProfileLoading.value) {
+                        return Text(
+                          'Loading...',
+                          style: AppTheme.headingLarge.copyWith(
+                            color: Colors.black,
+                          ),
+                        );
+                      }
+                      final userProfile = controller.userProfile.value;
+                      final displayName =
+                          !userProfile.isEmpty && userProfile.name.isNotEmpty
                               ? userProfile.name
                               : AppLocalStorage.instance.user.name;
 
-                          return Text(
-                            'Hello, $displayName',
-                            style: AppTheme.headingLarge.copyWith(
-                              color: Colors.black,
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: AppTheme.spacingL),
-                        Expanded(child: getExamListWidget(controller))
-                      ],
-                    ),
-                  ),
+                      return Text(
+                        'Hello, $displayName',
+                        style: AppTheme.headingLarge.copyWith(
+                          color: Colors.black,
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: AppTheme.spacingL),
+                    Expanded(child: getExamListWidget(controller))
+                  ],
                 ),
-              ],
+              ),
             ),
-          );
-        });
+          ],
+        ),
+      );
+    });
   }
 
   Widget getExamListWidget(HomeController controller) {
@@ -227,84 +277,62 @@ class StudentHomePage extends StatelessWidget {
               itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == examsToShow.length && showLoadMore) {
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        child: Obx(() => Material(
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(16),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: controller.isLoadingMore.value
-                                    ? null
-                                    : controller.loadMoreExams,
-                                child: Container(
-                                  width: double.infinity,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 16),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF9181F4),
-                                        Color(0xFF5038ED)
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Center(
-                                    child: controller.isLoadingMore.value
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Load More Exams',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                  ),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Obx(() => Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(16),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: controller.isLoadingMore.value
+                                ? null
+                                : controller.loadMoreExams,
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF9181F4),
+                                    Color(0xFF5038ED)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            )),
-                      ),
-                      const BannerAdWidget(),
-                    ],
+                              child: Center(
+                                child: controller.isLoadingMore.value
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Load More Exams',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                        )),
                   );
                 }
                 final singleItem = examsToShow[index];
-                final originalIndex = controller.allExams.indexOf(singleItem);
 
-                Widget examCard = Padding(
+                return Padding(
                   padding: const EdgeInsets.all(AppTheme.spacingS),
                   child: Obx(() => InkWell(
                         onTap: controller.isExamCardLoading.value
                             ? null
-                            : () async {
-                                if (isExamLive(singleItem)) {
-                                  _showLoadingDialog();
-                                  controller.selectedExam = controller.allExams[
-                                      originalIndex != -1
-                                          ? originalIndex
-                                          : index];
-                                  await controller.getConfiguration();
-                                  Get.back();
-                                  controller
-                                      .showConfigBasedAcknowledgementDialog();
-                                } else {
-                                  controller.showExamNotLiveDialog(
-                                      isExamEnded: isExamEnded(singleItem));
-                                }
-                              },
+                            : () => _handleExamCardTap(singleItem, controller),
                         child: Material(
                           elevation: 2,
                           borderRadius:
@@ -428,17 +456,6 @@ class StudentHomePage extends StatelessWidget {
                         ),
                       )),
                 );
-
-                if ((index + 1) % 3 == 0 && index != examsToShow.length - 1) {
-                  return Column(
-                    children: [
-                      examCard,
-                      const BannerAdWidget(),
-                    ],
-                  );
-                }
-
-                return examCard;
               },
             ),
           ),

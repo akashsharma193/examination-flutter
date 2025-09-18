@@ -16,6 +16,8 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(AppAuthController(), permanent: true);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         if (constraints.maxWidth < 900) {
