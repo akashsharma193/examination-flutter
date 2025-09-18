@@ -28,7 +28,8 @@ class RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     final authController = Get.find<AppAuthController>();
-    final purple = const Color(0xFF7460F1);
+
+    const purple = Color(0xFF7460F1);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -96,8 +97,14 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             authController.nameController,
                                         hintText: 'Name',
                                         prefixIcon:
-                                            Icon(Icons.person, color: purple),
+                                            const Icon(Icons.person, color: purple),
                                         type: TextFieldType.text,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Name is required';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
@@ -105,8 +112,17 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             authController.mobileController,
                                         hintText: 'Number',
                                         prefixIcon:
-                                            Icon(Icons.phone, color: purple),
+                                            const Icon(Icons.phone, color: purple),
                                         type: TextFieldType.number,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Number is required';
+                                          }
+                                          if (value.length < 10) {
+                                            return 'Enter a valid phone number';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
@@ -114,8 +130,17 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             .registerEmailController,
                                         hintText: 'Email',
                                         prefixIcon:
-                                            Icon(Icons.email, color: purple),
+                                            const Icon(Icons.email, color: purple),
                                         type: TextFieldType.email,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Email is required';
+                                          }
+                                          if (!value.isEmail) {
+                                            return 'Enter a valid email';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
@@ -123,18 +148,30 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             authController.batchController,
                                         hintText: 'Batch',
                                         prefixIcon:
-                                            Icon(Icons.people, color: purple),
+                                            const Icon(Icons.people, color: purple),
                                         type: TextFieldType.text,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Batch is required';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
                                         controller:
                                             authController.orgCodeController,
                                         hintText: 'Org Code',
-                                        prefixIcon: Icon(
+                                        prefixIcon: const Icon(
                                             Icons.apartment_outlined,
                                             color: purple),
                                         type: TextFieldType.text,
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Org Code is required';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
@@ -142,8 +179,10 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             .registerPassController,
                                         hintText: 'Password',
                                         prefixIcon:
-                                            Icon(Icons.lock, color: purple),
+                                            const Icon(Icons.lock, color: purple),
                                         type: TextFieldType.password,
+                                        validator: (value) => authController
+                                            .validatePassword(value ?? ''),
                                       ),
                                       const SizedBox(height: 16),
                                       AppTextField(
@@ -151,15 +190,20 @@ class RegistrationPageState extends State<RegistrationPage> {
                                             .confirmPassController,
                                         hintText: 'Confirm Password',
                                         prefixIcon:
-                                            Icon(Icons.lock, color: purple),
+                                            const Icon(Icons.lock, color: purple),
                                         type: TextFieldType.password,
-                                        validator: (value) => authController
-                                                    .registerPassController
-                                                    .text ==
-                                                authController
-                                                    .confirmPassController.text
-                                            ? null
-                                            : 'Passwords do not match',
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Confirm password is required';
+                                          }
+                                          if (value !=
+                                              authController
+                                                  .registerPassController
+                                                  .text) {
+                                            return 'Passwords do not match';
+                                          }
+                                          return null;
+                                        },
                                       ),
                                       const SizedBox(height: 28),
                                       Obx(() => Material(

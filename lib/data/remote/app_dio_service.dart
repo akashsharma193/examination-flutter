@@ -10,6 +10,7 @@ import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/data/remote/network_log_interceptor.dart';
 import 'package:crackitx/services/device_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:get/get.dart' as getx;
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -20,6 +21,7 @@ class AppDioService {
   static Dio get dio => Dio();
 
   final Dio _serviceDio = dio;
+  bool _isRefreshing = false;
 
   Map<String, String> get _getHeaders {
     final headers = <String, String>{
@@ -72,6 +74,71 @@ class AppDioService {
     _serviceDio.interceptors.add(NetworkLogInterceptor());
   }
 
+  Future<bool> _handleTokenRefresh() async {
+    if (_isRefreshing) return false;
+
+    _isRefreshing = true;
+
+    try {
+      final refreshToken = AppLocalStorage.instance.refreshToken;
+      final userId = AppLocalStorage.instance.user.userId;
+
+      if (refreshToken == null || refreshToken.isEmpty || userId.isEmpty) {
+        _forceLogout();
+        return false;
+      }
+
+      final refreshBody = {'refreshToken': refreshToken, 'userId': userId};
+
+      final encryptedData = _encryptData(refreshBody);
+      final encryptedBody = {'encPayload': encryptedData};
+
+      final response = await _serviceDio.post(
+        'user-open/refreshToken',
+        data: encryptedBody,
+        options: Options(headers: {
+          'Content-Type': 'application/json',
+          'encDisabled': 'false',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = {};
+
+        if (response.data is Map<String, dynamic> &&
+            response.data.containsKey('encPayloadRes')) {
+          responseData = _decryptData(response.data['encPayloadRes']);
+        } else if (response.data is Map<String, dynamic>) {
+          responseData = response.data;
+        }
+
+        if (responseData.containsKey('data')) {
+          final data = responseData['data'];
+          if (data.containsKey('token') && data.containsKey('refreshToken')) {
+            AppLocalStorage.instance
+                .setTokens(data['token'], data['refreshToken']);
+            return true;
+          }
+        }
+      }
+
+      _forceLogout();
+      return false;
+    } catch (e) {
+      _forceLogout();
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
+  void _forceLogout() {
+    AppLocalStorage.instance.clearTokens();
+    AppLocalStorage.instance.setIsUserLoggedIn(false);
+    Get.snackbar('Session Expired', 'Please login again');
+    Get.offAllNamed('/login');
+  }
+
   Future<AppResult> getDio(
       {required String endpoint,
       Map<String, dynamic>? queryParams,
@@ -85,14 +152,26 @@ class AppDioService {
         encryptedQueryParams = {'encPayload': encryptedData};
       }
 
-      return _serviceDio
-          .get(endpoint,
-              queryParameters: encryptedQueryParams,
-              options: Options(headers: mergedHeaders))
-          .then((v) {
-        return _handleResponse(v);
-      });
+      final response = await _serviceDio.get(
+        endpoint,
+        queryParameters: encryptedQueryParams,
+        options: Options(headers: mergedHeaders),
+      );
+
+      return _handleResponse(response);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        final refreshSuccess = await _handleTokenRefresh();
+        if (refreshSuccess) {
+          return getDio(
+            endpoint: endpoint,
+            queryParams: queryParams,
+            headers: headers,
+          );
+        }
+        return AppResult.failure(
+            const AppFailure(errorMessage: 'Session expired'));
+      }
       return _handleDioExceptionError(e);
     } catch (e, s) {
       return _handleCaughtError(e, s);
@@ -119,6 +198,20 @@ class AppDioService {
     } on SocketException {
       return AppResult.failure(const AppNoInternetFailure());
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401 &&
+          endpoint != 'user-open/refreshToken') {
+        final refreshSuccess = await _handleTokenRefresh();
+        if (refreshSuccess) {
+          return postDio(
+            endpoint: endpoint,
+            body: body,
+            queryParams: queryParams,
+            headers: headers,
+          );
+        }
+        return AppResult.failure(
+            const AppFailure(errorMessage: 'Session expired'));
+      }
       return _handleDioExceptionError(e);
     } catch (e, s) {
       log("💥 [DIO] Unknown Error in POST request: $endpoint",
@@ -137,19 +230,30 @@ class AppDioService {
       final encryptedData = _encryptData(body);
       final encryptedBody = {'encPayload': encryptedData};
 
-      return _serviceDio
-          .delete(endpoint,
-              data: encryptedBody,
-              queryParameters: queryParams,
-              options: Options(headers: mergedHeaders))
-          .then((v) {
-        if (v.statusCode == 204) {
-          return const AppSuccess(null);
-        } else {
-          return _handleResponse(v);
-        }
-      });
+      final response = await _serviceDio.delete(endpoint,
+          data: encryptedBody,
+          queryParameters: queryParams,
+          options: Options(headers: mergedHeaders));
+
+      if (response.statusCode == 204) {
+        return const AppSuccess(null);
+      } else {
+        return _handleResponse(response);
+      }
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        final refreshSuccess = await _handleTokenRefresh();
+        if (refreshSuccess) {
+          return deleteDio(
+            endpoint: endpoint,
+            body: body,
+            queryParams: queryParams,
+            headers: headers,
+          );
+        }
+        return AppResult.failure(
+            const AppFailure(errorMessage: 'Session expired'));
+      }
       return _handleDioExceptionError(e);
     } catch (e, s) {
       return _handleCaughtError(e, s);

@@ -27,6 +27,22 @@ class AppLocalStorage {
     _prefs.setString('user-data', jsonEncode(user.toJson()));
   }
 
+  String get userId {
+    return _prefs.getString('user-id') ?? '';
+  }
+
+  void setUserId(String userId) {
+    _prefs.setString('user-id', userId);
+  }
+
+  String get userRole {
+    return _prefs.getString('user-role') ?? 'User';
+  }
+
+  void setUserRole(String role) {
+    _prefs.setString('user-role', role);
+  }
+
   String? get accessToken {
     return _prefs.getString('access-token');
   }
@@ -51,6 +67,8 @@ class AppLocalStorage {
   void clearTokens() {
     _prefs.remove('access-token');
     _prefs.remove('refresh-token');
+    _prefs.remove('user-id');
+    _prefs.remove('user-role');
   }
 
   bool get isLoggedIn {

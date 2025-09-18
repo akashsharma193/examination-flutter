@@ -169,7 +169,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
         AppDialog().show(
           title: "Warning!",
-          content: Text(
+          content: const Text(
               "You have exceeded the maximum number of app switches.\nYour exam will now be submitted automatically."),
           buttonText: "OK",
           onPressed: () {
@@ -400,6 +400,29 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     });
   }
 
+  // void submitExam() {
+  //   if (!isExamActive) return;
+
+  //   isExamActive = false;
+  //   List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
+
+  //   ExamRepo().submitExam(questionsWithTime, testId).then((v) {
+  //     switch (v) {
+  //       case AppSuccess(value: bool v):
+  //         AppSnackbarWidget.showSnackBar(
+  //             isSuccess: v,
+  //             subTitle: 'Exam submitted status : ${v ? 'Success' : 'Failed'}');
+
+  //         Get.offAllNamed('/home');
+  //         break;
+  //       case AppFailure():
+  //         AppSnackbarWidget.showSnackBar(
+  //             isSuccess: false, subTitle: v.errorMessage);
+  //         goToCompletedScreen();
+  //     }
+  //   });
+  // }
+
   void submitExam() {
     if (!isExamActive) return;
 
@@ -412,8 +435,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
           AppSnackbarWidget.showSnackBar(
               isSuccess: v,
               subTitle: 'Exam submitted status : ${v ? 'Success' : 'Failed'}');
-
-          Get.offAllNamed('/home');
+          goToCompletedScreen();
           break;
         case AppFailure():
           AppSnackbarWidget.showSnackBar(
@@ -439,13 +461,14 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     return questionsWithTime;
   }
 
-  void goToCompletedScreen() {
+  void goToCompletedScreen({bool isAlreadySubmitted = false}) {
     isExamActive = false;
     List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
 
     Get.offAll(() => TestCompletedScreen(
           list: questionsWithTime,
           testID: testId,
+          isAlreadySubmitted: isAlreadySubmitted,
         ));
   }
 
