@@ -54,7 +54,7 @@ class AppDioService {
           'Content-Type': 'application/json',
           'deviceId': await DeviceService.instance.uniqueDeviceId,
           'encDisabled': 'false',
-          'Origin': 'https://crackitx.contentive.in',
+          'Origin': 'https://examdy.in',
         },
         connectTimeout: const Duration(minutes: 2),
         sendTimeout: const Duration(minutes: 2),
