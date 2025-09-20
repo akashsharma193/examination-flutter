@@ -62,8 +62,8 @@ class AdHelper {
         RequestConfiguration(
           testDeviceIds: [],
           tagForChildDirectedTreatment:
-              TagForChildDirectedTreatment.unspecified,
-          tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.unspecified,
+              TagForChildDirectedTreatment.yes,
+          tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.yes,
         ),
       );
       print('🎯 Request configuration updated');
