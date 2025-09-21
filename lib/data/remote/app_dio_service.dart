@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -23,7 +22,20 @@ class AppDioService {
 
   final Dio _serviceDio = dio;
   bool _isRefreshing = false;
-  final List<Completer<bool>> _refreshQueue = [];
+  final List<Completer<String?>> _failedQueue = [];
+
+  void _processQueue(dynamic error, String? token) {
+    for (final completer in _failedQueue) {
+      if (!completer.isCompleted) {
+        if (error != null) {
+          completer.completeError(error);
+        } else {
+          completer.complete(token);
+        }
+      }
+    }
+    _failedQueue.clear();
+  }
 
   Map<String, String> get _getHeaders {
     final headers = <String, String>{
@@ -67,189 +79,386 @@ class AppDioService {
           return code != null && code >= 200 && code <= 503;
         },
         contentType: 'application/json');
-    
+
     if (kDebugMode) {
       _serviceDio.interceptors.add(PrettyDioLogger(
           request: true, requestBody: true, responseBody: true));
     }
-    
+
     _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
     _serviceDio.interceptors.add(NetworkLogInterceptor());
-    
-    // Add token refresh interceptor
+
     _serviceDio.interceptors.add(
       InterceptorsWrapper(
+        onResponse: (response, handler) {
+          if (response.data != null &&
+              response.data is Map<String, dynamic> &&
+              response.data.containsKey('encPayloadRes')) {
+            response.data = _decryptData(response.data['encPayloadRes']);
+          }
+
+          if (response.statusCode == 401) {
+            _handle401Error(response, handler);
+            return;
+          }
+
+          handler.next(response);
+        },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401 && 
-              !error.requestOptions.path.contains('user-open/login') &&
-              !error.requestOptions.path.contains('user-open/refreshToken')) {
-            
-            final refreshSuccess = await _handleTokenRefresh();
-            if (refreshSuccess) {
-              // Clone the original request options
-              final originalOptions = error.requestOptions;
-              final newOptions = Options(
-                method: originalOptions.method,
-                headers: {
-                  ...originalOptions.headers,
-                  'Authorization': 'Bearer ${AppLocalStorage.instance.accessToken}',
-                },
-              );
-              
+          final originalRequest = error.requestOptions;
+
+          if (error.response?.data != null &&
+              error.response!.data is Map<String, dynamic> &&
+              error.response!.data.containsKey('encPayloadRes')) {
+            error.response!.data =
+                _decryptData(error.response!.data['encPayloadRes']);
+          }
+
+          if (error.response?.statusCode == 401 &&
+              originalRequest.extra['retry'] != true) {
+            if (originalRequest.path.contains('/user-open/login')) {
+              handler.next(error);
+              return;
+            }
+
+            if (_isRefreshing) {
+              final completer = Completer<String?>();
+              _failedQueue.add(completer);
+
               try {
-                // Retry the request with new token
-                final response = await _serviceDio.request(
-                  originalOptions.path,
-                  options: newOptions,
-                  data: originalOptions.data,
-                  queryParameters: originalOptions.queryParameters,
-                );
-                handler.resolve(response);
-                return;
+                final newToken = await completer.future;
+                if (newToken != null) {
+                  final retryOptions = Options(
+                    method: originalRequest.method,
+                    headers: {
+                      ...originalRequest.headers,
+                      'Authorization': 'Bearer $newToken',
+                    },
+                    extra: {
+                      ...originalRequest.extra,
+                      'retry': true,
+                    },
+                  );
+
+                  final response = await _serviceDio.request(
+                    originalRequest.path,
+                    options: retryOptions,
+                    data: originalRequest.data,
+                    queryParameters: originalRequest.queryParameters,
+                  );
+                  handler.resolve(response);
+                  return;
+                }
               } catch (e) {
-                log('Retry request failed after token refresh: $e');
+                handler.next(error);
+                return;
               }
             }
+
+            originalRequest.extra['retry'] = true;
+            _isRefreshing = true;
+
+            final refreshToken = AppLocalStorage.instance.refreshToken;
+            final userId = AppLocalStorage.instance.user.userId;
+
+            if (refreshToken == null ||
+                refreshToken.isEmpty ||
+                userId.isEmpty) {
+              _handleLogout('Session expired. Please login again.');
+              _processQueue(error, null);
+              _isRefreshing = false;
+              handler.next(error);
+              return;
+            }
+
+            try {
+              final refreshDio = Dio();
+              refreshDio.options = BaseOptions(
+                baseUrl: _serviceDio.options.baseUrl,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'encDisabled': 'false',
+                },
+                connectTimeout: const Duration(seconds: 30),
+                sendTimeout: const Duration(seconds: 30),
+                receiveTimeout: const Duration(seconds: 30),
+              );
+
+              final refreshPayload = {
+                'refreshToken': refreshToken,
+                'userId': userId,
+              };
+
+              final refreshBody = {
+                'encPayload': _encryptData(refreshPayload),
+              };
+
+              final refreshResponse = await refreshDio.post(
+                '/user-open/refreshToken',
+                data: refreshBody,
+              );
+
+              Map<String, dynamic> responseData = refreshResponse.data;
+
+              if (responseData.containsKey('encPayloadRes')) {
+                responseData = _decryptData(responseData['encPayloadRes']);
+              }
+
+              if (responseData['success'] == true &&
+                  responseData.containsKey('data')) {
+                final data = responseData['data'];
+                final newToken = data['token'];
+                final newRefreshToken = data['refreshToken'];
+                final newUserId = data['userId'];
+
+                if (newToken != null) {
+                  AppLocalStorage.instance.setTokens(newToken, newRefreshToken);
+
+                  final retryOptions = Options(
+                    method: originalRequest.method,
+                    headers: {
+                      ...originalRequest.headers,
+                      'Authorization': 'Bearer $newToken',
+                    },
+                    extra: {
+                      ...originalRequest.extra,
+                      'retry': true,
+                    },
+                  );
+
+                  _processQueue(null, newToken);
+
+                  final response = await _serviceDio.request(
+                    originalRequest.path,
+                    options: retryOptions,
+                    data: originalRequest.data,
+                    queryParameters: originalRequest.queryParameters,
+                  );
+
+                  handler.resolve(response);
+                  return;
+                } else {
+                  throw Exception('No access token in refresh response');
+                }
+              } else {
+                throw Exception(
+                    'Invalid refresh token response: ${responseData['message'] ?? 'Unknown error'}');
+              }
+            } catch (refreshError) {
+              _processQueue(refreshError, null);
+
+              if (refreshError is DioException) {
+                final statusCode = refreshError.response?.statusCode;
+                if (statusCode == 401 ||
+                    statusCode == 403 ||
+                    statusCode == 400) {
+                  _handleLogout('Session expired. Please login again.');
+                } else if (statusCode != null && statusCode >= 500) {
+                  _handleLogout('Server error. Please try logging in again.');
+                } else {
+                  _handleLogout('Authentication failed. Please login again.');
+                }
+              } else {
+                _handleLogout('Authentication failed. Please login again.');
+              }
+
+              handler.next(error);
+            } finally {
+              _isRefreshing = false;
+            }
+          } else {
+            handler.next(error);
           }
-          handler.next(error);
         },
       ),
     );
   }
 
-  Future<bool> _handleTokenRefresh() async {
-    // If already refreshing, wait for the current refresh to complete
+  Future<void> _handle401Error(
+      Response response, ResponseInterceptorHandler handler) async {
+    final originalRequest = response.requestOptions;
+
+    if (originalRequest.path.contains('/user-open/login')) {
+      final error = DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+      );
+      handler.reject(error);
+      return;
+    }
+
     if (_isRefreshing) {
-      final completer = Completer<bool>();
-      _refreshQueue.add(completer);
-      return completer.future;
+      final completer = Completer<String?>();
+      _failedQueue.add(completer);
+
+      try {
+        final newToken = await completer.future;
+        if (newToken != null) {
+          final retryOptions = Options(
+            method: originalRequest.method,
+            headers: {
+              ...originalRequest.headers,
+              'Authorization': 'Bearer $newToken',
+            },
+            extra: {
+              ...originalRequest.extra,
+              'retry': true,
+            },
+          );
+
+          final response = await _serviceDio.request(
+            originalRequest.path,
+            options: retryOptions,
+            data: originalRequest.data,
+            queryParameters: originalRequest.queryParameters,
+          );
+          handler.resolve(response);
+          return;
+        }
+      } catch (e) {
+        final error = DioException(
+          requestOptions: response.requestOptions,
+          response: response,
+          type: DioExceptionType.badResponse,
+        );
+        handler.reject(error);
+        return;
+      }
+    }
+
+    if (originalRequest.extra['retry'] == true) {
+      final error = DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+      );
+      handler.reject(error);
+      return;
     }
 
     _isRefreshing = true;
 
+    final refreshToken = AppLocalStorage.instance.refreshToken;
+    final userId = AppLocalStorage.instance.user.userId;
+
+    if (refreshToken == null || refreshToken.isEmpty || userId.isEmpty) {
+      _handleLogout('Session expired. Please login again.');
+      _processQueue(response, null);
+      _isRefreshing = false;
+      final error = DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+      );
+      handler.reject(error);
+      return;
+    }
+
     try {
-      final refreshToken = AppLocalStorage.instance.refreshToken;
-      final userId = AppLocalStorage.instance.user.userId;
-
-      log('Attempting token refresh for userId: $userId');
-
-      if (refreshToken == null || refreshToken.isEmpty || userId.isEmpty) {
-        log('Missing refresh token or userId, forcing logout');
-        _forceLogout();
-        _completeRefreshQueue(false);
-        return false;
-      }
-
-      final refreshBody = {
-        'refreshToken': refreshToken, 
-        'userId': userId
-      };
-
-      final encryptedData = _encryptData(refreshBody);
-      final encryptedBody = {'encPayload': encryptedData};
-
-      log('Sending refresh token request with encrypted payload');
-
-      // Create a separate Dio instance for refresh to avoid interceptor conflicts
       final refreshDio = Dio();
       refreshDio.options = BaseOptions(
         baseUrl: _serviceDio.options.baseUrl,
         headers: {
           'Content-Type': 'application/json',
           'encDisabled': 'false',
-          'deviceId': await DeviceService.instance.uniqueDeviceId,
         },
         connectTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
       );
 
-      final response = await refreshDio.post(
-        'user-open/refreshToken',
-        data: encryptedBody,
+      final refreshPayload = {
+        'refreshToken': refreshToken,
+        'userId': userId,
+      };
+
+      final refreshBody = {
+        'encPayload': _encryptData(refreshPayload),
+      };
+
+      final refreshResponse = await refreshDio.post(
+        '/user-open/refreshToken',
+        data: refreshBody,
       );
 
-      log('Refresh token response status: ${response.statusCode}');
-      log('Refresh token response data: ${response.data}');
+      Map<String, dynamic> responseData = refreshResponse.data;
 
-      if (response.statusCode == 200 && response.data != null) {
-        Map<String, dynamic> responseData = {};
-
-        // Handle encrypted response
-        if (response.data is Map<String, dynamic> &&
-            response.data.containsKey('encPayloadRes')) {
-          try {
-            responseData = _decryptData(response.data['encPayloadRes']);
-            log('Decrypted refresh response: $responseData');
-          } catch (e) {
-            log('Failed to decrypt refresh response: $e');
-            responseData = response.data;
-          }
-        } else if (response.data is Map<String, dynamic>) {
-          responseData = response.data;
-        }
-
-        // Check if refresh was successful
-        if (responseData.containsKey('success') && 
-            responseData['success'] == true &&
-            responseData.containsKey('data')) {
-          final data = responseData['data'];
-          if (data.containsKey('token') && data.containsKey('refreshToken')) {
-            final newToken = data['token'];
-            final newRefreshToken = data['refreshToken'];
-            
-            log('Token refresh successful, updating stored tokens');
-            
-            // Update stored tokens
-            AppLocalStorage.instance.setTokens(newToken, newRefreshToken);
-            
-            // Update userId if provided
-            if (data.containsKey('userId')) {
-              // Handle userId update if needed
-              log('Updated userId from refresh: ${data['userId']}');
-            }
-            
-            _completeRefreshQueue(true);
-            return true;
-          } else {
-            log('Missing token or refreshToken in response data');
-          }
-        } else {
-          log('Refresh response indicates failure: ${responseData['message'] ?? 'Unknown error'}');
-        }
-      } else {
-        log('Refresh request failed with status: ${response.statusCode}');
+      if (responseData.containsKey('encPayloadRes')) {
+        responseData = _decryptData(responseData['encPayloadRes']);
       }
 
-      log('Token refresh failed, forcing logout');
-      _forceLogout();
-      _completeRefreshQueue(false);
-      return false;
-      
-    } catch (e, stackTrace) {
-      log('Token refresh error: $e', stackTrace: stackTrace);
-      _forceLogout();
-      _completeRefreshQueue(false);
-      return false;
+      if (responseData['success'] == true && responseData.containsKey('data')) {
+        final data = responseData['data'];
+        final newToken = data['token'];
+        final newRefreshToken = data['refreshToken'];
+        final newUserId = data['userId'];
+
+        if (newToken != null) {
+          AppLocalStorage.instance.setTokens(newToken, newRefreshToken);
+
+          final retryOptions = Options(
+            method: originalRequest.method,
+            headers: {
+              ...originalRequest.headers,
+              'Authorization': 'Bearer $newToken',
+            },
+            extra: {
+              ...originalRequest.extra,
+              'retry': true,
+            },
+          );
+
+          _processQueue(null, newToken);
+
+          final retryResponse = await _serviceDio.request(
+            originalRequest.path,
+            options: retryOptions,
+            data: originalRequest.data,
+            queryParameters: originalRequest.queryParameters,
+          );
+
+          handler.resolve(retryResponse);
+          return;
+        } else {
+          throw Exception('No access token in refresh response');
+        }
+      } else {
+        throw Exception(
+            'Invalid refresh token response: ${responseData['message'] ?? 'Unknown error'}');
+      }
+    } catch (refreshError) {
+      _processQueue(refreshError, null);
+
+      if (refreshError is DioException) {
+        final statusCode = refreshError.response?.statusCode;
+        if (statusCode == 401 || statusCode == 403 || statusCode == 400) {
+          _handleLogout('Session expired. Please login again.');
+        } else if (statusCode != null && statusCode >= 500) {
+          _handleLogout('Server error. Please try logging in again.');
+        } else {
+          _handleLogout('Authentication failed. Please login again.');
+        }
+      } else {
+        _handleLogout('Authentication failed. Please login again.');
+      }
+
+      final error = DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+      );
+      handler.reject(error);
     } finally {
       _isRefreshing = false;
     }
   }
 
-  void _completeRefreshQueue(bool success) {
-    for (final completer in _refreshQueue) {
-      if (!completer.isCompleted) {
-        completer.complete(success);
-      }
-    }
-    _refreshQueue.clear();
-  }
-
-  void _forceLogout() {
-    log('Forcing user logout due to token refresh failure');
+  void _handleLogout(String message) {
     AppLocalStorage.instance.clearTokens();
     AppLocalStorage.instance.setIsUserLoggedIn(false);
-    Get.snackbar('Session Expired', 'Please login again');
+
+    Get.snackbar('Session Expired', message);
     Get.offAllNamed('/login');
   }
 
@@ -265,9 +474,6 @@ class AppDioService {
         final encryptedData = _encryptData(queryParams);
         encryptedQueryParams = {'encPayload': encryptedData};
       }
-
-      log('Making GET request to: $endpoint');
-      log('Query params: $encryptedQueryParams');
 
       final response = await _serviceDio.get(
         endpoint,
@@ -294,9 +500,6 @@ class AppDioService {
       final encryptedData = _encryptData(body);
       final encryptedBody = {'encPayload': encryptedData};
 
-      log('Making POST request to: $endpoint');
-      log('Request body (encrypted): $encryptedBody');
-
       final response = await _serviceDio.post(
         endpoint,
         data: encryptedBody,
@@ -310,8 +513,6 @@ class AppDioService {
     } on DioException catch (e) {
       return _handleDioExceptionError(e);
     } catch (e, s) {
-      log("💥 [DIO] Unknown Error in POST request: $endpoint",
-          error: e, stackTrace: s);
       return _handleCaughtError(e, s);
     }
   }
@@ -325,8 +526,6 @@ class AppDioService {
       final mergedHeaders = {..._getHeaders, ...?headers};
       final encryptedData = _encryptData(body);
       final encryptedBody = {'encPayload': encryptedData};
-
-      log('Making DELETE request to: $endpoint');
 
       final response = await _serviceDio.delete(
         endpoint,
@@ -354,9 +553,7 @@ class AppDioService {
         response.data.containsKey('encPayloadRes')) {
       try {
         responseData = _decryptData(response.data['encPayloadRes']);
-        log('Decrypted response data: $responseData');
       } catch (e) {
-        log('Failed to decrypt response: $e');
         responseData = response.data;
       }
     } else if (response.data is Map<String, dynamic>) {
@@ -416,9 +613,6 @@ class AppDioService {
   }
 
   AppResult _handleCaughtError(Object e, StackTrace s) {
-    log('\n<---------------- \n Error Caught in Dio Service File \n',
-        name: 'Dio service Caught Error \n ', error: e, stackTrace: s);
-
     return AppResult.failure(const AppFailure());
   }
 
