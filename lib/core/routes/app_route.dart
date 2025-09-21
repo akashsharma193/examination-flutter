@@ -20,17 +20,18 @@ class AppRoute {
         page: () => const LoginPage(),
         binding: AppBindings(),
         middlewares: [AuthMiddleWare()]),
-    GetPage(name: AppRoutesNames.home, page: () => homePage(), bindings: [
-      HomeBinding(),
-    ]),
+    GetPage(
+        name: AppRoutesNames.home,
+        page: () => homePage(),
+        binding: AppBindings()),
     GetPage(
         name: AppRoutesNames.userList,
         page: () => const UserListScreen(),
-        binding: UserListBinding()),
+        binding: AppBindings()),
     GetPage(
         name: AppRoutesNames.editUserScreen,
         page: () => const EditUserScreen(),
-        binding: EditUserBinding()),
+        binding: AppBindings()),
     GetPage(
         name: AppRoutesNames.examScreen,
         page: () {

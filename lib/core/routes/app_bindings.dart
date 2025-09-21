@@ -8,35 +8,10 @@ import 'package:crackitx/controllers/user_list_controller.dart';
 class AppBindings extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => AppAuthController());
-  }
-}
-
-class HomeBinding extends Bindings {
-  @override
-  void dependencies() {
-    Get.delete<HomeController>();
-    Get.put(HomeController(), permanent: true);
-  }
-}
-
-class ExamHistoryBinding extends Bindings {
-  @override
-  void dependencies() {
+    Get.put(AppAuthController(), permanent: true);
+    Get.lazyPut(() => HomeController());
     Get.lazyPut(() => ExamHistoryController());
-  }
-}
-
-class UserListBinding extends Bindings {
-  @override
-  void dependencies() {
     Get.lazyPut(() => UserListController());
-  }
-}
-
-class EditUserBinding extends Bindings {
-  @override
-  void dependencies() {
     Get.lazyPut(() => EditUserDetailController());
   }
 }

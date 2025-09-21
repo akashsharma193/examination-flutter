@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/app_user_model.dart';
@@ -51,43 +50,31 @@ class HomeController extends GetxController {
   final AuthRepo authRepo = AuthRepo();
 
   bool isRequestInProgress = false;
-  bool _isInitialized = false;
   bool complianceLoadError = false;
 
   @override
   void onInit() {
     super.onInit();
-    if (!_isInitialized) {
-      _isInitialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        refreshPage();
-      });
-    }
+    _setupSearchListener();
+  }
 
-    ever(isLoadingMore, (bool loading) {
-      print("isLoadingMore changed to: $loading");
-    });
+  @override
+  void onReady() {
+    super.onReady();
+    _loadInitialData();
+  }
 
-    ever(allExams, (List<ExamModel> exams) {
-      print("allExams length changed to: ${exams.length}");
-      if (!isSearching.value) {
-        filteredExams.value = exams;
-      }
-    });
-
+  void _setupSearchListener() {
     searchController.addListener(() {
       searchQuery.value = searchController.text;
       filterExams();
     });
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-    if (!_isInitialized) {
-      _isInitialized = true;
-      refreshPage();
-    }
+  void _loadInitialData() {
+    getAndSubmitOfflinePendingExams();
+    getExams();
+    getUserProfile();
   }
 
   void toggleSearch() {
@@ -112,28 +99,28 @@ class HomeController extends GetxController {
   }
 
   void refreshPage() {
+    _resetPagination();
+    _clearData();
+    _loadInitialData();
+  }
+
+  void _resetPagination() {
     currentPage = 0;
     hasNextPage = false;
     isRequestInProgress = false;
     complianceLoadError = false;
-    getAndSubmitOfflinePendingExams();
-    isLoading(false);
-    isCompliencesLoading(false);
-    isUserProfileLoading(false);
-    isChecked(false);
-    isSearching(false);
-    isExamCardLoading(false);
-    searchController.clear();
-    searchQuery.value = '';
+  }
+
+  void _clearData() {
     allExams.clear();
     filteredExams.clear();
     compliences.clear();
     userProfile.value = UserModel.toEmpty();
-    Future.delayed(Durations.medium3, () {
-      getExams();
-      getUserProfile();
-    });
-    update();
+    searchController.clear();
+    searchQuery.value = '';
+    isChecked.value = false;
+    isSearching.value = false;
+    isExamCardLoading.value = false;
   }
 
   void loadMoreExams() async {
@@ -201,7 +188,6 @@ class HomeController extends GetxController {
   void getUserProfile() async {
     try {
       isUserProfileLoading.value = true;
-      update();
       final resp = await authRepo.getUserProfile();
 
       switch (resp) {
@@ -216,7 +202,6 @@ class HomeController extends GetxController {
       }
     } finally {
       isUserProfileLoading.value = false;
-      update();
     }
   }
 
@@ -224,9 +209,6 @@ class HomeController extends GetxController {
     try {
       isLoading.value = true;
       isRequestInProgress = true;
-      update();
-      print(
-          "Getting initial exams - currentPage: $currentPage, pageSize: $pageSize");
 
       final resp = await examRepo.getAllExams(
           orgCode: AppLocalStorage.instance.user.orgCode,
@@ -239,6 +221,7 @@ class HomeController extends GetxController {
           final data = resp.value;
           List<ExamModel> exams = data['content'] ?? [];
           allExams.value = exams;
+          filteredExams.value = exams;
 
           hasNextPage = data['hasNext'] ?? false;
           hasPreviousPage = data['hasPrevious'] ?? false;
@@ -248,7 +231,6 @@ class HomeController extends GetxController {
           _initializeTimers();
           break;
         case AppFailure():
-          print("Failed to fetch exams: ${resp.errorMessage}");
           Fluttertoast.showToast(
               msg: 'Failed to fetch exam : ${resp.errorMessage}');
           allExams.value = [];
@@ -257,7 +239,6 @@ class HomeController extends GetxController {
     } finally {
       isLoading.value = false;
       isRequestInProgress = false;
-      update();
     }
   }
 
@@ -294,7 +275,6 @@ class HomeController extends GetxController {
       Get.offAllNamed('/login');
     } finally {
       isLoading.value = false;
-      update();
     }
   }
 
@@ -302,7 +282,6 @@ class HomeController extends GetxController {
     try {
       isExamCardLoading.value = true;
       isConfigurationLoading.value = true;
-      update();
       final resp = await examRepo.getConfiguration();
 
       switch (resp) {
@@ -316,7 +295,6 @@ class HomeController extends GetxController {
       }
     } finally {
       isConfigurationLoading.value = false;
-      update();
     }
   }
 
@@ -324,7 +302,6 @@ class HomeController extends GetxController {
     try {
       complianceLoadError = false;
       isCompliencesLoading.value = true;
-      update();
       final resp = await examRepo.getCompliance();
 
       switch (resp) {
@@ -339,7 +316,6 @@ class HomeController extends GetxController {
     } finally {
       isExamCardLoading.value = false;
       isCompliencesLoading.value = false;
-      update();
     }
   }
 
@@ -558,10 +534,6 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
-    for (String examId in examTimers.keys) {
-      Timer? timer = Timer(Duration.zero, () {});
-      timer?.cancel();
-    }
     searchController.dispose();
     super.onClose();
   }
