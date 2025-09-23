@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/app_user_model.dart';
+import 'package:crackitx/controllers/auth_controller.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/theme/app_theme.dart';
@@ -272,6 +273,8 @@ class HomeController extends GetxController {
       final AuthRepo repo = AuthRepo();
       repo.logOut(userId: AppLocalStorage.instance.userId);
       AppLocalStorage.instance.clearStorage();
+      Get.delete<HomeController>(force: true);
+      Get.delete<AppAuthController>(force: true);
       Get.offAllNamed('/login');
     } finally {
       isLoading.value = false;
