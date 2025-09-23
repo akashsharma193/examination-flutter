@@ -1,4 +1,5 @@
 import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/controllers/home_controller.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/screens/forgot_password.dart';
 import 'package:crackitx/screens/register_screen.dart';
@@ -158,6 +159,7 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                                           onTap: authController.isLoading.value
                                               ? null
                                               : () {
+                                                  Get.put(HomeController());
                                                   authController.login();
                                                 },
                                           child: Container(
