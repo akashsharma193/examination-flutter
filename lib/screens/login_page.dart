@@ -159,7 +159,6 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                                           onTap: authController.isLoading.value
                                               ? null
                                               : () {
-                                                  Get.put(HomeController());
                                                   authController.login();
                                                 },
                                           child: Container(
