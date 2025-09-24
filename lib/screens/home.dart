@@ -21,10 +21,7 @@ Widget homePage() {
         final controller = Get.find<HomeController>();
         controller.showConfigBasedAcknowledgementDialog();
       },
-      onAdFailedToLoad: () {
-        final controller = Get.find<HomeController>();
-        controller.showConfigBasedAcknowledgementDialog();
-      },
+      onAdFailedToLoad: () {},
       child: const StudentHomePage(),
     );
   }
@@ -65,6 +62,94 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  void _showLogoutConfirmationDialog(HomeController controller) {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.logout_outlined,
+                size: 48,
+                color: Color(0xFF5038ED),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Logout Confirmation',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Are you sure you want to logout?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFF5038ED)),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Color(0xFF5038ED),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        controller.logOut();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5038ED),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -159,7 +244,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         ),
                       )),
                   IconButton(
-                    onPressed: controller.logOut,
+                    onPressed: () => _showLogoutConfirmationDialog(controller),
                     icon:
                         const Icon(Icons.logout_outlined, color: Colors.white),
                   ),
@@ -170,39 +255,53 @@ class _StudentHomePageState extends State<StudentHomePage> {
           children: [
             const BannerAdWidget(),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(AppTheme.spacingM),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppTheme.spacingL),
-                    Obx(() {
-                      if (controller.isUserProfileLoading.value) {
-                        return Text(
+              child: Obx(() {
+                if ((controller.isUserProfileLoading.value ||
+                        controller.isLoading.value) &&
+                    controller.allExams.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        Text(
                           'Loading...',
+                          style: AppTheme.bodyLarge.copyWith(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.all(AppTheme.spacingM),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: AppTheme.spacingL),
+                      Obx(() {
+                        final userProfile = controller.userProfile.value;
+                        final displayName =
+                            !userProfile.isEmpty && userProfile.name.isNotEmpty
+                                ? userProfile.name
+                                : AppLocalStorage.instance.user.name;
+
+                        return Text(
+                          'Hello, $displayName',
                           style: AppTheme.headingLarge.copyWith(
                             color: Colors.black,
                           ),
                         );
-                      }
-                      final userProfile = controller.userProfile.value;
-                      final displayName =
-                          !userProfile.isEmpty && userProfile.name.isNotEmpty
-                              ? userProfile.name
-                              : AppLocalStorage.instance.user.name;
-
-                      return Text(
-                        'Hello, $displayName',
-                        style: AppTheme.headingLarge.copyWith(
-                          color: Colors.black,
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: AppTheme.spacingL),
-                    Expanded(child: getExamListWidget(controller))
-                  ],
-                ),
-              ),
+                      }),
+                      const SizedBox(height: AppTheme.spacingL),
+                      Expanded(child: getExamListWidget(controller))
+                    ],
+                  ),
+                );
+              }),
             ),
           ],
         ),
@@ -216,15 +315,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
 
     return Obx(() {
-      if (controller.isLoading.value && controller.allExams.isEmpty) {
-        return Center(
-          child: Text(
-            'Fetching exam details...',
-            style: AppTheme.bodyLarge.copyWith(color: Colors.black),
-          ),
-        );
-      }
-
       if (controller.allExams.isEmpty && !controller.isLoading.value) {
         return Center(
           child: Text(

@@ -340,7 +340,6 @@ class HomeController extends GetxController {
 
   void showConfigBasedAcknowledgementDialog() async {
     await getCompliances();
-    Get.back();
 
     if (complianceLoadError) {
       AppDialog().show(
@@ -381,106 +380,94 @@ class HomeController extends GetxController {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Obx(() {
-                      if (isConfigurationLoading.value) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (configuration.isInternetDisabled == true)
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.shade50,
-                                border:
-                                    Border.all(color: Colors.orange.shade300),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.wifi_off,
-                                      color: Colors.orange.shade700),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      "Internet must be disabled to start this exam. Please turn off your internet connection before proceeding.",
-                                      style: AppTheme.bodyMedium.copyWith(
-                                        color: Colors.orange.shade700,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (configuration.isInternetDisabled == true)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              border: Border.all(color: Colors.orange.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.wifi_off,
+                                    color: Colors.orange.shade700),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Internet must be disabled to start this exam. Please turn off your internet connection before proceeding.",
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: Colors.orange.shade700,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          if (compliences.isNotEmpty) ...[
-                            Text(
-                              "Instructions:",
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ...compliences.map((compliance) => _buildReminder(
-                                compliance['compliance'] as String? ?? '')),
-                            const SizedBox(height: 16),
-                          ],
-                          CheckboxListTile(
-                            title: Text(
-                              "I acknowledge the instructions and requirements.",
-                              style: AppTheme.bodyMedium
-                                  .copyWith(color: Colors.black),
-                            ),
-                            value: isChecked.value,
-                            onChanged: (value) {
-                              isChecked.value = value!;
-                              setState(() {});
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () => Get.back(),
-                                child: Text(
-                                  "Cancel",
-                                  style: AppTheme.bodyMedium.copyWith(
-                                    color: Colors.grey.shade600,
-                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              ElevatedButton(
-                                onPressed: isChecked.value
-                                    ? () => _handleExamStart()
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.cardBackground,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                child: const Text("Start Exam"),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                        if (compliences.isNotEmpty) ...[
+                          Text(
+                            "Instructions:",
+                            style: AppTheme.bodyLarge.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ...compliences.map((compliance) => _buildReminder(
+                              compliance['compliance'] as String? ?? '')),
+                          const SizedBox(height: 16),
                         ],
-                      );
-                    }),
+                        CheckboxListTile(
+                          title: Text(
+                            "I acknowledge the instructions and requirements.",
+                            style: AppTheme.bodyMedium
+                                .copyWith(color: Colors.black),
+                          ),
+                          value: isChecked.value,
+                          onChanged: (value) {
+                            isChecked.value = value!;
+                            setState(() {});
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: Text(
+                                "Cancel",
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: isChecked.value
+                                  ? () => _handleExamStart()
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.cardBackground,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                              ),
+                              child: const Text("Start Exam"),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );

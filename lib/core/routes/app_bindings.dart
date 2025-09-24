@@ -9,7 +9,7 @@ class AppBindings extends Bindings {
   @override
   void dependencies() {
     Get.put(AppAuthController(), permanent: true);
-    Get.lazyPut(() => HomeController());
+    Get.lazyPut(() => HomeController(), fenix: true);
     Get.lazyPut(() => ExamHistoryController());
     Get.lazyPut(() => UserListController());
     Get.lazyPut(() => EditUserDetailController());
