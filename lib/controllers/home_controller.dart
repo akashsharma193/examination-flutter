@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/app_user_model.dart';
+import 'package:crackitx/controllers/auth_controller.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/theme/app_theme.dart';
@@ -51,43 +51,31 @@ class HomeController extends GetxController {
   final AuthRepo authRepo = AuthRepo();
 
   bool isRequestInProgress = false;
-  bool _isInitialized = false;
   bool complianceLoadError = false;
 
   @override
   void onInit() {
     super.onInit();
-    if (!_isInitialized) {
-      _isInitialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        refreshPage();
-      });
-    }
+    _setupSearchListener();
+  }
 
-    ever(isLoadingMore, (bool loading) {
-      print("isLoadingMore changed to: $loading");
-    });
+  @override
+  void onReady() {
+    super.onReady();
+    _loadInitialData();
+  }
 
-    ever(allExams, (List<ExamModel> exams) {
-      print("allExams length changed to: ${exams.length}");
-      if (!isSearching.value) {
-        filteredExams.value = exams;
-      }
-    });
-
+  void _setupSearchListener() {
     searchController.addListener(() {
       searchQuery.value = searchController.text;
       filterExams();
     });
   }
 
-  @override
-  void onReady() {
-    super.onReady();
-    if (!_isInitialized) {
-      _isInitialized = true;
-      refreshPage();
-    }
+  void _loadInitialData() {
+    getAndSubmitOfflinePendingExams();
+    getExams();
+    getUserProfile();
   }
 
   void toggleSearch() {
@@ -112,28 +100,28 @@ class HomeController extends GetxController {
   }
 
   void refreshPage() {
+    _resetPagination();
+    _clearData();
+    _loadInitialData();
+  }
+
+  void _resetPagination() {
     currentPage = 0;
     hasNextPage = false;
     isRequestInProgress = false;
     complianceLoadError = false;
-    getAndSubmitOfflinePendingExams();
-    isLoading(false);
-    isCompliencesLoading(false);
-    isUserProfileLoading(false);
-    isChecked(false);
-    isSearching(false);
-    isExamCardLoading(false);
-    searchController.clear();
-    searchQuery.value = '';
+  }
+
+  void _clearData() {
     allExams.clear();
     filteredExams.clear();
     compliences.clear();
     userProfile.value = UserModel.toEmpty();
-    Future.delayed(Durations.medium3, () {
-      getExams();
-      getUserProfile();
-    });
-    update();
+    searchController.clear();
+    searchQuery.value = '';
+    isChecked.value = false;
+    isSearching.value = false;
+    isExamCardLoading.value = false;
   }
 
   void loadMoreExams() async {
@@ -201,7 +189,6 @@ class HomeController extends GetxController {
   void getUserProfile() async {
     try {
       isUserProfileLoading.value = true;
-      update();
       final resp = await authRepo.getUserProfile();
 
       switch (resp) {
@@ -216,7 +203,6 @@ class HomeController extends GetxController {
       }
     } finally {
       isUserProfileLoading.value = false;
-      update();
     }
   }
 
@@ -224,9 +210,6 @@ class HomeController extends GetxController {
     try {
       isLoading.value = true;
       isRequestInProgress = true;
-      update();
-      print(
-          "Getting initial exams - currentPage: $currentPage, pageSize: $pageSize");
 
       final resp = await examRepo.getAllExams(
           orgCode: AppLocalStorage.instance.user.orgCode,
@@ -239,6 +222,7 @@ class HomeController extends GetxController {
           final data = resp.value;
           List<ExamModel> exams = data['content'] ?? [];
           allExams.value = exams;
+          filteredExams.value = exams;
 
           hasNextPage = data['hasNext'] ?? false;
           hasPreviousPage = data['hasPrevious'] ?? false;
@@ -248,7 +232,6 @@ class HomeController extends GetxController {
           _initializeTimers();
           break;
         case AppFailure():
-          print("Failed to fetch exams: ${resp.errorMessage}");
           Fluttertoast.showToast(
               msg: 'Failed to fetch exam : ${resp.errorMessage}');
           allExams.value = [];
@@ -257,7 +240,6 @@ class HomeController extends GetxController {
     } finally {
       isLoading.value = false;
       isRequestInProgress = false;
-      update();
     }
   }
 
@@ -291,10 +273,11 @@ class HomeController extends GetxController {
       final AuthRepo repo = AuthRepo();
       repo.logOut(userId: AppLocalStorage.instance.userId);
       AppLocalStorage.instance.clearStorage();
+      Get.delete<HomeController>(force: true);
+      Get.delete<AppAuthController>(force: true);
       Get.offAllNamed('/login');
     } finally {
       isLoading.value = false;
-      update();
     }
   }
 
@@ -302,7 +285,6 @@ class HomeController extends GetxController {
     try {
       isExamCardLoading.value = true;
       isConfigurationLoading.value = true;
-      update();
       final resp = await examRepo.getConfiguration();
 
       switch (resp) {
@@ -316,7 +298,6 @@ class HomeController extends GetxController {
       }
     } finally {
       isConfigurationLoading.value = false;
-      update();
     }
   }
 
@@ -324,7 +305,6 @@ class HomeController extends GetxController {
     try {
       complianceLoadError = false;
       isCompliencesLoading.value = true;
-      update();
       final resp = await examRepo.getCompliance();
 
       switch (resp) {
@@ -339,7 +319,6 @@ class HomeController extends GetxController {
     } finally {
       isExamCardLoading.value = false;
       isCompliencesLoading.value = false;
-      update();
     }
   }
 
@@ -361,7 +340,6 @@ class HomeController extends GetxController {
 
   void showConfigBasedAcknowledgementDialog() async {
     await getCompliances();
-    Get.back();
 
     if (complianceLoadError) {
       AppDialog().show(
@@ -402,106 +380,94 @@ class HomeController extends GetxController {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Obx(() {
-                      if (isConfigurationLoading.value) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: CircularProgressIndicator(),
-                          ),
-                        );
-                      }
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (configuration.isInternetDisabled == true)
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.shade50,
-                                border:
-                                    Border.all(color: Colors.orange.shade300),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.wifi_off,
-                                      color: Colors.orange.shade700),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      "Internet must be disabled to start this exam. Please turn off your internet connection before proceeding.",
-                                      style: AppTheme.bodyMedium.copyWith(
-                                        color: Colors.orange.shade700,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (configuration.isInternetDisabled == true)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              border: Border.all(color: Colors.orange.shade300),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.wifi_off,
+                                    color: Colors.orange.shade700),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Internet must be disabled to start this exam. Please turn off your internet connection before proceeding.",
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: Colors.orange.shade700,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          if (compliences.isNotEmpty) ...[
-                            Text(
-                              "Instructions:",
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ...compliences.map((compliance) => _buildReminder(
-                                compliance['compliance'] as String? ?? '')),
-                            const SizedBox(height: 16),
-                          ],
-                          CheckboxListTile(
-                            title: Text(
-                              "I acknowledge the instructions and requirements.",
-                              style: AppTheme.bodyMedium
-                                  .copyWith(color: Colors.black),
-                            ),
-                            value: isChecked.value,
-                            onChanged: (value) {
-                              isChecked.value = value!;
-                              setState(() {});
-                            },
-                            controlAffinity: ListTileControlAffinity.leading,
-                            contentPadding: EdgeInsets.zero,
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () => Get.back(),
-                                child: Text(
-                                  "Cancel",
-                                  style: AppTheme.bodyMedium.copyWith(
-                                    color: Colors.grey.shade600,
-                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              ElevatedButton(
-                                onPressed: isChecked.value
-                                    ? () => _handleExamStart()
-                                    : null,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.cardBackground,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                child: const Text("Start Exam"),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                        if (compliences.isNotEmpty) ...[
+                          Text(
+                            "Instructions:",
+                            style: AppTheme.bodyLarge.copyWith(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ...compliences.map((compliance) => _buildReminder(
+                              compliance['compliance'] as String? ?? '')),
+                          const SizedBox(height: 16),
                         ],
-                      );
-                    }),
+                        CheckboxListTile(
+                          title: Text(
+                            "I acknowledge the instructions and requirements.",
+                            style: AppTheme.bodyMedium
+                                .copyWith(color: Colors.black),
+                          ),
+                          value: isChecked.value,
+                          onChanged: (value) {
+                            isChecked.value = value!;
+                            setState(() {});
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Get.back(),
+                              child: Text(
+                                "Cancel",
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            ElevatedButton(
+                              onPressed: isChecked.value
+                                  ? () => _handleExamStart()
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.cardBackground,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                              ),
+                              child: const Text("Start Exam"),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );
@@ -558,12 +524,7 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
-    for (String examId in examTimers.keys) {
-      Timer? timer = Timer(Duration.zero, () {});
-      timer?.cancel();
-    }
     searchController.dispose();
     super.onClose();
   }
 }
-

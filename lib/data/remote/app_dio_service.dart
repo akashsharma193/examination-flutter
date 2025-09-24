@@ -114,7 +114,7 @@ class AppDioService {
                 _decryptData(error.response!.data['encPayloadRes']);
           }
 
-          if (error.response?.statusCode == 401 &&
+          if (error.response?.statusCode == 409 &&
               originalRequest.extra['retry'] != true) {
             if (originalRequest.path.contains('/user-open/login')) {
               handler.next(error);

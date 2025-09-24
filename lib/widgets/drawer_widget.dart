@@ -1,3 +1,4 @@
+import 'package:crackitx/controllers/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
@@ -35,6 +36,95 @@ class _AppDrawerState extends State<AppDrawer> {
     drawerItems.addAll({
       'Log Out': FeatherIcons.logOut,
     });
+  }
+
+  void _showLogoutConfirmationDialog() {
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                FeatherIcons.logOut,
+                size: 48,
+                color: Color(0xFF5038ED),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Logout Confirmation',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Are you sure you want to logout?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFF5038ED)),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Color(0xFF5038ED),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back();
+                        final homeController = Get.find<HomeController>();
+                        homeController.logOut();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5038ED),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   @override
@@ -150,10 +240,7 @@ class _AppDrawerState extends State<AppDrawer> {
                                   ));
                               break;
                             case 'Log Out':
-                              final AuthRepo repo = AuthRepo();
-                              repo.logOut(userId: user.userId);
-                              AppLocalStorage.instance.clearStorage();
-                              Get.offAllNamed('/login');
+                              _showLogoutConfirmationDialog();
                               break;
                             case 'Create Exam':
                               Get.to(() => const AdminExamDashboard());
