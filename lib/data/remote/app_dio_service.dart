@@ -97,7 +97,7 @@ class AppDioService {
             response.data = _decryptData(response.data['encPayloadRes']);
           }
 
-          if (response.statusCode == 401) {
+          if (response.statusCode == 409) {
             _handle401Error(response, handler);
             return;
           }
@@ -116,7 +116,7 @@ class AppDioService {
 
           if (error.response?.statusCode == 409 &&
               originalRequest.extra['retry'] != true) {
-            if (originalRequest.path.contains('/user-open/login')) {
+            if (originalRequest.path.contains('user-open/login')) {
               handler.next(error);
               return;
             }
@@ -194,7 +194,7 @@ class AppDioService {
               };
 
               final refreshResponse = await refreshDio.post(
-                '/user-open/refreshToken',
+                'user-open/refreshToken',
                 data: refreshBody,
               );
 
@@ -278,7 +278,7 @@ class AppDioService {
       Response response, ResponseInterceptorHandler handler) async {
     final originalRequest = response.requestOptions;
 
-    if (originalRequest.path.contains('/user-open/login')) {
+    if (originalRequest.path.contains('user-open/login')) {
       final error = DioException(
         requestOptions: response.requestOptions,
         response: response,
