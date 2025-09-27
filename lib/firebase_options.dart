@@ -57,11 +57,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCcXMYiTmSWN8MPl_J8bEvW2rovtcAWVTU',
-    appId: '1:831248601177:android:812952ebdc56dd85c82148',
-    messagingSenderId: '831248601177',
-    projectId: 'crackitx-96076',
-    storageBucket: 'crackitx-96076.firebasestorage.app',
+    apiKey: 'AIzaSyC7gplg1BNHB4XwgLzCIPqxmwxxEBnlLtc',
+    appId: '1:865907605749:android:fd1d1329fbc11210ebc5bc',
+    messagingSenderId: '865907605749',
+    projectId: 'crackitx-831b3',
+    storageBucket: 'crackitx-831b3.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
