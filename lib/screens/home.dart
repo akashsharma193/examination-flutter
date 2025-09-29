@@ -16,6 +16,9 @@ Widget homePage() {
   if (AppLocalStorage.instance.user.isAdmin) {
     return const AdminDashboard();
   } else {
+    if (!Get.isRegistered<HomeController>()) {
+      Get.put(HomeController());
+    }
     return InterstitialVideoAdManager(
       onAdClosed: () {
         final controller = Get.find<HomeController>();
