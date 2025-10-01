@@ -17,7 +17,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
+  HomeController() {}
   static HomeController get to => Get.find<HomeController>();
+
+  bool _isDisposed = false;
+  List<Timer> _activeTimers = [];
 
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
@@ -56,17 +60,42 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    if (!_isAuthenticated()) {
+      return;
+    }
     _setupSearchListener();
   }
 
   @override
   void onReady() {
     super.onReady();
+    if (!_isAuthenticated()) {
+      return;
+    }
     _loadInitialData();
+  }
+
+  bool _isAuthenticated() {
+    return AppLocalStorage.instance.isLoggedIn;
+  }
+
+  Future<void> _safeApiCall(Future<void> Function() apiCall) async {
+    if (_isDisposed || !_isAuthenticated()) {
+      return;
+    }
+    try {
+      await apiCall();
+    } catch (e) {
+      if (!_isAuthenticated()) {
+        return;
+      }
+      rethrow;
+    }
   }
 
   void _setupSearchListener() {
     searchController.addListener(() {
+      if (_isDisposed) return;
       searchQuery.value = searchController.text;
       filterExams();
     });
@@ -79,6 +108,7 @@ class HomeController extends GetxController {
   }
 
   void toggleSearch() {
+    if (_isDisposed) return;
     isSearching.value = !isSearching.value;
     if (!isSearching.value) {
       searchController.clear();
@@ -88,6 +118,7 @@ class HomeController extends GetxController {
   }
 
   void filterExams() {
+    if (_isDisposed) return;
     if (searchQuery.value.isEmpty) {
       filteredExams.value = allExams;
     } else {
@@ -100,6 +131,7 @@ class HomeController extends GetxController {
   }
 
   void refreshPage() {
+    if (!_isAuthenticated() || _isDisposed) return;
     _resetPagination();
     _clearData();
     _loadInitialData();
@@ -125,132 +157,157 @@ class HomeController extends GetxController {
   }
 
   void loadMoreExams() async {
+    if (!_isAuthenticated() || _isDisposed) return;
     if (isLoadingMore.value || !hasNextPage || isRequestInProgress) return;
 
-    try {
-      isRequestInProgress = true;
-      isLoadingMore.value = true;
-      currentPage++;
+    await _safeApiCall(() async {
+      try {
+        isRequestInProgress = true;
+        isLoadingMore.value = true;
+        currentPage++;
 
-      final resp = await examRepo.getAllExams(
-          orgCode: AppLocalStorage.instance.user.orgCode,
-          batchId: AppLocalStorage.instance.user.batch,
-          pageNumber: currentPage,
-          pageSize: pageSize);
+        final resp = await examRepo.getAllExams(
+            orgCode: AppLocalStorage.instance.user.orgCode,
+            batchId: AppLocalStorage.instance.user.batch,
+            pageNumber: currentPage,
+            pageSize: pageSize);
 
-      switch (resp) {
-        case AppSuccess():
-          final data = resp.value;
-          List<ExamModel> newExams = data['content'] ?? [];
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<ExamModel> newExams = data['content'] ?? [];
 
-          if (newExams.isNotEmpty) {
-            allExams.addAll(newExams);
-          }
+            if (newExams.isNotEmpty) {
+              allExams.addAll(newExams);
+            }
 
-          hasNextPage = data['hasNext'] ?? false;
-          hasPreviousPage = data['hasPrevious'] ?? false;
-          totalElements = data['totalElements'] ?? 0;
-          totalPages = data['totalPages'] ?? 0;
+            hasNextPage = data['hasNext'] ?? false;
+            hasPreviousPage = data['hasPrevious'] ?? false;
+            totalElements = data['totalElements'] ?? 0;
+            totalPages = data['totalPages'] ?? 0;
 
-          _initializeTimers();
-          break;
-        case AppFailure():
-          currentPage--;
-          Fluttertoast.showToast(
-              msg: 'Failed to load more exams: ${resp.errorMessage}');
-          break;
+            _initializeTimers();
+            break;
+          case AppFailure():
+            currentPage--;
+            Fluttertoast.showToast(
+                msg: 'Failed to load more exams: ${resp.errorMessage}');
+            break;
+        }
+      } finally {
+        isLoadingMore.value = false;
+        isRequestInProgress = false;
       }
-    } finally {
-      isLoadingMore.value = false;
-      isRequestInProgress = false;
-    }
+    });
   }
 
   getAndSubmitOfflinePendingExams() async {
-    final unSubmitedExams =
-        AppLocalStorage.instance.getOfflineUnSubmittedExams();
+    if (!_isAuthenticated() || _isDisposed) return;
 
-    for (Map<String, dynamic> item in unSubmitedExams) {
-      List<QuestionModel> questionList = List<QuestionModel>.from(
-          item['answerPaper'].map(
-              (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
-      final res = await examRepo.submitExam(questionList, item['questionId'],
-          timestamp: item["timestamp"]);
+    await _safeApiCall(() async {
+      final unSubmitedExams =
+          AppLocalStorage.instance.getOfflineUnSubmittedExams();
 
-      switch (res) {
-        case AppSuccess():
-          break;
-        case AppFailure():
+      for (Map<String, dynamic> item in unSubmitedExams) {
+        if (!_isAuthenticated() || _isDisposed) return;
+
+        List<QuestionModel> questionList = List<QuestionModel>.from(
+            item['answerPaper'].map(
+                (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e))));
+        final res = await examRepo.submitExam(questionList, item['questionId'],
+            timestamp: item["timestamp"]);
+
+        switch (res) {
+          case AppSuccess():
+            break;
+          case AppFailure():
+        }
+        await Future.delayed(const Duration(seconds: 1));
       }
-      await Future.delayed(const Duration(seconds: 1));
-    }
+    });
   }
 
   void getUserProfile() async {
-    try {
-      isUserProfileLoading.value = true;
-      final resp = await authRepo.getUserProfile();
+    if (!_isAuthenticated() || _isDisposed) return;
 
-      switch (resp) {
-        case AppSuccess():
-          userProfile.value = resp.value;
-          break;
-        case AppFailure():
-          Fluttertoast.showToast(
-              msg: 'Failed to fetch user profile: ${resp.errorMessage}');
-          userProfile.value = UserModel.toEmpty();
-          break;
+    await _safeApiCall(() async {
+      try {
+        isUserProfileLoading.value = true;
+        final resp = await authRepo.getUserProfile();
+
+        switch (resp) {
+          case AppSuccess():
+            userProfile.value = resp.value;
+            break;
+          case AppFailure():
+            Fluttertoast.showToast(
+                msg: 'Failed to fetch user profile: ${resp.errorMessage}');
+            userProfile.value = UserModel.toEmpty();
+            break;
+        }
+      } finally {
+        isUserProfileLoading.value = false;
       }
-    } finally {
-      isUserProfileLoading.value = false;
-    }
+    });
   }
 
   void getExams() async {
-    try {
-      isLoading.value = true;
-      isRequestInProgress = true;
+    if (!_isAuthenticated() || _isDisposed) return;
 
-      final resp = await examRepo.getAllExams(
-          orgCode: AppLocalStorage.instance.user.orgCode,
-          batchId: AppLocalStorage.instance.user.batch,
-          pageNumber: currentPage,
-          pageSize: pageSize);
+    await _safeApiCall(() async {
+      try {
+        isLoading.value = true;
+        isRequestInProgress = true;
 
-      switch (resp) {
-        case AppSuccess():
-          final data = resp.value;
-          List<ExamModel> exams = data['content'] ?? [];
-          allExams.value = exams;
-          filteredExams.value = exams;
+        final resp = await examRepo.getAllExams(
+            orgCode: AppLocalStorage.instance.user.orgCode,
+            batchId: AppLocalStorage.instance.user.batch,
+            pageNumber: currentPage,
+            pageSize: pageSize);
 
-          hasNextPage = data['hasNext'] ?? false;
-          hasPreviousPage = data['hasPrevious'] ?? false;
-          totalElements = data['totalElements'] ?? 0;
-          totalPages = data['totalPages'] ?? 0;
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<ExamModel> exams = data['content'] ?? [];
+            allExams.value = exams;
+            filteredExams.value = exams;
 
-          _initializeTimers();
-          break;
-        case AppFailure():
-          Fluttertoast.showToast(
-              msg: 'Failed to fetch exam : ${resp.errorMessage}');
-          allExams.value = [];
-          break;
+            hasNextPage = data['hasNext'] ?? false;
+            hasPreviousPage = data['hasPrevious'] ?? false;
+            totalElements = data['totalElements'] ?? 0;
+            totalPages = data['totalPages'] ?? 0;
+
+            _initializeTimers();
+            break;
+          case AppFailure():
+            Fluttertoast.showToast(
+                msg: 'Failed to fetch exam : ${resp.errorMessage}');
+            allExams.value = [];
+            break;
+        }
+      } finally {
+        isLoading.value = false;
+        isRequestInProgress = false;
       }
-    } finally {
-      isLoading.value = false;
-      isRequestInProgress = false;
-    }
+    });
   }
 
   void _initializeTimers() {
+    if (_isDisposed) return;
     for (var exam in allExams) {
       _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime);
     }
   }
 
   void _startCountdown(String examId, DateTime startTime) {
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    if (_isDisposed) return;
+
+    final timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isDisposed || !_isAuthenticated()) {
+        timer.cancel();
+        return;
+      }
+
       final now = DateTime.now();
       final remaining = startTime.difference(now);
 
@@ -266,6 +323,8 @@ class HomeController extends GetxController {
 
       examTimers.refresh();
     });
+
+    _activeTimers.add(timer);
   }
 
   void logOut() async {
@@ -273,6 +332,9 @@ class HomeController extends GetxController {
       final AuthRepo repo = AuthRepo();
       repo.logOut(userId: AppLocalStorage.instance.userId);
       AppLocalStorage.instance.clearStorage();
+
+      _cancelAllTimers();
+
       Get.delete<HomeController>(force: true);
       Get.delete<AppAuthController>(force: true);
       Get.offAllNamed('/login');
@@ -281,48 +343,64 @@ class HomeController extends GetxController {
     }
   }
 
-  getConfiguration() async {
-    try {
-      isExamCardLoading.value = true;
-      isConfigurationLoading.value = true;
-      final resp = await examRepo.getConfiguration();
-
-      switch (resp) {
-        case AppSuccess():
-          configuration = resp.value;
-          break;
-        case AppFailure():
-          configuration = ConfigurationModel.toEmpty();
-          Fluttertoast.showToast(
-              msg: 'Failed to fetch configuration: ${resp.errorMessage}');
-      }
-    } finally {
-      isConfigurationLoading.value = false;
+  void _cancelAllTimers() {
+    for (var timer in _activeTimers) {
+      timer.cancel();
     }
+    _activeTimers.clear();
+  }
+
+  getConfiguration() async {
+    if (!_isAuthenticated() || _isDisposed) return;
+
+    await _safeApiCall(() async {
+      try {
+        isExamCardLoading.value = true;
+        isConfigurationLoading.value = true;
+        final resp = await examRepo.getConfiguration();
+
+        switch (resp) {
+          case AppSuccess():
+            configuration = resp.value;
+            break;
+          case AppFailure():
+            configuration = ConfigurationModel.toEmpty();
+            Fluttertoast.showToast(
+                msg: 'Failed to fetch configuration: ${resp.errorMessage}');
+        }
+      } finally {
+        isConfigurationLoading.value = false;
+      }
+    });
   }
 
   getCompliances() async {
-    try {
-      complianceLoadError = false;
-      isCompliencesLoading.value = true;
-      final resp = await examRepo.getCompliance();
+    if (!_isAuthenticated() || _isDisposed) return;
 
-      switch (resp) {
-        case AppSuccess():
-          compliences.value =
-              resp.value.map((e) => e as Map<String, dynamic>).toList();
-          break;
-        case AppFailure():
-          complianceLoadError = true;
-          compliences.value = [];
+    await _safeApiCall(() async {
+      try {
+        complianceLoadError = false;
+        isCompliencesLoading.value = true;
+        final resp = await examRepo.getCompliance();
+
+        switch (resp) {
+          case AppSuccess():
+            compliences.value =
+                resp.value.map((e) => e as Map<String, dynamic>).toList();
+            break;
+          case AppFailure():
+            complianceLoadError = true;
+            compliences.value = [];
+        }
+      } finally {
+        isExamCardLoading.value = false;
+        isCompliencesLoading.value = false;
       }
-    } finally {
-      isExamCardLoading.value = false;
-      isCompliencesLoading.value = false;
-    }
+    });
   }
 
   void showExamNotLiveDialog({bool isExamEnded = false}) {
+    if (_isDisposed) return;
     AppDialog().show(
       title: isExamEnded ? 'Exam Ended' : 'Exam not Started yet!',
       content: Padding(
@@ -339,6 +417,8 @@ class HomeController extends GetxController {
   }
 
   void showConfigBasedAcknowledgementDialog() async {
+    if (!_isAuthenticated() || _isDisposed) return;
+
     await getCompliances();
 
     if (complianceLoadError) {
@@ -480,6 +560,8 @@ class HomeController extends GetxController {
   }
 
   void _handleExamStart() async {
+    if (!_isAuthenticated() || _isDisposed) return;
+
     bool isInternetConnected =
         await InternetServiceChecker().isInternetConnected;
 
@@ -524,6 +606,8 @@ class HomeController extends GetxController {
 
   @override
   void onClose() {
+    _isDisposed = true;
+    _cancelAllTimers();
     searchController.dispose();
     super.onClose();
   }

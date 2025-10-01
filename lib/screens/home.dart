@@ -13,12 +13,15 @@ import 'package:crackitx/widgets/drawer_widget.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
 
 Widget homePage() {
+  final isLoggedIn = AppLocalStorage.instance.isLoggedIn;
+  final isAdmin = AppLocalStorage.instance.user.isAdmin;
+
   if (AppLocalStorage.instance.user.isAdmin) {
     return const AdminDashboard();
   } else {
     if (!Get.isRegistered<HomeController>()) {
       Get.put(HomeController());
-    }
+    } else {}
     return InterstitialVideoAdManager(
       onAdClosed: () {
         final controller = Get.find<HomeController>();
@@ -557,3 +560,4 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
   }
 }
+

@@ -26,6 +26,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
   String? selectedTestName;
   DateTime? selectedStartDate;
   DateTime? selectedEndDate;
+  SingleExamHistoryModel? pendingNavigation;
 
   List<String> get teacherNames => controller.allAttemptedExamsList
       .map((e) => e.teacherName ?? '')
@@ -80,6 +81,7 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
 
     if (adManagerState != null) {
       if (adManagerState.isAdReady) {
+        pendingNavigation = singleItem;
         adManagerState.showAd();
       } else {
         _showLoadingDialog();
@@ -101,10 +103,21 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
     }
   }
 
+  void _handleAdClosed() {
+    if (pendingNavigation != null) {
+      final model = pendingNavigation!;
+      pendingNavigation = null;
+      Get.to(() => TestResultScreen(
+            model: model,
+            userId: widget.userId,
+          ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return InterstitialVideoAdManager(
-      onAdClosed: () {},
+      onAdClosed: _handleAdClosed,
       onAdFailedToLoad: () {},
       child:
           GetBuilder<ExamHistoryController>(builder: (examHistoryController) {

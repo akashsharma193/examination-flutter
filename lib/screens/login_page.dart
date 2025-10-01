@@ -1,5 +1,4 @@
 import 'package:crackitx/controllers/auth_controller.dart';
-import 'package:crackitx/controllers/home_controller.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/screens/forgot_password.dart';
 import 'package:crackitx/screens/register_screen.dart';
@@ -39,12 +38,18 @@ class MobileLoginPage extends StatefulWidget {
 }
 
 class _MobileLoginPageState extends State<MobileLoginPage> {
+  bool _hasNavigated = false;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value) {
-        Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+      final isAuth = authController.isUserAuthenticated.value;
+      if (isAuth && !_hasNavigated) {
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && Get.currentRoute == '/login') {
+            Get.offAllNamed('/home');
+          } else {}
         });
       }
       return GestureDetector(
@@ -77,10 +82,17 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                             children: [
                               const SizedBox(height: 32),
                               Center(
-                                  child: ClipRRect(
-                                borderRadius: BorderRadius.circular(50),
-                                child: Image.asset('assets/app_logo.png',
-                                    width: 100, height: 100),
+                                  child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                                child: Image.asset(
+                                  'assets/examdy_icon.png',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                               )),
                               const SizedBox(height: 32),
                               Card(
@@ -248,12 +260,17 @@ class WebLoginPage extends StatefulWidget {
 }
 
 class _WebLoginPageState extends State<WebLoginPage> {
+  bool _hasNavigated = false;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value) {
-        Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+      if (authController.isUserAuthenticated.value && !_hasNavigated) {
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && Get.currentRoute == '/login') {
+            Get.offAllNamed('/home');
+          }
         });
       }
       return GestureDetector(
@@ -262,7 +279,7 @@ class _WebLoginPageState extends State<WebLoginPage> {
         },
         child: Scaffold(
           backgroundColor: Colors.white,
-          body: Container(
+          body: SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
             child: Row(
@@ -271,7 +288,7 @@ class _WebLoginPageState extends State<WebLoginPage> {
                   flex: 3,
                   child: ClipPath(
                     clipper: CurvyLeftClipper(),
-                    child: Container(
+                    child: SizedBox(
                       height: double.infinity,
                       child: WavyGradientBackground(
                         width: double.infinity,
@@ -439,3 +456,4 @@ Widget _buildLoginForm(AppAuthController authController, BuildContext context) {
     ),
   );
 }
+

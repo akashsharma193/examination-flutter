@@ -4,19 +4,22 @@ import 'package:get/get.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/widgets/app_dialog.dart';
 
-class AuthMiddleWare extends GetMiddleware {
+class HomeAuthMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    return AppLocalStorage.instance.isLoggedIn
-        ? const RouteSettings(name: '/home')
-        : super.redirect(route);
+    final isLoggedIn = AppLocalStorage.instance.isLoggedIn;
+
+    if (!isLoggedIn) {
+      return const RouteSettings(name: '/login');
+    }
+    return null;
   }
 }
 
 class InternetCheckMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    return null; // No automatic redirection, handling manually
+    return null;
   }
 
   @override
@@ -27,10 +30,9 @@ class InternetCheckMiddleware extends GetMiddleware {
 
     if (results.isNotEmpty) {
       _showAlertDialog();
-      return null; // Prevent navigation
+      return null;
     }
 
-    // No internet, allow navigation to exam screen
     return route;
   }
 

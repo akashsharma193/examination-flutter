@@ -16,33 +16,40 @@ class AppRoute {
       page: () => const SplashScreen(),
     ),
     GetPage(
-        name: AppRoutesNames.login,
-        page: () => const LoginPage(),
-        binding: AppBindings(),
-        middlewares: [AuthMiddleWare()]),
+      name: AppRoutesNames.login,
+      page: () => const LoginPage(),
+      binding: AppBindings(),
+    ),
     GetPage(
-        name: AppRoutesNames.home,
-        page: () => homePage(),
-        binding: AppBindings()),
+      name: AppRoutesNames.home,
+      page: () => homePage(),
+      binding: AppBindings(),
+      middlewares: [HomeAuthMiddleware()],
+    ),
     GetPage(
-        name: AppRoutesNames.userList,
-        page: () => const UserListScreen(),
-        binding: AppBindings()),
+      name: AppRoutesNames.userList,
+      page: () => const UserListScreen(),
+      binding: AppBindings(),
+    ),
     GetPage(
-        name: AppRoutesNames.editUserScreen,
-        page: () => const EditUserScreen(),
-        binding: AppBindings()),
+      name: AppRoutesNames.editUserScreen,
+      page: () => const EditUserScreen(),
+      binding: AppBindings(),
+    ),
     GetPage(
-        name: AppRoutesNames.examScreen,
-        page: () {
-          final args = Get.arguments;
-          return ExamScreen(
-            questions: args['questions'],
-            testId: args['testId'],
-            examName: args['name'] ?? 'Untitled Exam',
-            examDurationMinutes: args['time'],
-          );
-        },
-        binding: AppBindings()),
+      name: AppRoutesNames.examScreen,
+      page: () {
+        final args = Get.arguments;
+        return ExamScreen(
+          questions: args['questions'],
+          testId: args['testId'],
+          examName: args['name'] ?? 'Untitled Exam',
+          examDurationMinutes: args['time'],
+        );
+      },
+      binding: AppBindings(),
+    ),
   ];
 }
+
+

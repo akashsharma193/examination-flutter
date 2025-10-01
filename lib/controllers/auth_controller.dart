@@ -16,13 +16,6 @@ class AppAuthController extends GetxController {
 
   final emailController = TextEditingController();
   final passController = TextEditingController();
-
-  @override
-  void onReady() {
-    checkIfAlreadyLoggedIn();
-    super.onReady();
-  }
-
   final nameController = TextEditingController();
   final mobileController = TextEditingController();
   final registerEmailController = TextEditingController();
@@ -30,6 +23,23 @@ class AppAuthController extends GetxController {
   final registerPassController = TextEditingController();
   final confirmPassController = TextEditingController();
   final orgCodeController = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
+    syncAuthState();
+  }
+
+  @override
+  void onReady() {
+    checkIfAlreadyLoggedIn();
+    super.onReady();
+  }
+
+  void syncAuthState() {
+    isUserAuthenticated.value = AppLocalStorage.instance.isLoggedIn;
+    update();
+  }
 
   void checkIfAlreadyLoggedIn() {
     if (AppLocalStorage.instance.isLoggedIn &&
@@ -115,6 +125,8 @@ class AppAuthController extends GetxController {
             localStorage.setIsUserLoggedIn(true);
             localStorage.setUserData(response.value);
             repo.saveFCMToken(userId: AppLocalStorage.instance.userId);
+            emailController.clear();
+            passController.clear();
           }
           break;
         case AppFailure():
@@ -189,5 +201,19 @@ class AppAuthController extends GetxController {
   void forgotPassword() {
     ExamRepo repo = ExamRepo();
     repo.forgotPassword(emailController.text);
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passController.dispose();
+    nameController.dispose();
+    mobileController.dispose();
+    registerEmailController.dispose();
+    batchController.dispose();
+    registerPassController.dispose();
+    confirmPassController.dispose();
+    orgCodeController.dispose();
+    super.onClose();
   }
 }
