@@ -17,6 +17,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
 class HomeController extends GetxController {
+  HomeController() {}
   static HomeController get to => Get.find<HomeController>();
 
   bool _isDisposed = false;

@@ -44,12 +44,13 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value && !_hasNavigated) {
+      final isAuth = authController.isUserAuthenticated.value;
+      if (isAuth && !_hasNavigated) {
         _hasNavigated = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && Get.currentRoute == '/login') {
             Get.offAllNamed('/home');
-          }
+          } else {}
         });
       }
       return GestureDetector(

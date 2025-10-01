@@ -4,22 +4,15 @@ import 'package:get/get.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/widgets/app_dialog.dart';
 
-class AuthMiddleWare extends GetMiddleware {
-  @override
-  RouteSettings? redirect(String? route) {
-    return AppLocalStorage.instance.isLoggedIn
-        ? const RouteSettings(name: '/home')
-        : super.redirect(route);
-  }
-}
-
 class HomeAuthMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    if (!AppLocalStorage.instance.isLoggedIn) {
+    final isLoggedIn = AppLocalStorage.instance.isLoggedIn;
+
+    if (!isLoggedIn) {
       return const RouteSettings(name: '/login');
     }
-    return super.redirect(route);
+    return null;
   }
 }
 

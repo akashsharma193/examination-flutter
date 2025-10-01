@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crackitx/controllers/auth_controller.dart';
 import 'package:crackitx/controllers/home_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -439,6 +440,7 @@ class AppDioService {
 
       if (refreshError is DioException) {
         final statusCode = refreshError.response?.statusCode;
+
         if (statusCode == 401 ||
             statusCode == 403 ||
             statusCode == 400 ||
@@ -471,17 +473,23 @@ class AppDioService {
     AppLocalStorage.instance.clearTokens();
     AppLocalStorage.instance.setIsUserLoggedIn(false);
 
-    if (getx.Get.isRegistered<HomeController>()) {
-      getx.Get.delete<HomeController>(force: true);
+    if (getx.Get.isRegistered<AppAuthController>()) {
+      try {
+        getx.Get.find<AppAuthController>().syncAuthState();
+      } catch (e) {}
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getx.Get.snackbar('Session Expired', message);
+    if (getx.Get.isRegistered<HomeController>()) {
+      try {
+        getx.Get.delete<HomeController>(force: true);
+      } catch (e) {}
+    }
 
+    Future.microtask(() {
       if (getx.Get.currentRoute != '/login') {
         getx.Get.offAllNamed('/login');
       }
-
+      getx.Get.snackbar('Session Expired', message);
       _isLoggingOut = false;
     });
   }
