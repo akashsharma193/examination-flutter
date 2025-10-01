@@ -13,10 +13,20 @@ class AuthMiddleWare extends GetMiddleware {
   }
 }
 
+class HomeAuthMiddleware extends GetMiddleware {
+  @override
+  RouteSettings? redirect(String? route) {
+    if (!AppLocalStorage.instance.isLoggedIn) {
+      return const RouteSettings(name: '/login');
+    }
+    return super.redirect(route);
+  }
+}
+
 class InternetCheckMiddleware extends GetMiddleware {
   @override
   RouteSettings? redirect(String? route) {
-    return null; // No automatic redirection, handling manually
+    return null;
   }
 
   @override
@@ -27,10 +37,9 @@ class InternetCheckMiddleware extends GetMiddleware {
 
     if (results.isNotEmpty) {
       _showAlertDialog();
-      return null; // Prevent navigation
+      return null;
     }
 
-    // No internet, allow navigation to exam screen
     return route;
   }
 
@@ -43,4 +52,3 @@ class InternetCheckMiddleware extends GetMiddleware {
     );
   }
 }
-

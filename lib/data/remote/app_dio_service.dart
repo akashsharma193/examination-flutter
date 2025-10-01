@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crackitx/controllers/home_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
@@ -22,6 +24,7 @@ class AppDioService {
 
   final Dio _serviceDio = dio;
   bool _isRefreshing = false;
+  bool _isLoggingOut = false;
   final List<Completer<String?>> _failedQueue = [];
 
   void _processQueue(dynamic error, String? token) {
@@ -116,7 +119,8 @@ class AppDioService {
 
           if (error.response?.statusCode == 409 &&
               originalRequest.extra['retry'] != true) {
-            if (originalRequest.path.contains('user-open/login')) {
+            if (originalRequest.path.contains('user-open/login') ||
+                originalRequest.path.contains('user-open/refreshToken')) {
               handler.next(error);
               return;
             }
@@ -204,12 +208,12 @@ class AppDioService {
                 responseData = _decryptData(responseData['encPayloadRes']);
               }
 
-              if (responseData['success'] == true &&
+              if (refreshResponse.statusCode == 200 &&
+                  responseData['success'] == true &&
                   responseData.containsKey('data')) {
                 final data = responseData['data'];
                 final newToken = data['token'];
                 final newRefreshToken = data['refreshToken'];
-                final newUserId = data['userId'];
 
                 if (newToken != null) {
                   AppLocalStorage.instance.setTokens(newToken, newRefreshToken);
@@ -251,7 +255,8 @@ class AppDioService {
                 final statusCode = refreshError.response?.statusCode;
                 if (statusCode == 401 ||
                     statusCode == 403 ||
-                    statusCode == 400) {
+                    statusCode == 400 ||
+                    statusCode == 409) {
                   _handleLogout('Session expired. Please login again.');
                 } else if (statusCode != null && statusCode >= 500) {
                   _handleLogout('Server error. Please try logging in again.');
@@ -278,7 +283,8 @@ class AppDioService {
       Response response, ResponseInterceptorHandler handler) async {
     final originalRequest = response.requestOptions;
 
-    if (originalRequest.path.contains('user-open/login')) {
+    if (originalRequest.path.contains('user-open/login') ||
+        originalRequest.path.contains('user-open/refreshToken')) {
       final error = DioException(
         requestOptions: response.requestOptions,
         response: response,
@@ -378,7 +384,7 @@ class AppDioService {
       };
 
       final refreshResponse = await refreshDio.post(
-        '/user-open/refreshToken',
+        'user-open/refreshToken',
         data: refreshBody,
       );
 
@@ -388,11 +394,12 @@ class AppDioService {
         responseData = _decryptData(responseData['encPayloadRes']);
       }
 
-      if (responseData['success'] == true && responseData.containsKey('data')) {
+      if (refreshResponse.statusCode == 200 &&
+          responseData['success'] == true &&
+          responseData.containsKey('data')) {
         final data = responseData['data'];
         final newToken = data['token'];
         final newRefreshToken = data['refreshToken'];
-        final newUserId = data['userId'];
 
         if (newToken != null) {
           AppLocalStorage.instance.setTokens(newToken, newRefreshToken);
@@ -432,7 +439,10 @@ class AppDioService {
 
       if (refreshError is DioException) {
         final statusCode = refreshError.response?.statusCode;
-        if (statusCode == 401 || statusCode == 403 || statusCode == 400) {
+        if (statusCode == 401 ||
+            statusCode == 403 ||
+            statusCode == 400 ||
+            statusCode == 409) {
           _handleLogout('Session expired. Please login again.');
         } else if (statusCode != null && statusCode >= 500) {
           _handleLogout('Server error. Please try logging in again.');
@@ -455,11 +465,25 @@ class AppDioService {
   }
 
   void _handleLogout(String message) {
+    if (_isLoggingOut) return;
+    _isLoggingOut = true;
+
     AppLocalStorage.instance.clearTokens();
     AppLocalStorage.instance.setIsUserLoggedIn(false);
 
-    Get.snackbar('Session Expired', message);
-    Get.offAllNamed('/login');
+    if (getx.Get.isRegistered<HomeController>()) {
+      getx.Get.delete<HomeController>(force: true);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getx.Get.snackbar('Session Expired', message);
+
+      if (getx.Get.currentRoute != '/login') {
+        getx.Get.offAllNamed('/login');
+      }
+
+      _isLoggingOut = false;
+    });
   }
 
   Future<AppResult> getDio(
@@ -599,6 +623,8 @@ class AppDioService {
         return 'Access forbidden. You don\'t have permission.';
       case 404:
         return 'Resource not found.';
+      case 409:
+        return 'Session expired. Please login again.';
       case 422:
         return 'Validation error. Please check your input.';
       case 500:

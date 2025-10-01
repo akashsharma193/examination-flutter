@@ -39,12 +39,17 @@ class MobileLoginPage extends StatefulWidget {
 }
 
 class _MobileLoginPageState extends State<MobileLoginPage> {
+  bool _hasNavigated = false;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value) {
-        Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+      if (authController.isUserAuthenticated.value && !_hasNavigated) {
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && Get.currentRoute == '/login') {
+            Get.offAllNamed('/home');
+          }
         });
       }
       return GestureDetector(
@@ -255,12 +260,17 @@ class WebLoginPage extends StatefulWidget {
 }
 
 class _WebLoginPageState extends State<WebLoginPage> {
+  bool _hasNavigated = false;
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<AppAuthController>(builder: (authController) {
-      if (authController.isUserAuthenticated.value) {
-        Future.delayed(Durations.medium3, () {
-          Get.offAllNamed('/home');
+      if (authController.isUserAuthenticated.value && !_hasNavigated) {
+        _hasNavigated = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && Get.currentRoute == '/login') {
+            Get.offAllNamed('/home');
+          }
         });
       }
       return GestureDetector(

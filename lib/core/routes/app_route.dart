@@ -23,7 +23,8 @@ class AppRoute {
     GetPage(
         name: AppRoutesNames.home,
         page: () => homePage(),
-        binding: AppBindings()),
+        binding: AppBindings(),
+        middlewares: [HomeAuthMiddleware()]),
     GetPage(
         name: AppRoutesNames.userList,
         page: () => const UserListScreen(),
