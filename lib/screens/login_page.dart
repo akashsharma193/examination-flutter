@@ -82,17 +82,11 @@ class _MobileLoginPageState extends State<MobileLoginPage> {
                             children: [
                               const SizedBox(height: 32),
                               Center(
-                                  child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Image.asset(
-                                  'assets/examdy_icon.png',
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
+                                  child: Image.asset(
+                                'assets/app_logo.png',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
                               )),
                               const SizedBox(height: 32),
                               Card(
@@ -456,4 +450,3 @@ Widget _buildLoginForm(AppAuthController authController, BuildContext context) {
     ),
   );
 }
-
