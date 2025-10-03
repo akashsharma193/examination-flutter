@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:crackitx/ad_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +20,9 @@ void main() async {
   await AppFirebaseService.instance.initialize();
   await AppNotificationService.instance.initialize();
   await AppDioService.instance.initDioService(baseUrl: 'https://tomarbros.in/');
-  await AdHelper.initializeAds();
+  if (Platform.isAndroid) {
+    await AdHelper.initializeAds();
+  }
   runApp(const MyApp());
 }
 

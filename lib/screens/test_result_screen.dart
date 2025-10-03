@@ -11,11 +11,13 @@ import 'package:crackitx/widgets/gradient_app_bar.dart';
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
   final String userId;
+  final TestResultDetailModel? preloadedData;
 
   const TestResultScreen({
     super.key,
     required this.model,
     required this.userId,
+    this.preloadedData,
   });
 
   @override
@@ -29,14 +31,22 @@ class _TestResultScreenState extends State<TestResultScreen> {
   @override
   void initState() {
     super.initState();
-    controller.fetchData(widget.model.questionId ?? '', widget.userId);
+    if (widget.preloadedData != null) {
+      controller.setPreloadedData(widget.preloadedData!);
+    } else {
+      controller.fetchData(widget.model.questionId ?? '', widget.userId);
+    }
   }
 
   Future<void> _onRefresh() async {
     setState(() {
       currentFilter = 'all';
     });
-    controller.refreshData(widget.model.questionId ?? '', widget.userId);
+    if (widget.preloadedData != null) {
+      controller.setPreloadedData(widget.preloadedData!);
+    } else {
+      controller.refreshData(widget.model.questionId ?? '', widget.userId);
+    }
   }
 
   List<FinalResult> _getFilteredQuestions(TestResultDetailModel model) {
@@ -77,17 +87,19 @@ class _TestResultScreenState extends State<TestResultScreen> {
       builder: (controller) {
         return Scaffold(
           backgroundColor: Colors.white,
-          floatingActionButton: FloatingActionButton.small(
-            onPressed: () {
-              controller.refreshData(
-                  widget.model.questionId ?? '', widget.userId);
-            },
-            backgroundColor: AppColors.cardBackground,
-            child: const Icon(
-              Icons.refresh,
-              color: Colors.white,
-            ),
-          ),
+          floatingActionButton: widget.preloadedData == null
+              ? FloatingActionButton.small(
+                  onPressed: () {
+                    controller.refreshData(
+                        widget.model.questionId ?? '', widget.userId);
+                  },
+                  backgroundColor: AppColors.cardBackground,
+                  child: const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
           appBar: GradientAppBar(
             title: Text(
               "${widget.model.subjectName}",
@@ -353,7 +365,6 @@ class _TestResultScreenState extends State<TestResultScreen> {
       ];
     }
 
-    // Fixed: Using map instead of List.generate and converting to List<Widget>
     return filteredQuestions.map<Widget>((question) {
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -375,7 +386,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                     ),
                   ),
                   Text(
-                    "Time: ${question.timeTaken ?? 0} sec",
+                    "Time: ${question.timeTaken} sec",
                     style: const TextStyle(fontSize: 14),
                   ),
                 ],
@@ -407,9 +418,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
                                   : Icons.cancel)
                               : Icons.circle_outlined,
                           color: option == question.userAnswer
-                              ? (option == question.correctAnswer
-                                  ? Colors.white
-                                  : Colors.white)
+                              ? Colors.white
                               : Colors.black,
                         ),
                         const SizedBox(width: 10),

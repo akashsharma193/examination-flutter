@@ -1,16 +1,21 @@
-import 'package:crackitx/core/constants/color_constants.dart';
-import 'package:crackitx/widgets/banner_ad_widget.dart';
-import 'package:crackitx/widgets/interstitial_ad.dart';
+import 'package:crackitx/core/utils/missed_exam_converter.dart';
+import 'package:crackitx/screens/test_result_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/missed_exam_model.dart';
+import 'package:crackitx/app_models/upcoming_exam_model.dart';
 import 'package:crackitx/controllers/home_controller.dart';
-import 'package:crackitx/core/theme/app_theme.dart';
+import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/extensions/datetime_extension.dart';
+import 'package:crackitx/core/theme/app_theme.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_home.dart';
+import 'package:crackitx/widgets/banner_ad_widget.dart';
 import 'package:crackitx/widgets/drawer_widget.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
+import 'package:crackitx/widgets/interstitial_ad.dart';
 
 Widget homePage() {
   final isLoggedIn = AppLocalStorage.instance.isLoggedIn;
@@ -220,7 +225,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           ],
         ),
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
+          preferredSize: const Size.fromHeight(kToolbarHeight + 48),
           child: Obx(() => GradientAppBar(
                 title: controller.isSearching.value
                     ? TextField(
@@ -255,6 +260,34 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         const Icon(Icons.logout_outlined, color: Colors.white),
                   ),
                 ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildTabItem(
+                          controller,
+                          ExamTab.active,
+                          'Active Exams',
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildTabItem(
+                          controller,
+                          ExamTab.upcoming,
+                          'Upcoming',
+                        ),
+                      ),
+                      Expanded(
+                        child: _buildTabItem(
+                          controller,
+                          ExamTab.missed,
+                          'Missed',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               )),
         ),
         body: Column(
@@ -264,7 +297,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               child: Obx(() {
                 if ((controller.isUserProfileLoading.value ||
                         controller.isLoading.value) &&
-                    controller.allExams.isEmpty) {
+                    _getCurrentExamList(controller).isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -303,7 +336,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         );
                       }),
                       const SizedBox(height: AppTheme.spacingL),
-                      Expanded(child: getExamListWidget(controller))
+                      Expanded(child: _buildExamContent(controller))
                     ],
                   ),
                 );
@@ -315,16 +348,66 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
   }
 
-  Widget getExamListWidget(HomeController controller) {
+  Widget _buildTabItem(HomeController controller, ExamTab tab, String label) {
+    final isSelected = controller.currentTab.value == tab;
+    return InkWell(
+      onTap: () => controller.changeTab(tab),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? Colors.white : Colors.transparent,
+              width: 3,
+            ),
+          ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: AppTheme.bodyMedium.copyWith(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<dynamic> _getCurrentExamList(HomeController controller) {
+    switch (controller.currentTab.value) {
+      case ExamTab.active:
+        return controller.allExams;
+      case ExamTab.upcoming:
+        return controller.upcomingExams;
+      case ExamTab.missed:
+        return controller.missedExams;
+    }
+  }
+
+  Widget _buildExamContent(HomeController controller) {
     if (AppLocalStorage.instance.user.isAdmin) {
       return const SizedBox.shrink();
     }
 
     return Obx(() {
+      switch (controller.currentTab.value) {
+        case ExamTab.active:
+          return _buildActiveExamsWidget(controller);
+        case ExamTab.upcoming:
+          return _buildUpcomingExamsWidget(controller);
+        case ExamTab.missed:
+          return _buildMissedExamsWidget(controller);
+      }
+    });
+  }
+
+  Widget _buildActiveExamsWidget(HomeController controller) {
+    return Obx(() {
       if (controller.allExams.isEmpty && !controller.isLoading.value) {
         return Center(
           child: Text(
-            'No Exams Scheduled for you as of now..',
+            'No Active Exams Scheduled for you as of now..',
             style: AppTheme.headingMedium.copyWith(color: Colors.black),
           ),
         );
@@ -345,15 +428,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
           ? controller.filteredExams
           : controller.allExams;
       final showLoadMore =
-          !controller.isSearching.value && controller.hasNextPage;
+          !controller.isSearching.value && controller.activeHasNextPage;
 
       return Column(
         children: [
-          if (controller.totalElements > 0 && !controller.isSearching.value)
+          if (controller.activeTotalElements > 0 &&
+              !controller.isSearching.value)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
-                'Showing ${controller.allExams.length} of ${controller.totalElements} exams',
+                'Showing ${controller.allExams.length} of ${controller.activeTotalElements} exams',
                 style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
               ),
             ),
@@ -373,190 +457,553 @@ class _StudentHomePageState extends State<StudentHomePage> {
               itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == examsToShow.length && showLoadMore) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Obx(() => Material(
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(16),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: controller.isLoadingMore.value
-                                ? null
-                                : controller.loadMoreExams,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Color(0xFF9181F4),
-                                    Color(0xFF5038ED)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Center(
-                                child: controller.isLoadingMore.value
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Load More Exams',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        )),
-                  );
+                  return _buildLoadMoreButton(controller);
                 }
                 final singleItem = examsToShow[index];
-
-                return Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacingS),
-                  child: Obx(() => InkWell(
-                        onTap: controller.isExamCardLoading.value
-                            ? null
-                            : () => _handleExamCardTap(singleItem, controller),
-                        child: Material(
-                          elevation: 2,
-                          borderRadius:
-                              BorderRadius.circular(AppTheme.borderRadiusM),
-                          color: AppColors.cardBackground,
-                          shadowColor: AppTheme.shadowSmall[0].color,
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 300,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFD3D3D3),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(8),
-                                      bottomRight: Radius.circular(40),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    singleItem.subjectName,
-                                    style: AppTheme.bodyMedium.copyWith(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              'by ${singleItem.teacherName}',
-                                              style: AppTheme.bodyLarge
-                                                  .copyWith(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w400),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              'Start: ${singleItem.startTime.formatTime}',
-                                              style: AppTheme.normalText
-                                                  .copyWith(
-                                                      color: Colors.white),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            Text(
-                                              'End: ${singleItem.endTime.formatTime}',
-                                              style: AppTheme.normalText
-                                                  .copyWith(
-                                                      color: Colors.white),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.schedule,
-                                                  color: Colors.white),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                '${singleItem.examDuration} mins',
-                                                style: AppTheme.normalText
-                                                    .copyWith(
-                                                        color: Colors.white),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            children: [
-                                              const Icon(Icons.timer_outlined,
-                                                  color: Colors.white),
-                                              const SizedBox(width: 4),
-                                              Obx(() => Text(
-                                                    controller.examTimers[
-                                                            singleItem
-                                                                .questionId] ??
-                                                        'Calculating...',
-                                                    style: AppTheme.normalText
-                                                        .copyWith(
-                                                            color:
-                                                                Colors.white),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  )),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ]),
-                        ),
-                      )),
-                );
+                return _buildActiveExamCard(singleItem, controller);
               },
             ),
           ),
         ],
       );
     });
+  }
+
+  Widget _buildUpcomingExamsWidget(HomeController controller) {
+    return Obx(() {
+      if (controller.upcomingExams.isEmpty && !controller.isLoading.value) {
+        return Center(
+          child: Text(
+            'No Upcoming Exams Scheduled for you as of now..',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      if (controller.isSearching.value &&
+          controller.filteredUpcomingExams.isEmpty &&
+          controller.searchQuery.value.isNotEmpty) {
+        return Center(
+          child: Text(
+            'No exams found matching "${controller.searchQuery.value}"',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      final examsToShow = controller.isSearching.value
+          ? controller.filteredUpcomingExams
+          : controller.upcomingExams;
+      final showLoadMore =
+          !controller.isSearching.value && controller.upcomingHasNextPage;
+
+      return Column(
+        children: [
+          if (controller.upcomingTotalElements > 0 &&
+              !controller.isSearching.value)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Showing ${controller.upcomingExams.length} of ${controller.upcomingTotalElements} exams',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
+            ),
+          if (controller.isSearching.value &&
+              controller.filteredUpcomingExams.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Found ${controller.filteredUpcomingExams.length} exam(s)',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == examsToShow.length && showLoadMore) {
+                  return _buildLoadMoreButton(controller);
+                }
+                final singleItem = examsToShow[index];
+                return _buildUpcomingExamCard(singleItem, controller);
+              },
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildMissedExamsWidget(HomeController controller) {
+    return Obx(() {
+      if (controller.missedExams.isEmpty && !controller.isLoading.value) {
+        return Center(
+          child: Text(
+            'No Missed Exams found..',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      if (controller.isSearching.value &&
+          controller.filteredMissedExams.isEmpty &&
+          controller.searchQuery.value.isNotEmpty) {
+        return Center(
+          child: Text(
+            'No exams found matching "${controller.searchQuery.value}"',
+            style: AppTheme.headingMedium.copyWith(color: Colors.black),
+          ),
+        );
+      }
+
+      final examsToShow = controller.isSearching.value
+          ? controller.filteredMissedExams
+          : controller.missedExams;
+      final showLoadMore =
+          !controller.isSearching.value && controller.missedHasNextPage;
+
+      return Column(
+        children: [
+          if (controller.missedTotalElements > 0 &&
+              !controller.isSearching.value)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Showing ${controller.missedExams.length} of ${controller.missedTotalElements} exams',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
+            ),
+          if (controller.isSearching.value &&
+              controller.filteredMissedExams.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Text(
+                'Found ${controller.filteredMissedExams.length} exam(s)',
+                style: AppTheme.bodyMedium.copyWith(color: Colors.grey),
+              ),
+            ),
+          Expanded(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const AlwaysScrollableScrollPhysics(),
+              itemCount: examsToShow.length + (showLoadMore ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == examsToShow.length && showLoadMore) {
+                  return _buildLoadMoreButton(controller);
+                }
+                final singleItem = examsToShow[index];
+                return _buildMissedExamCard(singleItem, controller);
+              },
+            ),
+          ),
+        ],
+      );
+    });
+  }
+
+  Widget _buildLoadMoreButton(HomeController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Obx(() => Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: controller.isLoadingMore.value
+                  ? null
+                  : controller.loadMoreExams,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF9181F4), Color(0xFF5038ED)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Center(
+                  child: controller.isLoadingMore.value
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Load More Exams',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+          )),
+    );
+  }
+
+  Widget _buildActiveExamCard(ExamModel singleItem, HomeController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacingS),
+      child: Obx(() => InkWell(
+            onTap: controller.isExamCardLoading.value
+                ? null
+                : () => _handleExamCardTap(singleItem, controller),
+            child: Material(
+              elevation: 2,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+              color: AppColors.cardBackground,
+              shadowColor: AppTheme.shadowSmall[0].color,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 300,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFD3D3D3),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(40),
+                        ),
+                      ),
+                      child: Text(
+                        singleItem.subjectName,
+                        style: AppTheme.bodyMedium.copyWith(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 6),
+                                Text(
+                                  'by ${singleItem.teacherName}',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Start: ${singleItem.startTime.formatTime}',
+                                  style: AppTheme.normalText
+                                      .copyWith(color: Colors.white),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'End: ${singleItem.endTime.formatTime}',
+                                  style: AppTheme.normalText
+                                      .copyWith(color: Colors.white),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.schedule,
+                                      color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${singleItem.examDuration} mins',
+                                    style: AppTheme.normalText
+                                        .copyWith(color: Colors.white),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(Icons.timer_outlined,
+                                      color: Colors.white),
+                                  const SizedBox(width: 4),
+                                  Obx(() => Text(
+                                        controller.examTimers[
+                                                singleItem.questionId] ??
+                                            'Calculating...',
+                                        style: AppTheme.normalText
+                                            .copyWith(color: Colors.white),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]),
+            ),
+          )),
+    );
+  }
+
+  Widget _buildUpcomingExamCard(
+      UpcomingExamModel singleItem, HomeController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacingS),
+      child: InkWell(
+        onTap: () => controller.showUpcomingExamDialog(),
+        child: Material(
+          elevation: 2,
+          borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+          color: AppColors.cardBackground,
+          shadowColor: AppTheme.shadowSmall[0].color,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 300,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD3D3D3),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: Text(
+                singleItem.subjectName,
+                style: AppTheme.bodyMedium.copyWith(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        Text(
+                          'by ${singleItem.teacherName}',
+                          style: AppTheme.bodyLarge.copyWith(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Start: ${singleItem.startTime.formatTime}',
+                          style:
+                              AppTheme.normalText.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'End: ${singleItem.endTime.formatTime}',
+                          style:
+                              AppTheme.normalText.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.schedule, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${singleItem.examDuration} mins',
+                            style: AppTheme.normalText
+                                .copyWith(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.timer_outlined, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Obx(() => Text(
+                                controller.upcomingExamTimers[
+                                        singleItem.questionId] ??
+                                    'Calculating...',
+                                style: AppTheme.normalText
+                                    .copyWith(color: Colors.white),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMissedExamCard(
+      MissedExamModel singleItem, HomeController controller) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spacingS),
+      child: InkWell(
+        onTap: () {
+          final historyModel =
+              MissedExamConverter.toSingleExamHistoryModel(singleItem);
+          final testResultData =
+              MissedExamConverter.toTestResultDetailModel(singleItem);
+          final userId = AppLocalStorage.instance.user.userId;
+
+          Get.to(() => TestResultScreen(
+                model: historyModel,
+                userId: userId,
+                preloadedData: testResultData,
+              ));
+        },
+        child: Material(
+          elevation: 2,
+          borderRadius: BorderRadius.circular(AppTheme.borderRadiusM),
+          color: AppColors.cardBackground,
+          shadowColor: AppTheme.shadowSmall[0].color,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 300,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD3D3D3),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomRight: Radius.circular(40),
+                ),
+              ),
+              child: Text(
+                singleItem.subjectName,
+                style: AppTheme.bodyMedium.copyWith(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        Text(
+                          'by ${singleItem.teacherName}',
+                          style: AppTheme.bodyLarge.copyWith(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Start: ${singleItem.startTime.formatTime}',
+                          style:
+                              AppTheme.normalText.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'End: ${singleItem.endTime.formatTime}',
+                          style:
+                              AppTheme.normalText.copyWith(color: Colors.white),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.schedule, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${singleItem.examDuration} mins',
+                            style: AppTheme.normalText
+                                .copyWith(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.cancel, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Missed',
+                            style: AppTheme.normalText
+                                .copyWith(color: Colors.white),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
   }
 }
