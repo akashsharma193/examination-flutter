@@ -41,4 +41,11 @@ class TestResultDetailController extends GetxController {
   void refreshData(String qId, String userId) {
     fetchData(qId, userId);
   }
+
+  void setPreloadedData(TestResultDetailModel data) {
+    testResultDetailModel = data;
+    isLoading = false;
+    update();
+  }
 }
+

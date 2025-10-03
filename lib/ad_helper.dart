@@ -5,6 +5,8 @@ class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-6836526074800523/9549257078';
+    } else if (Platform.isIOS) {
+      return '';
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -13,6 +15,8 @@ class AdHelper {
   static String get testBannerAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-3940256099942544/6300978111';
+    } else if (Platform.isIOS) {
+      return '';
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -21,6 +25,8 @@ class AdHelper {
   static String get interstitialVideoAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-6836526074800523/7714620590';
+    } else if (Platform.isIOS) {
+      return '';
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -29,6 +35,8 @@ class AdHelper {
   static String get testInterstitialVideoAdUnitId {
     if (Platform.isAndroid) {
       return 'ca-app-pub-3940256099942544/1033173712';
+    } else if (Platform.isIOS) {
+      return '';
     } else {
       throw UnsupportedError('Unsupported platform');
     }
@@ -56,21 +64,13 @@ class AdHelper {
   static String getCurrentAdType() => useTestAds ? "TEST" : "PRODUCTION";
 
   static Future<void> initializeAds() async {
-    print('🎯 Initializing Mobile Ads...');
-
     try {
       await MobileAds.instance.initialize();
-      print('🎯 Mobile Ads initialized successfully');
-
-      final version = await MobileAds.instance.getVersionString();
-      print('🎯 Mobile Ads SDK version: $version');
-
       await MobileAds.instance.updateRequestConfiguration(
         RequestConfiguration(
           testDeviceIds: [],
-          tagForChildDirectedTreatment:
-              TagForChildDirectedTreatment.unspecified,
-          tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.unspecified,
+          tagForChildDirectedTreatment: TagForChildDirectedTreatment.yes,
+          tagForUnderAgeOfConsent: TagForUnderAgeOfConsent.yes,
         ),
       );
       print('🎯 Request configuration updated');

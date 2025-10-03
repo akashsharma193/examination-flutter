@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/upcoming_exam_model.dart'
+    as upcoming_exam_model;
+import 'package:crackitx/app_models/missed_exam_model.dart';
 import 'package:crackitx/app_models/app_user_model.dart';
 import 'package:crackitx/controllers/auth_controller.dart';
 import 'package:crackitx/core/constants/app_result.dart';
@@ -15,6 +18,8 @@ import 'package:crackitx/widgets/app_snackbar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+
+enum ExamTab { active, upcoming, missed }
 
 class HomeController extends GetxController {
   HomeController() {}
@@ -32,29 +37,55 @@ class HomeController extends GetxController {
   RxBool isSearching = false.obs;
   RxBool isExamCardLoading = false.obs;
 
+  Rx<ExamTab> currentTab = ExamTab.active.obs;
+
   RxList<ExamModel> allExams = <ExamModel>[].obs;
   RxList<ExamModel> filteredExams = <ExamModel>[].obs;
+  RxList<upcoming_exam_model.UpcomingExamModel> upcomingExams =
+      <upcoming_exam_model.UpcomingExamModel>[].obs;
+  RxList<upcoming_exam_model.UpcomingExamModel> filteredUpcomingExams =
+      <upcoming_exam_model.UpcomingExamModel>[].obs;
+  RxList<MissedExamModel> missedExams = <MissedExamModel>[].obs;
+  RxList<MissedExamModel> filteredMissedExams = <MissedExamModel>[].obs;
+
   RxList<Map<String, dynamic>> compliences = <Map<String, dynamic>>[].obs;
   ConfigurationModel configuration = ConfigurationModel.toEmpty();
   ExamModel selectedExam = ExamModel.toEmpty();
   Rx<UserModel> userProfile = UserModel.toEmpty().obs;
 
   RxMap<String, String> examTimers = <String, String>{}.obs;
+  RxMap<String, String> upcomingExamTimers = <String, String>{}.obs;
 
   TextEditingController searchController = TextEditingController();
   RxString searchQuery = ''.obs;
 
-  int currentPage = 0;
-  int pageSize = 10;
-  bool hasNextPage = false;
-  bool hasPreviousPage = false;
-  int totalElements = 0;
-  int totalPages = 0;
+  int activeCurrentPage = 0;
+  int activePageSize = 10;
+  bool activeHasNextPage = false;
+  bool activeHasPreviousPage = false;
+  int activeTotalElements = 0;
+  int activeTotalPages = 0;
+
+  int upcomingCurrentPage = 0;
+  int upcomingPageSize = 10;
+  bool upcomingHasNextPage = false;
+  bool upcomingHasPreviousPage = false;
+  int upcomingTotalElements = 0;
+  int upcomingTotalPages = 0;
+
+  int missedCurrentPage = 0;
+  int missedPageSize = 10;
+  bool missedHasNextPage = false;
+  bool missedHasPreviousPage = false;
+  int missedTotalElements = 0;
+  int missedTotalPages = 0;
 
   final ExamRepo examRepo = ExamRepo();
   final AuthRepo authRepo = AuthRepo();
 
-  bool isRequestInProgress = false;
+  bool activeRequestInProgress = false;
+  bool upcomingRequestInProgress = false;
+  bool missedRequestInProgress = false;
   bool complianceLoadError = false;
 
   @override
@@ -93,6 +124,32 @@ class HomeController extends GetxController {
     }
   }
 
+  void changeTab(ExamTab tab) {
+    if (_isDisposed) return;
+    currentTab.value = tab;
+    searchController.clear();
+    searchQuery.value = '';
+    isSearching.value = false;
+
+    switch (tab) {
+      case ExamTab.active:
+        if (allExams.isEmpty) {
+          getExams();
+        }
+        break;
+      case ExamTab.upcoming:
+        if (upcomingExams.isEmpty) {
+          getUpcomingExams();
+        }
+        break;
+      case ExamTab.missed:
+        if (missedExams.isEmpty) {
+          getMissedExams();
+        }
+        break;
+    }
+  }
+
   void _setupSearchListener() {
     searchController.addListener(() {
       if (_isDisposed) return;
@@ -103,8 +160,10 @@ class HomeController extends GetxController {
 
   void _loadInitialData() {
     getAndSubmitOfflinePendingExams();
-    getExams();
     getUserProfile();
+    getExams();
+    getUpcomingExams();
+    getMissedExams();
   }
 
   void toggleSearch() {
@@ -113,7 +172,7 @@ class HomeController extends GetxController {
     if (!isSearching.value) {
       searchController.clear();
       searchQuery.value = '';
-      filteredExams.value = allExams;
+      filterExams();
     }
   }
 
@@ -121,8 +180,22 @@ class HomeController extends GetxController {
     if (_isDisposed) return;
     if (searchQuery.value.isEmpty) {
       filteredExams.value = allExams;
+      filteredUpcomingExams.value = upcomingExams;
+      filteredMissedExams.value = missedExams;
     } else {
       filteredExams.value = allExams.where((exam) {
+        return exam.subjectName
+            .toLowerCase()
+            .contains(searchQuery.value.toLowerCase());
+      }).toList();
+
+      filteredUpcomingExams.value = upcomingExams.where((exam) {
+        return exam.subjectName
+            .toLowerCase()
+            .contains(searchQuery.value.toLowerCase());
+      }).toList();
+
+      filteredMissedExams.value = missedExams.where((exam) {
         return exam.subjectName
             .toLowerCase()
             .contains(searchQuery.value.toLowerCase());
@@ -138,15 +211,28 @@ class HomeController extends GetxController {
   }
 
   void _resetPagination() {
-    currentPage = 0;
-    hasNextPage = false;
-    isRequestInProgress = false;
+    activeCurrentPage = 0;
+    activeHasNextPage = false;
+    activeRequestInProgress = false;
+
+    upcomingCurrentPage = 0;
+    upcomingHasNextPage = false;
+    upcomingRequestInProgress = false;
+
+    missedCurrentPage = 0;
+    missedHasNextPage = false;
+    missedRequestInProgress = false;
+
     complianceLoadError = false;
   }
 
   void _clearData() {
     allExams.clear();
     filteredExams.clear();
+    upcomingExams.clear();
+    filteredUpcomingExams.clear();
+    missedExams.clear();
+    filteredMissedExams.clear();
     compliences.clear();
     userProfile.value = UserModel.toEmpty();
     searchController.clear();
@@ -158,19 +244,35 @@ class HomeController extends GetxController {
 
   void loadMoreExams() async {
     if (!_isAuthenticated() || _isDisposed) return;
-    if (isLoadingMore.value || !hasNextPage || isRequestInProgress) return;
+
+    switch (currentTab.value) {
+      case ExamTab.active:
+        _loadMoreActiveExams();
+        break;
+      case ExamTab.upcoming:
+        _loadMoreUpcomingExams();
+        break;
+      case ExamTab.missed:
+        _loadMoreMissedExams();
+        break;
+    }
+  }
+
+  void _loadMoreActiveExams() async {
+    if (isLoadingMore.value || !activeHasNextPage || activeRequestInProgress)
+      return;
 
     await _safeApiCall(() async {
       try {
-        isRequestInProgress = true;
+        activeRequestInProgress = true;
         isLoadingMore.value = true;
-        currentPage++;
+        activeCurrentPage++;
 
         final resp = await examRepo.getAllExams(
             orgCode: AppLocalStorage.instance.user.orgCode,
             batchId: AppLocalStorage.instance.user.batch,
-            pageNumber: currentPage,
-            pageSize: pageSize);
+            pageNumber: activeCurrentPage,
+            pageSize: activePageSize);
 
         switch (resp) {
           case AppSuccess():
@@ -181,22 +283,108 @@ class HomeController extends GetxController {
               allExams.addAll(newExams);
             }
 
-            hasNextPage = data['hasNext'] ?? false;
-            hasPreviousPage = data['hasPrevious'] ?? false;
-            totalElements = data['totalElements'] ?? 0;
-            totalPages = data['totalPages'] ?? 0;
+            activeHasNextPage = data['hasNext'] ?? false;
+            activeHasPreviousPage = data['hasPrevious'] ?? false;
+            activeTotalElements = data['totalElements'] ?? 0;
+            activeTotalPages = data['totalPages'] ?? 0;
 
-            _initializeTimers();
+            _initializeActiveTimers();
             break;
           case AppFailure():
-            currentPage--;
+            activeCurrentPage--;
             Fluttertoast.showToast(
                 msg: 'Failed to load more exams: ${resp.errorMessage}');
             break;
         }
       } finally {
         isLoadingMore.value = false;
-        isRequestInProgress = false;
+        activeRequestInProgress = false;
+      }
+    });
+  }
+
+  void _loadMoreUpcomingExams() async {
+    if (isLoadingMore.value ||
+        !upcomingHasNextPage ||
+        upcomingRequestInProgress) return;
+
+    await _safeApiCall(() async {
+      try {
+        upcomingRequestInProgress = true;
+        isLoadingMore.value = true;
+        upcomingCurrentPage++;
+
+        final resp = await examRepo.getUpcomingExams(
+            pageNumber: upcomingCurrentPage, pageSize: upcomingPageSize);
+
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<upcoming_exam_model.UpcomingExamModel> newExams =
+                data['content'] ?? [];
+
+            if (newExams.isNotEmpty) {
+              upcomingExams.addAll(newExams);
+            }
+
+            upcomingHasNextPage = data['hasNext'] ?? false;
+            upcomingHasPreviousPage = data['hasPrevious'] ?? false;
+            upcomingTotalElements = data['totalElements'] ?? 0;
+            upcomingTotalPages = data['totalPages'] ?? 0;
+
+            _initializeUpcomingTimers();
+            break;
+          case AppFailure():
+            upcomingCurrentPage--;
+            Fluttertoast.showToast(
+                msg:
+                    'Failed to load more upcoming exams: ${resp.errorMessage}');
+            break;
+        }
+      } finally {
+        isLoadingMore.value = false;
+        upcomingRequestInProgress = false;
+      }
+    });
+  }
+
+  void _loadMoreMissedExams() async {
+    if (isLoadingMore.value || !missedHasNextPage || missedRequestInProgress)
+      return;
+
+    await _safeApiCall(() async {
+      try {
+        missedRequestInProgress = true;
+        isLoadingMore.value = true;
+        missedCurrentPage++;
+
+        final resp = await examRepo.getMissedExams(
+            pageNumber: missedCurrentPage, pageSize: missedPageSize);
+
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<MissedExamModel> newExams = data['content'] ?? [];
+
+            if (newExams.isNotEmpty) {
+              missedExams.addAll(newExams);
+            }
+
+            missedHasNextPage = data['hasNext'] ?? false;
+            missedHasPreviousPage = data['hasPrevious'] ?? false;
+            missedTotalElements = data['totalElements'] ?? 0;
+            missedTotalPages = data['totalPages'] ?? 0;
+
+            break;
+          case AppFailure():
+            missedCurrentPage--;
+            Fluttertoast.showToast(
+                msg: 'Failed to load more missed exams: ${resp.errorMessage}');
+            break;
+        }
+      } finally {
+        isLoadingMore.value = false;
+        missedRequestInProgress = false;
       }
     });
   }
@@ -257,13 +445,13 @@ class HomeController extends GetxController {
     await _safeApiCall(() async {
       try {
         isLoading.value = true;
-        isRequestInProgress = true;
+        activeRequestInProgress = true;
 
         final resp = await examRepo.getAllExams(
             orgCode: AppLocalStorage.instance.user.orgCode,
             batchId: AppLocalStorage.instance.user.batch,
-            pageNumber: currentPage,
-            pageSize: pageSize);
+            pageNumber: activeCurrentPage,
+            pageSize: activePageSize);
 
         switch (resp) {
           case AppSuccess():
@@ -272,12 +460,12 @@ class HomeController extends GetxController {
             allExams.value = exams;
             filteredExams.value = exams;
 
-            hasNextPage = data['hasNext'] ?? false;
-            hasPreviousPage = data['hasPrevious'] ?? false;
-            totalElements = data['totalElements'] ?? 0;
-            totalPages = data['totalPages'] ?? 0;
+            activeHasNextPage = data['hasNext'] ?? false;
+            activeHasPreviousPage = data['hasPrevious'] ?? false;
+            activeTotalElements = data['totalElements'] ?? 0;
+            activeTotalPages = data['totalPages'] ?? 0;
 
-            _initializeTimers();
+            _initializeActiveTimers();
             break;
           case AppFailure():
             Fluttertoast.showToast(
@@ -287,15 +475,98 @@ class HomeController extends GetxController {
         }
       } finally {
         isLoading.value = false;
-        isRequestInProgress = false;
+        activeRequestInProgress = false;
       }
     });
   }
 
-  void _initializeTimers() {
+  void getUpcomingExams() async {
+    if (!_isAuthenticated() || _isDisposed) return;
+
+    await _safeApiCall(() async {
+      try {
+        isLoading.value = true;
+        upcomingRequestInProgress = true;
+
+        final resp = await examRepo.getUpcomingExams(
+            pageNumber: upcomingCurrentPage, pageSize: upcomingPageSize);
+
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<upcoming_exam_model.UpcomingExamModel> exams =
+                data['content'] ?? [];
+            upcomingExams.value = exams;
+            filteredUpcomingExams.value = exams;
+
+            upcomingHasNextPage = data['hasNext'] ?? false;
+            upcomingHasPreviousPage = data['hasPrevious'] ?? false;
+            upcomingTotalElements = data['totalElements'] ?? 0;
+            upcomingTotalPages = data['totalPages'] ?? 0;
+
+            _initializeUpcomingTimers();
+            break;
+          case AppFailure():
+            Fluttertoast.showToast(
+                msg: 'Failed to fetch upcoming exams: ${resp.errorMessage}');
+            upcomingExams.value = [];
+            break;
+        }
+      } finally {
+        isLoading.value = false;
+        upcomingRequestInProgress = false;
+      }
+    });
+  }
+
+  void getMissedExams() async {
+    if (!_isAuthenticated() || _isDisposed) return;
+
+    await _safeApiCall(() async {
+      try {
+        isLoading.value = true;
+        missedRequestInProgress = true;
+
+        final resp = await examRepo.getMissedExams(
+            pageNumber: missedCurrentPage, pageSize: missedPageSize);
+
+        switch (resp) {
+          case AppSuccess():
+            final data = resp.value;
+            List<MissedExamModel> exams = data['content'] ?? [];
+            missedExams.value = exams;
+            filteredMissedExams.value = exams;
+
+            missedHasNextPage = data['hasNext'] ?? false;
+            missedHasPreviousPage = data['hasPrevious'] ?? false;
+            missedTotalElements = data['totalElements'] ?? 0;
+            missedTotalPages = data['totalPages'] ?? 0;
+
+            break;
+          case AppFailure():
+            Fluttertoast.showToast(
+                msg: 'Failed to fetch missed exams: ${resp.errorMessage}');
+            missedExams.value = [];
+            break;
+        }
+      } finally {
+        isLoading.value = false;
+        missedRequestInProgress = false;
+      }
+    });
+  }
+
+  void _initializeActiveTimers() {
     if (_isDisposed) return;
     for (var exam in allExams) {
       _startCountdown(exam.questionId ?? 'uniqExam', exam.startTime);
+    }
+  }
+
+  void _initializeUpcomingTimers() {
+    if (_isDisposed) return;
+    for (var exam in upcomingExams) {
+      _startUpcomingCountdown(exam.questionId ?? 'uniqExam', exam.startTime);
     }
   }
 
@@ -322,6 +593,34 @@ class HomeController extends GetxController {
       }
 
       examTimers.refresh();
+    });
+
+    _activeTimers.add(timer);
+  }
+
+  void _startUpcomingCountdown(String examId, DateTime startTime) {
+    if (_isDisposed) return;
+
+    final timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isDisposed || !_isAuthenticated()) {
+        timer.cancel();
+        return;
+      }
+
+      final now = DateTime.now();
+      final remaining = startTime.difference(now);
+
+      if (remaining.isNegative) {
+        upcomingExamTimers[examId] = "Exam Started!";
+        timer.cancel();
+      } else {
+        final hours = remaining.inHours;
+        final minutes = remaining.inMinutes % 60;
+        final seconds = remaining.inSeconds % 60;
+        upcomingExamTimers[examId] = "$hours h : $minutes m : $seconds s";
+      }
+
+      upcomingExamTimers.refresh();
     });
 
     _activeTimers.add(timer);
@@ -408,6 +707,22 @@ class HomeController extends GetxController {
         child: Text(isExamEnded
             ? 'This Exam has Ended, please Attempt Live or Upcoming Exams!'
             : 'Exam will start soon, come back when Exam is Live!'),
+      ),
+      buttonText: 'Ok',
+      onPressed: () => Get.back(),
+      restrictBack: false,
+      isDismissible: true,
+    );
+  }
+
+  void showUpcomingExamDialog() {
+    if (_isDisposed) return;
+    AppDialog().show(
+      title: 'Upcoming Exam',
+      content: const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Text(
+            'This exam has not started yet. Please check back when the exam is scheduled to begin.'),
       ),
       buttonText: 'Ok',
       onPressed: () => Get.back(),

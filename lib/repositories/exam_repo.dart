@@ -1,6 +1,9 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/upcoming_exam_model.dart'
+    as upcoming_exam_model;
+import 'package:crackitx/app_models/missed_exam_model.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
 import 'package:crackitx/app_models/test_result_detail_model.dart';
 import 'package:crackitx/core/constants/app_result.dart';
@@ -37,14 +40,6 @@ class ExamRepo {
             bool hasNext = currentPageNumber < (totalPages - 1);
             bool hasPrevious = currentPageNumber > 0;
 
-            print("Pagination Info:");
-            print("- Current page: $currentPageNumber");
-            print("- Total pages: $totalPages");
-            print("- Total elements: $totalElements");
-            print("- Has next: $hasNext");
-            print("- Has previous: $hasPrevious");
-            print("- Content length: ${content?.length ?? 0}");
-
             return AppSuccess({
               'content': content != null
                   ? (content as List<dynamic>)
@@ -70,7 +65,113 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
-      print("Exception in getAllExams: $e");
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<Map<String, dynamic>>> getUpcomingExams({
+    int pageNumber = 0,
+    int pageSize = 10,
+  }) async {
+    try {
+      final response = await dioService.postDio(
+          endpoint: 'studentReport/getUpcomingExam',
+          body: {"pageSize": pageSize, "pageNumber": pageNumber, "filter": {}});
+
+      switch (response) {
+        case AppSuccess():
+          final data = response.value['data'];
+
+          if (data != null) {
+            final pageInfo = data['page'];
+            final content = data['content'];
+
+            int totalElements = pageInfo?['totalElements'] ?? 0;
+            int totalPages = pageInfo?['totalPages'] ?? 0;
+            int currentPageNumber = pageInfo?['number'] ?? 0;
+
+            bool hasNext = currentPageNumber < (totalPages - 1);
+            bool hasPrevious = currentPageNumber > 0;
+
+            return AppSuccess({
+              'content': content != null
+                  ? (content as List<dynamic>)
+                      .map((e) =>
+                          upcoming_exam_model.UpcomingExamModel.fromJson(e))
+                      .toList()
+                  : <upcoming_exam_model.UpcomingExamModel>[],
+              'totalElements': totalElements,
+              'totalPages': totalPages,
+              'hasNext': hasNext,
+              'hasPrevious': hasPrevious,
+            });
+          } else {
+            return const AppSuccess({
+              'content': <upcoming_exam_model.UpcomingExamModel>[],
+              'totalElements': 0,
+              'totalPages': 0,
+              'hasNext': false,
+              'hasPrevious': false,
+            });
+          }
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<Map<String, dynamic>>> getMissedExams({
+    int pageNumber = 0,
+    int pageSize = 10,
+  }) async {
+    try {
+      final response = await dioService.postDio(
+          endpoint: 'user-activity/getAllUnAttemptedTest',
+          body: {"pageSize": pageSize, "pageNumber": pageNumber, "filter": {}});
+
+      switch (response) {
+        case AppSuccess():
+          final data = response.value['data'];
+
+          if (data != null) {
+            final pageInfo = data['page'];
+            final content = data['content'];
+
+            int totalElements = pageInfo?['totalElements'] ?? 0;
+            int totalPages = pageInfo?['totalPages'] ?? 0;
+            int currentPageNumber = pageInfo?['number'] ?? 0;
+
+            bool hasNext = currentPageNumber < (totalPages - 1);
+            bool hasPrevious = currentPageNumber > 0;
+
+            return AppSuccess({
+              'content': content != null
+                  ? (content as List<dynamic>)
+                      .map((e) => MissedExamModel.fromJson(e))
+                      .toList()
+                  : <MissedExamModel>[],
+              'totalElements': totalElements,
+              'totalPages': totalPages,
+              'hasNext': hasNext,
+              'hasPrevious': hasPrevious,
+            });
+          } else {
+            return const AppSuccess({
+              'content': <MissedExamModel>[],
+              'totalElements': 0,
+              'totalPages': 0,
+              'hasNext': false,
+              'hasPrevious': false,
+            });
+          }
+        case AppFailure():
+          return AppFailure(
+              errorMessage: response.errorMessage, code: response.code);
+      }
+    } catch (e) {
       return AppResult.failure(const AppFailure());
     }
   }
@@ -212,8 +313,9 @@ class ExamRepo {
   Future<AppResult<TestResultDetailModel>> getTestResultDetails(
       {required String userId, required String qID}) async {
     try {
+      final encodedQID = Uri.encodeComponent(qID);
       final response = await dioService.getDio(
-          endpoint: 'user-activity/getAnswerPaper/$qID');
+          endpoint: 'user-activity/getAnswerPaper/$encodedQID');
 
       switch (response) {
         case AppSuccess():
