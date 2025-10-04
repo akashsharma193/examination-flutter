@@ -4,7 +4,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 class AdHelper {
   static String get bannerAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-6836526074800523/9549257078';
+      return 'ca-app-pub-6836526074800523/5575660921';
     } else if (Platform.isIOS) {
       return '';
     } else {
@@ -24,7 +24,7 @@ class AdHelper {
 
   static String get interstitialVideoAdUnitId {
     if (Platform.isAndroid) {
-      return 'ca-app-pub-6836526074800523/7714620590';
+      return 'ca-app-pub-6836526074800523/4952844390';
     } else if (Platform.isIOS) {
       return '';
     } else {
