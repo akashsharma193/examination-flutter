@@ -3,6 +3,7 @@ import 'package:crackitx/controllers/exam_controller.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/widgets/app_dialog.dart';
 import 'package:crackitx/widgets/test_completed_screen.dart';
+import 'package:crackitx/widgets/banner_ad_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
@@ -66,7 +67,7 @@ class ExamScreen extends StatelessWidget {
                 child: Obx(() => Text(
                       "⏳ ${controller.formatTime(controller.remainingSeconds.value)}",
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600, // Semi-bold
+                                fontWeight: FontWeight.w600,
                               ) ??
                           const TextStyle(
                             fontSize: 18,
@@ -77,52 +78,58 @@ class ExamScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: Obx(() {
-          if (controller.isAppInSplitScreen.value) {
-            return const Center(
-              child: Text(
-                "This app is not accessible in split-screen or floating window mode.",
-                style: TextStyle(fontSize: 16),
-              ),
-            );
-          }
+        body: Column(
+          children: [
+            const BannerAdWidget(),
+            Expanded(
+              child: Obx(() {
+                if (controller.isAppInSplitScreen.value) {
+                  return const Center(
+                    child: Text(
+                      "This app is not accessible in split-screen or floating window mode.",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  );
+                }
 
-          final currentQuestion =
-              controller.questionList[controller.currentQuestionIndex.value];
+                final currentQuestion = controller
+                    .questionList[controller.currentQuestionIndex.value];
 
-          return Column(
-            children: [
-              // Fixed header section
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Column(
                   children: [
-                    const SizedBox(height: 12),
-                    _buildQuestionIndicator(controller, context),
-                    const SizedBox(height: 12),
-                    _buildQuestionHeader(controller, currentQuestion, context),
-                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 16.0, right: 16.0, top: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 12),
+                          _buildQuestionIndicator(controller, context),
+                          const SizedBox(height: 12),
+                          _buildQuestionHeader(
+                              controller, currentQuestion, context),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child:
+                            _buildOptions(controller, currentQuestion, context),
+                      ),
+                    ),
+                    Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.all(16.0),
+                      child: _buildNavigationButtons(controller, context),
+                    ),
                   ],
-                ),
-              ),
-              // Scrollable options section
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: _buildOptions(controller, currentQuestion, context),
-                ),
-              ),
-              // Fixed navigation buttons at bottom
-              Container(
-                color: Colors.transparent, // Transparent background
-                padding: const EdgeInsets.all(16.0),
-                child: _buildNavigationButtons(controller, context),
-              ),
-            ],
-          );
-        }),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -237,13 +244,13 @@ class ExamScreen extends StatelessWidget {
   Widget _buildOptions(ExamController controller,
       Map<String, dynamic> currentQuestion, BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 16), // Add bottom padding
+      padding: const EdgeInsets.only(bottom: 16),
       itemCount: currentQuestion['options'].length,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
       itemBuilder: (context, index) {
         final option = currentQuestion['options'][index];
         return Card(
-          elevation: 2, // Subtle shadow
+          elevation: 2,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: RadioListTile<String>(
@@ -312,10 +319,7 @@ class ExamScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF9181F4),
-                    Color(0xFF5038ED)
-                  ], // Your gradient colors
+                  colors: [Color(0xFF9181F4), Color(0xFF5038ED)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
