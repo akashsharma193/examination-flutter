@@ -133,6 +133,58 @@ class AuthRepo {
     }
   }
 
+  Future<AppResult<List<Map<String, dynamic>>>> getAllOrganizations() async {
+    try {
+      final response = await dioService.getDio(
+        endpoint: 'user-open/getAllOrganization',
+      );
+
+      switch (response) {
+        case AppSuccess():
+          final responseData = response.value;
+          if (responseData['data'] != null && responseData['data'] is List) {
+            return AppSuccess(
+                List<Map<String, dynamic>>.from(responseData['data']));
+          }
+          return const AppSuccess([]);
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<List<Map<String, dynamic>>>> getAllBatchesByOrganization(
+      String organizationName) async {
+    try {
+      final response = await dioService.postDio(
+        endpoint: 'user-open/getAllBatchByOrganization',
+        body: {'organization': organizationName},
+      );
+
+      switch (response) {
+        case AppSuccess():
+          final responseData = response.value;
+          if (responseData['data'] != null && responseData['data'] is List) {
+            return AppSuccess(
+                List<Map<String, dynamic>>.from(responseData['data']));
+          }
+          return const AppSuccess([]);
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
   Future<AppResult<dynamic>> saveFCMToken({required String userId}) async {
     try {
       final token = await AppFirebaseService.instance.getFcmToken();
@@ -227,4 +279,3 @@ class AuthRepo {
     }
   }
 }
-

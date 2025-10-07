@@ -17,6 +17,7 @@ class SingleExamHistoryModel {
   final int totalMarks;
   final List<QuestionModel> questionList;
   final int totalQuestion;
+  final bool? showResult;
 
   SingleExamHistoryModel({
     required this.id,
@@ -35,6 +36,7 @@ class SingleExamHistoryModel {
     required this.totalMarks,
     required this.questionList,
     required this.totalQuestion,
+    this.showResult,
   });
 
   factory SingleExamHistoryModel.fromJson(Map<String, dynamic> json) =>
@@ -67,6 +69,7 @@ class SingleExamHistoryModel {
                     (e) => QuestionModel.fromJson(Map<String, dynamic>.from(e)))
                 .toList()
             : [],
+        showResult: json['showResult'] as bool?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -86,11 +89,12 @@ class SingleExamHistoryModel {
         "questionList": questionList.map((q) => q.toJson()).toList(),
         "totalMarks": totalMarks,
         "totalQuestion": totalQuestion,
+        "showResult": showResult,
       };
 
   @override
   String toString() {
-    return 'SingleExamHistoryModel(id: $id, answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $startTime, endTime: $endTime, examDuration: $examDuration, minusMarks: $minusMarks, studentCount: $studentCount, totalMarks: $totalMarks, totalQuestion: $totalQuestion, questionList: $questionList)';
+    return 'SingleExamHistoryModel(id: $id, answerPaper: $answerPaper, subjectName: $subjectName, teacherName: $teacherName, orgCode: $orgCode, batch: $batch, userId: $userId, questionId: $questionId, startTime: $startTime, endTime: $endTime, examDuration: $examDuration, minusMarks: $minusMarks, studentCount: $studentCount, totalMarks: $totalMarks, totalQuestion: $totalQuestion, questionList: $questionList, showResult: $showResult)';
   }
 
   bool isEmpty() {
@@ -109,7 +113,8 @@ class SingleExamHistoryModel {
         studentCount == null &&
         totalMarks == 0 &&
         totalQuestion == 0 &&
-        questionList.isEmpty;
+        questionList.isEmpty &&
+        showResult == null;
   }
 
   SingleExamHistoryModel toEmpty() {
@@ -130,6 +135,7 @@ class SingleExamHistoryModel {
       totalQuestion: 0,
       totalMarks: 0,
       questionList: [],
+      showResult: null,
     );
   }
 }

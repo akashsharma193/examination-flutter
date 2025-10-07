@@ -10,6 +10,10 @@ class AppAuthController extends GetxController {
   RxBool isUserAuthenticated = false.obs;
   RxBool isLoading = false.obs;
   RxBool isRegisterLoading = false.obs;
+  RxBool isLoadingOrgs = false.obs;
+  RxBool isLoadingBatches = false.obs;
+  RxBool showOrgDropdown = false.obs;
+  RxBool showBatchDropdown = false.obs;
 
   final AuthRepo repo = AuthRepo();
   AppLocalStorage localStorage = AppLocalStorage.instance;
@@ -23,6 +27,16 @@ class AppAuthController extends GetxController {
   final registerPassController = TextEditingController();
   final confirmPassController = TextEditingController();
   final orgCodeController = TextEditingController();
+  final orgSearchController = TextEditingController();
+  final batchSearchController = TextEditingController();
+
+  RxList<Map<String, dynamic>> organizations = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> batches = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> filteredOrganizations =
+      <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> filteredBatches = <Map<String, dynamic>>[].obs;
+  RxString selectedOrgCode = ''.obs;
+  RxString selectedBatchCode = ''.obs;
 
   @override
   void onInit() {
@@ -51,6 +65,101 @@ class AppAuthController extends GetxController {
         isUserAuthenticated.value = true;
       }
     }
+  }
+
+  Future<void> fetchOrganizations() async {
+    isLoadingOrgs.value = true;
+    try {
+      final response = await repo.getAllOrganizations();
+      switch (response) {
+        case AppSuccess():
+          if (response.value != null && response.value is List) {
+            organizations.value =
+                List<Map<String, dynamic>>.from(response.value);
+            filteredOrganizations.value =
+                List<Map<String, dynamic>>.from(response.value);
+          }
+          break;
+        case AppFailure():
+          AppSnackbarWidget.showSnackBar(
+            isSuccess: false,
+            subTitle: 'Failed to load organizations',
+          );
+          break;
+      }
+    } finally {
+      isLoadingOrgs.value = false;
+    }
+  }
+
+  Future<void> fetchBatches(String organizationName) async {
+    isLoadingBatches.value = true;
+    batches.clear();
+    filteredBatches.clear();
+    batchSearchController.clear();
+    selectedBatchCode.value = '';
+
+    try {
+      final response = await repo.getAllBatchesByOrganization(organizationName);
+      switch (response) {
+        case AppSuccess():
+          if (response.value != null && response.value is List) {
+            batches.value = List<Map<String, dynamic>>.from(response.value);
+            filteredBatches.value =
+                List<Map<String, dynamic>>.from(response.value);
+          }
+          break;
+        case AppFailure():
+          AppSnackbarWidget.showSnackBar(
+            isSuccess: false,
+            subTitle: 'Failed to load batches',
+          );
+          break;
+      }
+    } finally {
+      isLoadingBatches.value = false;
+    }
+  }
+
+  void filterOrganizations(String query) {
+    if (query.isEmpty) {
+      filteredOrganizations.value =
+          List<Map<String, dynamic>>.from(organizations);
+    } else {
+      filteredOrganizations.value = organizations.where((org) {
+        final name = org['name']?.toString().toLowerCase() ?? '';
+        final description = org['description']?.toString().toLowerCase() ?? '';
+        final searchQuery = query.toLowerCase();
+        return name.contains(searchQuery) || description.contains(searchQuery);
+      }).toList();
+    }
+  }
+
+  void filterBatches(String query) {
+    if (query.isEmpty) {
+      filteredBatches.value = List<Map<String, dynamic>>.from(batches);
+    } else {
+      filteredBatches.value = batches.where((batch) {
+        final name = batch['name']?.toString().toLowerCase() ?? '';
+        final description =
+            batch['description']?.toString().toLowerCase() ?? '';
+        final searchQuery = query.toLowerCase();
+        return name.contains(searchQuery) || description.contains(searchQuery);
+      }).toList();
+    }
+  }
+
+  void selectOrganization(Map<String, dynamic> org) {
+    selectedOrgCode.value = org['name'] ?? '';
+    orgCodeController.text = org['name'] ?? '';
+    orgSearchController.text = org['name'] ?? '';
+    fetchBatches(org['name'] ?? '');
+  }
+
+  void selectBatch(Map<String, dynamic> batch) {
+    selectedBatchCode.value = batch['name'] ?? '';
+    batchController.text = batch['name'] ?? '';
+    batchSearchController.text = batch['name'] ?? '';
   }
 
   String? validatePassword(String password) {
@@ -214,6 +323,8 @@ class AppAuthController extends GetxController {
     registerPassController.dispose();
     confirmPassController.dispose();
     orgCodeController.dispose();
+    orgSearchController.dispose();
+    batchSearchController.dispose();
     super.onClose();
   }
 }

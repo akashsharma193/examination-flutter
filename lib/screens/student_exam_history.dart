@@ -74,7 +74,76 @@ class _StudentExamHistoryState extends State<StudentExamHistory> {
     );
   }
 
+  void _showTestLiveDialog(DateTime? endTime) {
+    final formattedEndTime = endTime != null
+        ? DateFormat('dd MMM yyyy, hh:mm a').format(endTime)
+        : 'exam ends';
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.info_outline,
+                size: 48,
+                color: Color(0xFF5038ED),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Test is Live',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Currently test is live. Please check after $formattedEndTime',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF5038ED),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   void _handleExamHistoryCardTap(SingleExamHistoryModel singleItem) async {
+    if (singleItem.showResult != true) {
+      _showTestLiveDialog(singleItem.endTime);
+      return;
+    }
+
     InterstitialVideoAdManagerState? adManagerState =
         context.findAncestorStateOfType<InterstitialVideoAdManagerState>();
     adManagerState ??= InterstitialVideoAdManager.current;

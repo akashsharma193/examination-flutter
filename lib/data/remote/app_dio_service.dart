@@ -2,18 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crackitx/controllers/auth_controller.dart';
-import 'package:crackitx/controllers/home_controller.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' as getx;
 import 'package:get/state_manager.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+
+import 'package:crackitx/controllers/auth_controller.dart';
+import 'package:crackitx/controllers/home_controller.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/data/remote/network_log_interceptor.dart';
 import 'package:crackitx/services/device_service.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:get/get.dart' as getx;
 
 class AppDioService {
   static AppDioService instance = AppDioService._();
@@ -86,6 +87,7 @@ class AppDioService {
 
     if (kDebugMode) {
       _serviceDio.interceptors.add(PrettyDioLogger(
+        
           request: true, requestBody: true, responseBody: true));
     }
 
