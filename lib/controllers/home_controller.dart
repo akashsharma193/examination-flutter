@@ -426,6 +426,32 @@ class HomeController extends GetxController {
         switch (resp) {
           case AppSuccess():
             userProfile.value = resp.value;
+
+            if (resp.value.batch.isNotEmpty) {
+              final currentUser = AppLocalStorage.instance.user;
+              final updatedUser = UserModel(
+                id: currentUser.userId,
+                email: resp.value.email.isNotEmpty
+                    ? resp.value.email
+                    : currentUser.email,
+                name: resp.value.name.isNotEmpty
+                    ? resp.value.name
+                    : currentUser.name,
+                mobile: resp.value.mobile.isNotEmpty
+                    ? resp.value.mobile
+                    : currentUser.mobile,
+                password: currentUser.password,
+                userId: currentUser.userId,
+                fcmToken: currentUser.fcmToken,
+                isActive: currentUser.isActive,
+                batch: resp.value.batch,
+                orgCode: resp.value.orgCode.isNotEmpty
+                    ? resp.value.orgCode
+                    : currentUser.orgCode,
+                isAdmin: currentUser.isAdmin,
+              );
+              AppLocalStorage.instance.saveUser(updatedUser);
+            }
             break;
           case AppFailure():
             Fluttertoast.showToast(

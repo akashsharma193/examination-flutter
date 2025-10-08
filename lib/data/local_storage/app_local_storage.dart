@@ -27,6 +27,10 @@ class AppLocalStorage {
     _prefs.setString('user-data', jsonEncode(user.toJson()));
   }
 
+  void saveUser(UserModel user) {
+    _prefs.setString('user-data', jsonEncode(user.toJson()));
+  }
+
   String get userId {
     return _prefs.getString('user-id') ?? '';
   }
