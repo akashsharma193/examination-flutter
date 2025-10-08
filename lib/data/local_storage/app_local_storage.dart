@@ -22,9 +22,12 @@ class AppLocalStorage {
       return UserModel.toEmpty();
     }
   }
-  
 
   void setUserData(UserModel user) {
+    _prefs.setString('user-data', jsonEncode(user.toJson()));
+  }
+
+  void saveUser(UserModel user) {
     _prefs.setString('user-data', jsonEncode(user.toJson()));
   }
 
@@ -116,5 +119,3 @@ class AppLocalStorage {
     _prefs.clear();
   }
 }
-
-

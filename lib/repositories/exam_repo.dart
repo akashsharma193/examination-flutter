@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
+import 'package:crackitx/app_models/ranking_model.dart';
 import 'package:crackitx/app_models/upcoming_exam_model.dart'
     as upcoming_exam_model;
 import 'package:crackitx/app_models/missed_exam_model.dart';
@@ -205,6 +206,59 @@ class ExamRepo {
         case AppFailure():
           return AppFailure(
               errorMessage: response.errorMessage, code: response.code);
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
+  Future<AppResult<List<RankingModel>>> getRankings({
+    required String batchCode,
+    String? questionId,
+  }) async {
+    try {
+      final Map<String, dynamic> requestBody = {
+        'id': batchCode,
+      };
+
+      if (questionId != null && questionId.trim().isNotEmpty) {
+        requestBody['questionId'] = questionId.trim();
+      }
+
+      final response = await dioService.postDio(
+        endpoint: 'report/student/reportCard',
+        body: requestBody,
+      );
+
+      switch (response) {
+        case AppSuccess():
+          final data = response.value['data'];
+          if (data != null && data is List) {
+            final rankings = (data as List<dynamic>)
+                .map((e) => RankingModel.fromJson(e))
+                .toList();
+
+            rankings.sort((a, b) => b.marks.compareTo(a.marks));
+
+            final rankedList = <RankingModel>[];
+            for (int i = 0; i < rankings.length; i++) {
+              final ranking = rankings[i];
+              if (ranking.ranking == 0) {
+                rankedList.add(ranking.copyWith(ranking: i + 1));
+              } else {
+                rankedList.add(ranking);
+              }
+            }
+
+            return AppSuccess(rankedList);
+          } else {
+            return const AppSuccess([]);
+          }
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
       }
     } catch (e) {
       return AppResult.failure(const AppFailure());

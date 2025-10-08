@@ -1,3 +1,4 @@
+import 'package:crackitx/core/utils/app_upgrader.dart';
 import 'package:crackitx/core/utils/missed_exam_converter.dart';
 import 'package:crackitx/screens/test_result_screen.dart';
 import 'package:flutter/material.dart';
@@ -22,18 +23,22 @@ Widget homePage() {
   final isAdmin = AppLocalStorage.instance.user.isAdmin;
 
   if (AppLocalStorage.instance.user.isAdmin) {
-    return const AdminDashboard();
+    return const ForceUpdateWrapper(
+      child: AdminDashboard(),
+    );
   } else {
     if (!Get.isRegistered<HomeController>()) {
       Get.put(HomeController());
-    } else {}
-    return InterstitialVideoAdManager(
-      onAdClosed: () {
-        final controller = Get.find<HomeController>();
-        controller.showConfigBasedAcknowledgementDialog();
-      },
-      onAdFailedToLoad: () {},
-      child: const StudentHomePage(),
+    }
+    return ForceUpdateWrapper(
+      child: InterstitialVideoAdManager(
+        onAdClosed: () {
+          final controller = Get.find<HomeController>();
+          controller.showConfigBasedAcknowledgementDialog();
+        },
+        onAdFailedToLoad: () {},
+        child: const StudentHomePage(),
+      ),
     );
   }
 }

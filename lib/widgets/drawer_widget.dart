@@ -9,6 +9,7 @@ import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
 import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/screens/student_exam_history.dart';
+import 'package:crackitx/screens/ranking_screen.dart';
 import 'package:feather_icons/feather_icons.dart';
 
 class AppDrawer extends StatefulWidget {
@@ -29,6 +30,7 @@ class _AppDrawerState extends State<AppDrawer> {
 
     if (!AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Exam History'] = FeatherIcons.clock;
+      drawerItems['Ranking'] = FeatherIcons.award;
     }
     if (AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Create Exam'] = FeatherIcons.plus;
@@ -238,6 +240,9 @@ class _AppDrawerState extends State<AppDrawer> {
                               Get.to(() => StudentExamHistory(
                                     userId: user.userId,
                                   ));
+                              break;
+                            case 'Ranking':
+                              Get.to(() => const RankingScreen());
                               break;
                             case 'Log Out':
                               _showLogoutConfirmationDialog();

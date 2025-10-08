@@ -267,7 +267,33 @@ class AuthRepo {
 
       switch (response) {
         case AppSuccess():
-          return AppSuccess(UserModel.fromJson(response.value['data']));
+          final userData = UserModel.fromJson(response.value['data']);
+
+          if (userData.batch.isNotEmpty) {
+            final currentUser = AppLocalStorage.instance.user;
+            final updatedUser = UserModel(
+              id: currentUser.userId,
+              email: userData.email.isNotEmpty
+                  ? userData.email
+                  : currentUser.email,
+              mobile: userData.mobile.isNotEmpty
+                  ? userData.mobile
+                  : currentUser.mobile,
+              password: currentUser.password,
+              userId: currentUser.userId,
+              fcmToken: currentUser.fcmToken,
+              isActive: currentUser.isActive,
+              name: userData.name.isNotEmpty ? userData.name : currentUser.name,
+              batch: userData.batch,
+              orgCode: userData.orgCode.isNotEmpty
+                  ? userData.orgCode
+                  : currentUser.orgCode,
+              isAdmin: currentUser.isAdmin,
+            );
+            AppLocalStorage.instance.saveUser(updatedUser);
+          }
+
+          return AppSuccess(userData);
         case AppFailure():
           return AppFailure(
             errorMessage: response.errorMessage,
