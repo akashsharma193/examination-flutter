@@ -50,9 +50,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   bool _isAppVisible = true;
   DateTime? _lastActivityTime;
   DateTime? _lastVisibilityChange;
-  int _backgroundDetectionCount = 0;
   bool _hasShownWarningForCurrentBackground = false;
   bool _isSubmitDialogShown = false;
+  bool _isDrawerOpen = false;
 
   @override
   void onInit() {
@@ -75,6 +75,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     ever(currentQuestionIndex, (int newIndex) {
       _onQuestionChanged(newIndex);
     });
+  }
+
+  void setDrawerState(bool isOpen) {
+    _isDrawerOpen = isOpen;
+    if (isOpen) {
+      _lastActivityTime = DateTime.now();
+    }
   }
 
   void _initializeMonitoring() {
@@ -107,7 +114,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleLifecycleMessage(String? message) {
-    if (!isExamActive) return;
+    if (!isExamActive || _isDrawerOpen) return;
 
     switch (message) {
       case 'AppLifecycleState.paused':
@@ -123,12 +130,12 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _checkAppFocus() {
-    if (!isExamActive) return;
+    if (!isExamActive || _isDrawerOpen) return;
 
     final now = DateTime.now();
 
     if (_lastActivityTime != null &&
-        now.difference(_lastActivityTime!).inMilliseconds > 1000 &&
+        now.difference(_lastActivityTime!).inMilliseconds > 1500 &&
         _isAppVisible) {
       _isAppVisible = false;
       _lastVisibilityChange = now;
@@ -151,10 +158,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleAppLostFocus() {
-    if (!isExamActive || _dialogShown || _isSubmitDialogShown) return;
+    if (!isExamActive || _dialogShown || _isSubmitDialogShown || _isDrawerOpen)
+      return;
 
     debugPrint('App lost focus detected');
-    _backgroundDetectionCount++;
 
     if (!_hasShownWarningForCurrentBackground) {
       _hasShownWarningForCurrentBackground = true;
@@ -187,7 +194,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         if (!_dialogShown &&
             !_isSubmitDialogShown &&
             isExamActive &&
-            _hasShownWarningForCurrentBackground) {
+            _hasShownWarningForCurrentBackground &&
+            !_isDrawerOpen) {
           showBackgroundWarning();
         }
       });
@@ -200,7 +208,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     debugPrint('App gained focus');
     _hasShownWarningForCurrentBackground = false;
 
-    if (isTimerPaused && !_dialogShown && !_isSubmitDialogShown) {
+    if (isTimerPaused &&
+        !_dialogShown &&
+        !_isSubmitDialogShown &&
+        !_isDrawerOpen) {
       resumeQuestionTimer();
     }
   }
@@ -274,24 +285,25 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void scrollToCurrentIndex() {
-    const itemWidth = 48.0;
-    const spacing = 8.0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (scrollController.hasClients) {
+        const double itemWidth = 48.0;
+        final double viewportWidth =
+            scrollController.position.viewportDimension;
+        final double targetOffset = currentQuestionIndex.value * itemWidth;
+        final double centeredOffset =
+            targetOffset - (viewportWidth / 2) + (itemWidth / 2);
+        final double maxScrollExtent =
+            scrollController.position.maxScrollExtent;
+        final double finalOffset = centeredOffset.clamp(0.0, maxScrollExtent);
 
-    final screenWidth = View.of(Get.context!).physicalSize.width /
-        View.of(Get.context!).devicePixelRatio;
-
-    final numberOfItemsDisplayed = screenWidth ~/ (itemWidth + spacing);
-    const fullItemWidth = itemWidth + spacing;
-
-    final section = currentQuestionIndex.value ~/ numberOfItemsDisplayed;
-
-    final position = section * numberOfItemsDisplayed * fullItemWidth;
-
-    scrollController.animateTo(
-      position,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+        scrollController.animateTo(
+          finalOffset,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -305,12 +317,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _internetSubscription?.cancel();
     SystemChannels.lifecycle.setMessageHandler(null);
+    scrollController.dispose();
     super.onClose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!isExamActive) return;
+    if (!isExamActive || _isDrawerOpen) return;
 
     debugPrint('Lifecycle state changed: $state, Last known: $_lastKnownState');
 
@@ -329,7 +342,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
         if (Platform.isAndroid) {
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (_lastKnownState == AppLifecycleState.inactive && isExamActive) {
+            if (_lastKnownState == AppLifecycleState.inactive &&
+                isExamActive &&
+                !_isDrawerOpen) {
               _handleAppLostFocus();
             }
           });
@@ -399,29 +414,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       }
     });
   }
-
-  // void submitExam() {
-  //   if (!isExamActive) return;
-
-  //   isExamActive = false;
-  //   List<QuestionModel> questionsWithTime = _prepareQuestionsWithTimeData();
-
-  //   ExamRepo().submitExam(questionsWithTime, testId).then((v) {
-  //     switch (v) {
-  //       case AppSuccess(value: bool v):
-  //         AppSnackbarWidget.showSnackBar(
-  //             isSuccess: v,
-  //             subTitle: 'Exam submitted status : ${v ? 'Success' : 'Failed'}');
-
-  //         Get.offAllNamed('/home');
-  //         break;
-  //       case AppFailure():
-  //         AppSnackbarWidget.showSnackBar(
-  //             isSuccess: false, subTitle: v.errorMessage);
-  //         goToCompletedScreen();
-  //     }
-  //   });
-  // }
 
   void submitExam() {
     if (!isExamActive) return;
@@ -605,7 +597,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showBackgroundWarning() {
-    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown || _isDrawerOpen)
+      return;
 
     _dialogShown = true;
     pauseQuestionTimer();
