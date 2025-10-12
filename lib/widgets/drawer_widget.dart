@@ -1,13 +1,10 @@
 import 'package:crackitx/controllers/home_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/core/extensions/app_string_extensions.dart';
-import 'package:crackitx/controllers/home_controller.dart';
 import 'package:crackitx/data/local_storage/app_local_storage.dart';
 import 'package:crackitx/screens/admin_screen/admin_exam_dashboard.dart';
-import 'package:crackitx/repositories/auth_repo.dart';
 import 'package:crackitx/screens/student_exam_history.dart';
 import 'package:crackitx/screens/ranking_screen.dart';
 import 'package:feather_icons/feather_icons.dart';
@@ -31,6 +28,7 @@ class _AppDrawerState extends State<AppDrawer> {
     if (!AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Exam History'] = FeatherIcons.clock;
       drawerItems['Ranking'] = FeatherIcons.award;
+      drawerItems['Feedback'] = FeatherIcons.messageSquare;
     }
     if (AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Create Exam'] = FeatherIcons.plus;
@@ -127,6 +125,167 @@ class _AppDrawerState extends State<AppDrawer> {
       ),
       barrierDismissible: false,
     );
+  }
+
+  void _showFeedbackDialog() {
+    final TextEditingController feedbackController = TextEditingController();
+    final RxBool isSubmitting = false.obs;
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    FeatherIcons.messageSquare,
+                    size: 28,
+                    color: Color(0xFF5038ED),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Submit Feedback',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'We value your feedback! Please share your thoughts with us.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: feedbackController,
+                maxLines: 5,
+                decoration: InputDecoration(
+                  hintText: 'Enter your feedback here...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        const BorderSide(color: Color(0xFF5038ED), width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        Get.back();
+                        Future.delayed(const Duration(milliseconds: 300), () {
+                          feedbackController.dispose();
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFF5038ED)),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Color(0xFF5038ED),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Obx(() => ElevatedButton(
+                          onPressed: isSubmitting.value
+                              ? null
+                              : () async {
+                                  if (feedbackController.text.trim().isEmpty) {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Please enter your feedback',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.red,
+                                      colorText: Colors.white,
+                                    );
+                                    return;
+                                  }
+
+                                  isSubmitting.value = true;
+                                  final success =
+                                      await homeController.submitFeedback(
+                                    feedbackController.text.trim(),
+                                  );
+                                  isSubmitting.value = false;
+
+                                  if (success) {
+                                    Get.back();
+                                    Future.delayed(
+                                        const Duration(milliseconds: 300), () {
+                                      feedbackController.dispose();
+                                    });
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5038ED),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: isSubmitting.value
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                )
+                              : const Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        )),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: false,
+    ).then((_) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        feedbackController.dispose();
+      });
+    });
   }
 
   @override
@@ -243,6 +402,9 @@ class _AppDrawerState extends State<AppDrawer> {
                               break;
                             case 'Ranking':
                               Get.to(() => const RankingScreen());
+                              break;
+                            case 'Feedback':
+                              _showFeedbackDialog();
                               break;
                             case 'Log Out':
                               _showLogoutConfirmationDialog();

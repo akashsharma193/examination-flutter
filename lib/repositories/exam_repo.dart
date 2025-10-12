@@ -444,6 +444,29 @@ class ExamRepo {
     }
   }
 
+  Future<AppResult<bool>> submitFeedback(String feedback) async {
+    try {
+      final response = await dioService.postDio(
+        endpoint: 'user-activity/createFeedback',
+        body: {
+          "feedback": feedback,
+        },
+      );
+
+      switch (response) {
+        case AppSuccess():
+          return const AppSuccess(true);
+        case AppFailure():
+          return AppFailure(
+            errorMessage: response.errorMessage,
+            code: response.code,
+          );
+      }
+    } catch (e) {
+      return AppResult.failure(const AppFailure());
+    }
+  }
+
   int calculateTotalExamTime(List<QuestionModel> questions) {
     return questions.fold(0, (total, question) => total + question.timeTaken);
   }
