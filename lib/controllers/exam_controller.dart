@@ -52,7 +52,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   DateTime? _lastVisibilityChange;
   bool _hasShownWarningForCurrentBackground = false;
   bool _isSubmitDialogShown = false;
-  bool _isDrawerOpen = false;
 
   @override
   void onInit() {
@@ -75,13 +74,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     ever(currentQuestionIndex, (int newIndex) {
       _onQuestionChanged(newIndex);
     });
-  }
-
-  void setDrawerState(bool isOpen) {
-    _isDrawerOpen = isOpen;
-    if (isOpen) {
-      _lastActivityTime = DateTime.now();
-    }
   }
 
   void _initializeMonitoring() {
@@ -114,7 +106,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleLifecycleMessage(String? message) {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     switch (message) {
       case 'AppLifecycleState.paused':
@@ -130,7 +122,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _checkAppFocus() {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     final now = DateTime.now();
 
@@ -158,19 +150,18 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleAppLostFocus() {
-    if (!isExamActive || _dialogShown || _isSubmitDialogShown || _isDrawerOpen)
-      return;
+    if (!isExamActive || _dialogShown || _isSubmitDialogShown) return;
 
     debugPrint('App lost focus detected');
 
     if (!_hasShownWarningForCurrentBackground) {
       _hasShownWarningForCurrentBackground = true;
       pauseQuestionTimer();
-      warningCount.value++;
 
-      debugPrint('Tab switch detected. Warning count: ${warningCount.value}');
+      debugPrint(
+          'Tab switch detected. Warning count: ${warningCount.value + 1}');
 
-      if (warningCount.value >= 3) {
+      if (warningCount.value >= 2) {
         _dialogShown = true;
         isExamActive = false;
 
@@ -190,12 +181,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         return;
       }
 
+      warningCount.value++;
+
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!_dialogShown &&
             !_isSubmitDialogShown &&
             isExamActive &&
-            _hasShownWarningForCurrentBackground &&
-            !_isDrawerOpen) {
+            _hasShownWarningForCurrentBackground) {
           showBackgroundWarning();
         }
       });
@@ -208,10 +200,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     debugPrint('App gained focus');
     _hasShownWarningForCurrentBackground = false;
 
-    if (isTimerPaused &&
-        !_dialogShown &&
-        !_isSubmitDialogShown &&
-        !_isDrawerOpen) {
+    if (isTimerPaused && !_dialogShown && !_isSubmitDialogShown) {
       resumeQuestionTimer();
     }
   }
@@ -287,15 +276,19 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void scrollToCurrentIndex() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scrollController.hasClients) {
-        const double itemWidth = 48.0;
-        final double viewportWidth =
-            scrollController.position.viewportDimension;
-        final double targetOffset = currentQuestionIndex.value * itemWidth;
-        final double centeredOffset =
-            targetOffset - (viewportWidth / 2) + (itemWidth / 2);
+        const int questionsPerRow = 7;
+        const int visibleRows = 2;
+        const int questionsPerPage = questionsPerRow * visibleRows;
+
+        final double itemHeight = 48.0;
+        final int currentIndex = currentQuestionIndex.value;
+
+        final int currentPage = currentIndex ~/ questionsPerPage;
+        final double targetOffset = currentPage * visibleRows * itemHeight;
+
         final double maxScrollExtent =
             scrollController.position.maxScrollExtent;
-        final double finalOffset = centeredOffset.clamp(0.0, maxScrollExtent);
+        final double finalOffset = targetOffset.clamp(0.0, maxScrollExtent);
 
         scrollController.animateTo(
           finalOffset,
@@ -323,7 +316,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     debugPrint('Lifecycle state changed: $state, Last known: $_lastKnownState');
 
@@ -342,9 +335,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
         if (Platform.isAndroid) {
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (_lastKnownState == AppLifecycleState.inactive &&
-                isExamActive &&
-                !_isDrawerOpen) {
+            if (_lastKnownState == AppLifecycleState.inactive && isExamActive) {
               _handleAppLostFocus();
             }
           });
@@ -597,8 +588,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showBackgroundWarning() {
-    if (_dialogShown || !isExamActive || _isSubmitDialogShown || _isDrawerOpen)
-      return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
 
     _dialogShown = true;
     pauseQuestionTimer();

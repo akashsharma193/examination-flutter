@@ -78,7 +78,6 @@ class ExamScreen extends StatelessWidget {
             ),
           ],
         ),
-        drawer: _buildExamDrawer(controller, context),
         body: Column(
           children: [
             const BannerAdWidget(),
@@ -101,23 +100,20 @@ class ExamScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(
                           left: 16.0, right: 16.0, top: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 12),
-                          _buildQuestionIndicator(controller, context),
-                          const SizedBox(height: 12),
-                          _buildQuestionHeader(
-                              controller, currentQuestion, context),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
+                      child: _buildQuestionIndicator(controller, context),
                     ),
                     Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child:
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildQuestionHeader(
+                                controller, currentQuestion, context),
+                            const SizedBox(height: 12),
                             _buildOptions(controller, currentQuestion, context),
+                          ],
+                        ),
                       ),
                     ),
                     Container(
@@ -135,239 +131,97 @@ class ExamScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildExamDrawer(ExamController controller, BuildContext context) {
-    return Drawer(
-      child: Column(
-        children: [
-          Container(
-            height: 100,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.cardBackground,
-                  AppColors.cardBackground.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                examName,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Obx(() => GridView.builder(
-                    shrinkWrap: true,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 5,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: 1,
-                    ),
-                    itemCount: controller.questionList.length,
-                    itemBuilder: (context, index) {
+  Widget _buildQuestionIndicator(
+      ExamController controller, BuildContext context) {
+    const int questionsPerRow = 7;
+    const int visibleRows = 2;
+    const int questionsPerPage = questionsPerRow * visibleRows;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: Get.height * 0.12),
+      child: SingleChildScrollView(
+        controller: controller.scrollController,
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: List.generate(
+            (controller.questionList.length / questionsPerRow).ceil(),
+            (rowIndex) {
+              int startIndex = rowIndex * questionsPerRow;
+              int endIndex = (startIndex + questionsPerRow)
+                  .clamp(0, controller.questionList.length);
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: List.generate(
+                    endIndex - startIndex,
+                    (colIndex) {
+                      int index = startIndex + colIndex;
                       final isSelected =
-                          controller.currentQuestionIndex.value == index;
+                          index == controller.currentQuestionIndex.value;
                       final isMarked =
                           controller.questionList[index]['isMarked'] ?? false;
                       final answered = (controller.questionList[index]
                                   ['userAnswer'] as String?)
                               ?.isNotEmpty ??
                           false;
-                      return GestureDetector(
-                        onTap: () {
-                          controller.currentQuestionIndex.value = index;
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isMarked
-                                ? Colors.purple
-                                : answered
-                                    ? Colors.green
-                                    : isSelected
-                                        ? AppColors.cardBackground
-                                        : Colors.grey.shade100,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: answered
-                                  ? Colors.grey.shade300
-                                  : AppColors.cardBackground,
-                              width: 2,
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                        child: InkWell(
+                          onTap: () {
+                            controller.currentQuestionIndex.value = index;
+                            controller.scrollToCurrentIndex();
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isMarked
+                                  ? Colors.purple
+                                  : answered
+                                      ? Colors.green
+                                      : isSelected
+                                          ? AppColors.cardBackground
+                                          : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                  color: answered
+                                      ? Colors.grey.shade300
+                                      : AppColors.cardBackground),
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Center(
+                            alignment: Alignment.center,
                             child: Text(
-                              '${index + 1}',
+                              "${index + 1}",
                               style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color:
+                                            isSelected || isMarked || answered
+                                                ? Colors.white
+                                                : Colors.black87,
+                                      ) ??
+                                  TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
                                     color: isSelected || isMarked || answered
                                         ? Colors.white
                                         : Colors.black87,
-                                    fontWeight: FontWeight.w600,
                                   ),
                             ),
                           ),
                         ),
                       );
                     },
-                  )),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Divider(color: AppColors.border),
-          const SizedBox(height: 10),
-          _buildLegend(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegend(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _buildLegendItem(
-            context: context,
-            color: AppColors.cardBackground,
-            label: "Current Question",
-          ),
-          const SizedBox(height: 10),
-          _buildLegendItem(
-            context: context,
-            color: Colors.green,
-            label: "Question Answered",
-          ),
-          const SizedBox(height: 10),
-          _buildLegendItem(
-            context: context,
-            color: Colors.purple,
-            label: "Question Marked",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem({
-    required BuildContext context,
-    required Color color,
-    required String label,
-    bool hasBorder = false,
-  }) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: hasBorder
-                ? Border.all(color: AppColors.cardBackground, width: 2)
-                : null,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 1,
-                blurRadius: 3,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 15),
-        Text(
-          label,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuestionIndicator(
-      ExamController controller, BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxHeight: Get.height * 0.11),
-      child: SingleChildScrollView(
-        controller: controller.scrollController,
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(controller.questionList.length, (index) {
-            final isSelected = index == controller.currentQuestionIndex.value;
-            final isMarked =
-                controller.questionList[index]['isMarked'] ?? false;
-            final answered =
-                (controller.questionList[index]['userAnswer'] as String?)
-                        ?.isNotEmpty ??
-                    false;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: InkWell(
-                onTap: () => controller.currentQuestionIndex.value = index,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isMarked
-                        ? Colors.purple
-                        : answered
-                            ? Colors.green
-                            : isSelected
-                                ? AppColors.cardBackground
-                                : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                        color: answered
-                            ? Colors.grey.shade300
-                            : AppColors.cardBackground),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "${index + 1}",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: isSelected || isMarked || answered
-                                  ? Colors.white
-                                  : Colors.black87,
-                            ) ??
-                        TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected || isMarked || answered
-                              ? Colors.white
-                              : Colors.black87,
-                        ),
                   ),
                 ),
-              ),
-            );
-          }),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -376,19 +230,14 @@ class ExamScreen extends StatelessWidget {
   Widget _buildQuestionHeader(ExamController controller,
       Map<String, dynamic> currentQuestion, BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                "Q ${controller.currentQuestionIndex.value + 1}: ${currentQuestion["question"]}",
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ) ??
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
+        Text(
+          "Q ${controller.currentQuestionIndex.value + 1}: ${currentQuestion["question"]}",
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ) ??
+              const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -421,6 +270,8 @@ class ExamScreen extends StatelessWidget {
   Widget _buildOptions(ExamController controller,
       Map<String, dynamic> currentQuestion, BuildContext context) {
     return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: 16),
       itemCount: currentQuestion['options'].length,
       separatorBuilder: (context, index) => const SizedBox(height: 4),
