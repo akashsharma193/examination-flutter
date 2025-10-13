@@ -234,6 +234,7 @@ class _AppDrawerState extends State<AppDrawer> {
                                   }
 
                                   isSubmitting.value = true;
+                                  Get.back();
                                   final success =
                                       await homeController.submitFeedback(
                                     feedbackController.text.trim(),
@@ -241,7 +242,6 @@ class _AppDrawerState extends State<AppDrawer> {
                                   isSubmitting.value = false;
 
                                   if (success) {
-                                    Get.back();
                                     Future.delayed(
                                         const Duration(milliseconds: 300), () {
                                       feedbackController.dispose();
