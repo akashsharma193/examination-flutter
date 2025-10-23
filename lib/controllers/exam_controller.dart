@@ -17,6 +17,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   final List<QuestionModel> questions;
   final String examDurationMinutes;
   final String testId;
+  var categories = <String>[].obs;
+  var selectedCategory = ''.obs;
+  var questionsByCategory = <String, List<Map<String, dynamic>>>{}.obs;
+  var currentCategoryQuestions = <Map<String, dynamic>>[].obs;
 
   final ScrollController scrollController = ScrollController();
 
@@ -62,6 +66,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     questionList.value = questions.map((e) => e.toJson()).toList();
     questionList.shuffle();
 
+    _initializeCategories();
+
     for (int i = 0; i < questionList.length; i++) {
       questionTimeSpent[i] = 0;
     }
@@ -74,6 +80,85 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     ever(currentQuestionIndex, (int newIndex) {
       _onQuestionChanged(newIndex);
     });
+  }
+
+  void _initializeCategories() {
+    Map<String, List<Map<String, dynamic>>> groups = {};
+    List<String> cats = [];
+
+    for (int i = 0; i < questionList.length; i++) {
+      final question = questionList[i];
+      final category = (question['category'] as String?) ?? 'Uncategorized';
+
+      if (!groups.containsKey(category)) {
+        groups[category] = [];
+        cats.add(category);
+      }
+
+      Map<String, dynamic> questionWithIndex =
+          Map<String, dynamic>.from(question);
+      questionWithIndex['originalIndex'] = i;
+      groups[category]!.add(questionWithIndex);
+    }
+
+    categories.value = cats;
+    questionsByCategory.value = groups;
+
+    if (cats.isNotEmpty) {
+      selectedCategory.value = cats[0];
+      currentCategoryQuestions.value = groups[cats[0]]!;
+    }
+  }
+
+  void selectCategory(String category) {
+    if (selectedCategory.value != category) {
+      selectedCategory.value = category;
+      currentCategoryQuestions.value = questionsByCategory[category] ?? [];
+      currentQuestionIndex.value = 0;
+      scrollToCurrentIndex();
+    }
+  }
+
+  void selectAnswer(String answer) {
+    if (!isExamActive) return;
+
+    final currentQuestion =
+        currentCategoryQuestions[currentQuestionIndex.value];
+    final originalIndex = currentQuestion['originalIndex'] as int;
+
+    questionList[originalIndex]["userAnswer"] = answer;
+    questionList.refresh();
+    _lastActivityTime = DateTime.now();
+  }
+
+  void clearAnswer() {
+    if (!isExamActive) return;
+
+    final currentQuestion =
+        currentCategoryQuestions[currentQuestionIndex.value];
+    final originalIndex = currentQuestion['originalIndex'] as int;
+
+    questionList[originalIndex]["userAnswer"] = '';
+    questionList.refresh();
+    _lastActivityTime = DateTime.now();
+  }
+
+  void previousQuestion() {
+    if (!isExamActive) return;
+    if (currentQuestionIndex.value > 0) {
+      currentQuestionIndex.value--;
+    }
+    _lastActivityTime = DateTime.now();
+  }
+
+  void nextQuestion() {
+    if (!isExamActive) return;
+    if (currentQuestionIndex.value < currentCategoryQuestions.length - 1) {
+      currentQuestionIndex.value++;
+    } else {
+      showExamSubumitConfirmationDialog();
+    }
+    _lastActivityTime = DateTime.now();
   }
 
   void _initializeMonitoring() {
@@ -455,37 +540,37 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         ));
   }
 
-  void selectAnswer(String answer) {
-    if (!isExamActive) return;
-    questionList[currentQuestionIndex.value]["userAnswer"] = answer;
-    questionList.refresh();
-    _lastActivityTime = DateTime.now();
-  }
+  // void selectAnswer(String answer) {
+  //   if (!isExamActive) return;
+  //   questionList[currentQuestionIndex.value]["userAnswer"] = answer;
+  //   questionList.refresh();
+  //   _lastActivityTime = DateTime.now();
+  // }
 
-  void clearAnswer() {
-    if (!isExamActive) return;
-    questionList[currentQuestionIndex.value]["userAnswer"] = '';
-    questionList.refresh();
-    _lastActivityTime = DateTime.now();
-  }
+  // void clearAnswer() {
+  //   if (!isExamActive) return;
+  //   questionList[currentQuestionIndex.value]["userAnswer"] = '';
+  //   questionList.refresh();
+  //   _lastActivityTime = DateTime.now();
+  // }
 
-  void previousQuestion() {
-    if (!isExamActive) return;
-    if (currentQuestionIndex.value > 0) {
-      currentQuestionIndex.value--;
-    }
-    _lastActivityTime = DateTime.now();
-  }
+  // void previousQuestion() {
+  //   if (!isExamActive) return;
+  //   if (currentQuestionIndex.value > 0) {
+  //     currentQuestionIndex.value--;
+  //   }
+  //   _lastActivityTime = DateTime.now();
+  // }
 
-  void nextQuestion() {
-    if (!isExamActive) return;
-    if (currentQuestionIndex.value < questionList.length - 1) {
-      currentQuestionIndex.value++;
-    } else {
-      showExamSubumitConfirmationDialog();
-    }
-    _lastActivityTime = DateTime.now();
-  }
+  // void nextQuestion() {
+  //   if (!isExamActive) return;
+  //   if (currentQuestionIndex.value < questionList.length - 1) {
+  //     currentQuestionIndex.value++;
+  //   } else {
+  //     showExamSubumitConfirmationDialog();
+  //   }
+  //   _lastActivityTime = DateTime.now();
+  // }
 
   void showExamSubumitConfirmationDialog(
       {String? message, bool isDismissable = true}) {

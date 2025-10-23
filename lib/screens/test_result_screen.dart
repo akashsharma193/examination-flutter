@@ -7,6 +7,7 @@ import 'package:crackitx/app_models/test_result_detail_model.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
@@ -81,6 +82,40 @@ class _TestResultScreenState extends State<TestResultScreen> {
     }
   }
 
+  String _getOptionIdentifier(FinalResult question, int index) {
+    if (question.optionImage != null && question.optionImage!.isNotEmpty) {
+      final hasTextOptions = question.option.any((opt) => opt.trim().isNotEmpty);
+      final hasImageOptions = question.optionImage!.any((img) => img != null && img.trim().isNotEmpty);
+
+      if (hasTextOptions && hasImageOptions) {
+        return question.option[index];
+      } else if (hasImageOptions) {
+        return (index + 1).toString();
+      }
+    }
+    return question.option[index];
+  }
+
+  bool _isCorrectAnswer(FinalResult question, int index) {
+    final optionId = _getOptionIdentifier(question, index);
+    if (question.correctAnswer == optionId) return true;
+    
+    final correctNum = int.tryParse(question.correctAnswer);
+    if (correctNum != null && correctNum == index + 1) return true;
+    
+    return false;
+  }
+
+  bool _isUserAnswer(FinalResult question, int index) {
+    final optionId = _getOptionIdentifier(question, index);
+    if (question.userAnswer == optionId) return true;
+    
+    final userNum = int.tryParse(question.userAnswer);
+    if (userNum != null && userNum == index + 1) return true;
+    
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetBuilder<TestResultDetailController>(
@@ -145,8 +180,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
     String filterText = '';
     Color filterColor = Colors.blue;
 
-    switch (currentFilter) {
-      case 'correct':
+    switch (currentFilter) {case 'correct':
         filterText = 'Showing Correct Answers Only';
         filterColor = Colors.green;
         break;
@@ -377,13 +411,8 @@ class _TestResultScreenState extends State<TestResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    width: Get.width * 0.55,
-                    child: Text(
-                      question.question,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                  Expanded(
+                    child: _buildQuestionContent(question),
                   ),
                   Text(
                     "Time: ${question.timeTaken} sec",
@@ -393,15 +422,22 @@ class _TestResultScreenState extends State<TestResultScreen> {
               ),
               const SizedBox(height: 10),
               Column(
-                children: question.option.map<Widget>((option) {
+                children: List.generate(question.option.length, (index) {
+                  final option = question.option[index];
+                  final optionImage = question.optionImage != null && index < question.optionImage!.length
+                      ? question.optionImage![index]
+                      : null;
+
+                  final isCorrect = _isCorrectAnswer(question, index);
+                  final isUserAns = _isUserAnswer(question, index);
+
                   Color optionColor = Colors.grey[200]!;
-                  if (option == question.userAnswer) {
-                    optionColor = option == question.correctAnswer
-                        ? Colors.green
-                        : Colors.red;
-                  } else if (option == question.correctAnswer) {
+                  if (isUserAns) {
+                    optionColor = isCorrect ? Colors.green : Colors.red;
+                  } else if (isCorrect) {
                     optionColor = Colors.greenAccent;
                   }
+
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(10),
@@ -410,23 +446,17 @@ class _TestResultScreenState extends State<TestResultScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          option == question.userAnswer
-                              ? (option == question.correctAnswer
-                                  ? Icons.check_circle
-                                  : Icons.cancel)
+                          isUserAns
+                              ? (isCorrect ? Icons.check_circle : Icons.cancel)
                               : Icons.circle_outlined,
-                          color: option == question.userAnswer
-                              ? Colors.white
-                              : Colors.black,
+                          color: isUserAns ? Colors.white : Colors.black,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            option,
-                            style: const TextStyle(fontSize: 14),
-                          ),
+                          child: _buildOptionContent(option, optionImage),
                         ),
                       ],
                     ),
@@ -438,5 +468,117 @@ class _TestResultScreenState extends State<TestResultScreen> {
         ),
       );
     }).toList();
+  }
+
+  Widget _buildQuestionContent(FinalResult question) {
+    final hasQuestionText = question.question.trim().isNotEmpty;
+    final hasQuestionImage = question.questionImage != null && question.questionImage!.trim().isNotEmpty;
+
+    if (hasQuestionText && hasQuestionImage) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            question.question,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: question.questionImage!,
+              fit: BoxFit.contain,
+              height: 150,
+              placeholder: (context, url) => const SizedBox(
+                height: 150,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => const SizedBox(
+                height: 150,
+                child: Center(child: Icon(Icons.error)),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (hasQuestionImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CachedNetworkImage(
+          imageUrl: question.questionImage!,
+          fit: BoxFit.contain,
+          height: 150,
+          placeholder: (context, url) => const SizedBox(
+            height: 150,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => const SizedBox(
+            height: 150,
+            child: Center(child: Icon(Icons.error)),
+          ),
+        ),
+      );
+    } else {
+      return Text(
+        question.question,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+    }
+  }
+
+  Widget _buildOptionContent(String option, String? optionImage) {
+    final hasText = option.trim().isNotEmpty;
+    final hasImage = optionImage != null && optionImage.trim().isNotEmpty;
+
+    if (hasText && hasImage) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            option,
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: CachedNetworkImage(
+              imageUrl: optionImage,
+              fit: BoxFit.contain,
+              height: 100,
+              placeholder: (context, url) => const SizedBox(
+                height: 100,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              errorWidget: (context, url, error) => const SizedBox(
+                height: 100,
+                child: Center(child: Icon(Icons.error)),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (hasImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: CachedNetworkImage(
+          imageUrl: optionImage,
+          fit: BoxFit.contain,
+          height: 100,
+          placeholder: (context, url) => const SizedBox(
+            height: 100,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          errorWidget: (context, url, error) => const SizedBox(
+            height: 100,
+            child: Center(child: Icon(Icons.error)),
+          ),
+        ),
+      );
+    } else {
+      return Text(
+        option,
+        style: const TextStyle(fontSize: 14),
+      );
+    }
   }
 }
