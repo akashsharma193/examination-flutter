@@ -562,9 +562,11 @@ class _TestResultScreenState extends State<TestResultScreen> {
 
   Widget _buildOptionContent(String option, String? optionImage) {
     final hasText = option.trim().isNotEmpty;
-    final hasImage = optionImage != null && optionImage.trim().isNotEmpty;
+    final hasValidImage = optionImage != null &&
+        optionImage.trim().isNotEmpty &&
+        optionImage.length > 50;
 
-    if (hasText && hasImage) {
+    if (hasText && hasValidImage) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -579,7 +581,7 @@ class _TestResultScreenState extends State<TestResultScreen> {
           ),
         ],
       );
-    } else if (hasImage) {
+    } else if (hasValidImage) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(6),
         child: _buildBase64Image(optionImage, 100),

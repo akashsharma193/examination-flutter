@@ -94,8 +94,8 @@ class ExamScreen extends StatelessWidget {
                   );
                 }
 
-                final currentQuestion = controller
-                    .currentCategoryQuestions[controller.currentQuestionIndex.value];
+                final currentQuestion = controller.currentCategoryQuestions[
+                    controller.currentQuestionIndex.value];
 
                 return Column(
                   children: [
@@ -150,17 +150,20 @@ class ExamScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final category = controller.categories[index];
             final isSelected = controller.selectedCategory.value == category;
-            final categoryQuestions = controller.questionsByCategory[category] ?? [];
+            final categoryQuestions =
+                controller.questionsByCategory[category] ?? [];
             final answeredCount = categoryQuestions.where((q) {
               final originalIndex = q['originalIndex'] as int;
-              final userAnswer = controller.questionList[originalIndex]['userAnswer'] as String?;
+              final userAnswer = controller.questionList[originalIndex]
+                  ['userAnswer'] as String?;
               return userAnswer?.isNotEmpty ?? false;
             }).length;
 
             return GestureDetector(
               onTap: () => controller.selectCategory(category),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   gradient: isSelected
                       ? const LinearGradient(
@@ -172,7 +175,8 @@ class ExamScreen extends StatelessWidget {
                   color: isSelected ? null : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
-                    color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                    color:
+                        isSelected ? Colors.transparent : Colors.grey.shade300,
                     width: 1.5,
                   ),
                 ),
@@ -213,7 +217,7 @@ class ExamScreen extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: Get.height * 0.12),
       child: Obx(() {
         final categoryQuestions = controller.currentCategoryQuestions;
-        
+
         return SingleChildScrollView(
           controller: controller.scrollController,
           scrollDirection: Axis.vertical,
@@ -234,11 +238,18 @@ class ExamScreen extends StatelessWidget {
                       (colIndex) {
                         int index = startIndex + colIndex;
                         final questionData = categoryQuestions[index];
-                        final originalIndex = questionData['originalIndex'] as int;
-                        
-                        final isSelected = index == controller.currentQuestionIndex.value;
-                        final isMarked = controller.questionList[originalIndex]['isMarked'] ?? false;
-                        final answered = (controller.questionList[originalIndex]['userAnswer'] as String?)?.isNotEmpty ?? false;
+                        final originalIndex =
+                            questionData['originalIndex'] as int;
+
+                        final isSelected =
+                            index == controller.currentQuestionIndex.value;
+                        final isMarked = controller.questionList[originalIndex]
+                                ['isMarked'] ??
+                            false;
+                        final answered = (controller.questionList[originalIndex]
+                                    ['userAnswer'] as String?)
+                                ?.isNotEmpty ??
+                            false;
 
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3.0),
@@ -332,12 +343,14 @@ class ExamScreen extends StatelessWidget {
             IconButton(
               onPressed: () {
                 controller.questionList[originalIndex]["isMarked"] =
-                    !(controller.questionList[originalIndex]["isMarked"] ?? false);
+                    !(controller.questionList[originalIndex]["isMarked"] ??
+                        false);
                 controller.questionList.refresh();
               },
-              icon: Icon((controller.questionList[originalIndex]["isMarked"] ?? false)
-                  ? Icons.bookmark_outline_rounded
-                  : Icons.bookmark_add_outlined),
+              icon: Icon(
+                  (controller.questionList[originalIndex]["isMarked"] ?? false)
+                      ? Icons.bookmark_outline_rounded
+                      : Icons.bookmark_add_outlined),
             ),
             TextButton(
               onPressed: controller.clearAnswer,
@@ -355,7 +368,7 @@ class ExamScreen extends StatelessWidget {
       if (base64String.contains(',')) {
         cleanBase64 = base64String.split(',').last;
       }
-      
+
       final Uint8List bytes = base64Decode(cleanBase64);
       return Image.memory(
         bytes,
@@ -382,7 +395,8 @@ class ExamScreen extends StatelessWidget {
             children: [
               const Icon(Icons.error, color: Colors.red),
               const SizedBox(height: 8),
-              Text('Error loading image', style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
+              Text('Error loading image',
+                  style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
             ],
           ),
         ),
@@ -397,11 +411,17 @@ class ExamScreen extends StatelessWidget {
     final options = originalQuestionData['options'] as List?;
     final optionsImage = originalQuestionData['optionsImage'] as List?;
 
-    if ((options == null || options.isEmpty) && (optionsImage == null || optionsImage.isEmpty)) {
+    if ((options == null || options.isEmpty) &&
+        (optionsImage == null || optionsImage.isEmpty)) {
       return const SizedBox.shrink();
     }
 
-    final itemCount = options?.length ?? optionsImage?.length ?? 0;
+    final hasTextOptions = options != null && options.isNotEmpty;
+    final hasImageOptions = optionsImage != null && optionsImage.isNotEmpty;
+
+    final itemCount = hasTextOptions
+        ? options.length
+        : (hasImageOptions ? optionsImage.length : 0);
 
     return ListView.separated(
       shrinkWrap: true,
@@ -410,18 +430,29 @@ class ExamScreen extends StatelessWidget {
       itemCount: itemCount,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
-        final option = (options != null && index < options.length) ? options[index] as String? : null;
-        final optionImage = (optionsImage != null && index < optionsImage.length)
+        final option = (hasTextOptions && index < options.length)
+            ? options[index] as String?
+            : null;
+        final optionImage = (hasImageOptions && index < optionsImage.length)
             ? optionsImage[index] as String?
             : null;
-        
-        final optionValue = option ?? (index + 1).toString();
+
+        final hasValidImage = optionImage != null &&
+            optionImage.trim().isNotEmpty &&
+            optionImage.length > 50;
+
+        final optionValue =
+            (hasTextOptions && option != null && option.isNotEmpty)
+                ? option
+                : (index + 1).toString();
+
         final userAnswer = controller.questionList[originalIndex]["userAnswer"];
         final isSelected = userAnswer == optionValue;
 
         return Card(
           elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: InkWell(
             onTap: () => controller.selectAnswer(optionValue),
             borderRadius: BorderRadius.circular(12),
@@ -430,7 +461,9 @@ class ExamScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? AppColors.cardBackground : Colors.transparent,
+                  color: isSelected
+                      ? AppColors.cardBackground
+                      : Colors.transparent,
                   width: 2,
                 ),
               ),
@@ -450,12 +483,12 @@ class ExamScreen extends StatelessWidget {
                             option,
                             style: const TextStyle(fontSize: 14),
                           ),
-                        if (optionImage != null && optionImage.isNotEmpty) ...[
+                        if (hasValidImage) ...[
                           if (option != null && option.isNotEmpty)
                             const SizedBox(height: 8),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: _buildBase64Image(optionImage, 100),
+                            child: _buildBase64Image(optionImage!, 100),
                           ),
                         ],
                       ],
@@ -476,8 +509,10 @@ class ExamScreen extends StatelessWidget {
       final isFirstQuestion = controller.currentQuestionIndex.value == 0;
       final isLastQuestionInCategory = controller.currentQuestionIndex.value ==
           controller.currentCategoryQuestions.length - 1;
-      final currentCategoryIndex = controller.categories.indexOf(controller.selectedCategory.value);
-      final isLastCategory = currentCategoryIndex == controller.categories.length - 1;
+      final currentCategoryIndex =
+          controller.categories.indexOf(controller.selectedCategory.value);
+      final isLastCategory =
+          currentCategoryIndex == controller.categories.length - 1;
       final isFirstCategory = currentCategoryIndex == 0;
 
       return Column(
@@ -491,7 +526,8 @@ class ExamScreen extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: controller.previousQuestion,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -504,7 +540,8 @@ class ExamScreen extends StatelessWidget {
                   iconAlignment: IconAlignment.end,
                   onPressed: controller.nextQuestion,
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 12),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
