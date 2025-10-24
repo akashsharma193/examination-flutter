@@ -85,11 +85,8 @@ class AppDioService {
         },
         contentType: 'application/json');
 
-    if (kDebugMode) {
-      _serviceDio.interceptors.add(PrettyDioLogger(
-        
-          request: true, requestBody: true, responseBody: true));
-    }
+    _serviceDio.interceptors.add(
+        PrettyDioLogger(request: true, requestBody: true, responseBody: true));
 
     _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
     _serviceDio.interceptors.add(NetworkLogInterceptor());

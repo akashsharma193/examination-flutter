@@ -27,14 +27,11 @@ class ExamModel {
     required this.isActive,
   });
 
-  /// Convert JSON String to `ExamModel`
   factory ExamModel.fromRawJson(String str) =>
       ExamModel.fromJson(json.decode(str));
 
-  /// Convert `ExamModel` to JSON String
   String toRawJson() => json.encode(toJson());
 
-  /// Convert JSON Map to `ExamModel` (Handles null values)
   factory ExamModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return ExamModel.toEmpty();
 
@@ -57,7 +54,6 @@ class ExamModel {
     );
   }
 
-  /// Convert `ExamModel` to JSON Map
   Map<String, dynamic> toJson() => {
         "id": id,
         "questionList": questionList.map((x) => x.toJson()).toList(),
@@ -72,7 +68,6 @@ class ExamModel {
         "isActive": isActive,
       };
 
-  /// Returns an **empty ExamModel** (Safe Default)
   factory ExamModel.toEmpty() => ExamModel(
         id: "",
         questionList: [],
@@ -87,13 +82,10 @@ class ExamModel {
         isActive: false,
       );
 
-  /// Checks if the object is empty
   bool get isEmpty => id.isEmpty && questionList.isEmpty;
 
-  /// Checks if the object is not empty
   bool get isNotEmpty => !isEmpty;
 
-  /// Debugging: Convert `ExamModel` to String
   @override
   String toString() {
     return "ExamModel(id: $id, subjectName: $subjectName, teacherName: $teacherName, isActive: $isActive)";
@@ -101,78 +93,98 @@ class ExamModel {
 }
 
 class QuestionModel {
-  final String question;
-  final List<String> options;
+  final String? question;
+  final String? questionImage;
+  final List<String>? options;
+  final List<String>? optionsImage;
   final String correctAnswer;
   final String? userAnswer;
   final String? color;
+  final String? category;
   int timeTaken;
   bool isMarked;
 
   QuestionModel({
-    required this.question,
-    required this.options,
+    this.question,
+    this.questionImage,
+    this.options,
+    this.optionsImage,
     required this.correctAnswer,
     this.userAnswer,
     this.color,
+    this.category,
     this.timeTaken = 0,
     this.isMarked = false,
   });
 
-  /// Convert JSON String to `QuestionModel`
   factory QuestionModel.fromRawJson(String str) =>
       QuestionModel.fromJson(json.decode(str));
 
-  /// Convert `QuestionModel` to JSON String
   String toRawJson() => json.encode(toJson());
 
-  /// Convert JSON Map to `QuestionModel` (Handles null values)
   factory QuestionModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return QuestionModel.toEmpty();
 
     return QuestionModel(
-      question: json["question"] ?? "",
-      options:
-          (json["options"] as List?)?.map((x) => x.toString()).toList() ?? [],
+      question: json["question"],
+      questionImage: json["questionImage"],
+      options: json["options"] != null
+          ? (json["options"] as List).map((x) => x.toString()).toList()
+          : null,
+      optionsImage: json["optionsImage"] != null
+          ? (json["optionsImage"] as List).map((x) => x.toString()).toList()
+          : null,
       correctAnswer: json["correctAnswer"] ?? "",
       userAnswer: json["userAnswer"],
       color: json["color"],
+      category: json["category"],
       timeTaken: json['timeTaken'] ?? 0,
       isMarked: json['isMarked'] ?? false,
     );
   }
 
-  /// Convert `QuestionModel` to JSON Map
   Map<String, dynamic> toJson() => {
         "question": question,
+        "questionImage": questionImage,
         "options": options,
+        "optionsImage": optionsImage,
         "correctAnswer": correctAnswer,
         "userAnswer": userAnswer,
         "color": color,
+        "category": category,
         'timeTaken': timeTaken,
         'isMarked': isMarked,
       };
 
-  /// Returns an **empty QuestionModel** (Safe Default)
   factory QuestionModel.toEmpty() => QuestionModel(
-        question: "",
-        options: [],
+        question: null,
+        questionImage: null,
+        options: null,
+        optionsImage: null,
         correctAnswer: "",
         userAnswer: null,
         color: null,
+        category: null,
         timeTaken: 0,
         isMarked: false,
       );
 
-  /// Checks if the object is empty
-  bool get isEmpty => question.isEmpty && options.isEmpty;
+  bool get isEmpty =>
+      (question?.isEmpty ?? true) &&
+      (questionImage?.isEmpty ?? true) &&
+      (options?.isEmpty ?? true);
 
-  /// Checks if the object is not empty
   bool get isNotEmpty => !isEmpty;
 
-  /// Debugging: Convert `QuestionModel` to String
+  bool get hasQuestion => question != null && question!.isNotEmpty;
+
+  bool get hasQuestionImage =>
+      questionImage != null && questionImage!.isNotEmpty;
+
+  bool get hasOptionsImage => optionsImage != null && optionsImage!.isNotEmpty;
+
   @override
   String toString() {
-    return "QuestionModel(question: $question, correctAnswer: $correctAnswer, userAnswer: $userAnswer, timeTaken: $timeTaken, isMarked: $isMarked)";
+    return "QuestionModel(question: $question, questionImage: ${questionImage?.substring(0, 20)}..., category: $category, correctAnswer: $correctAnswer, userAnswer: $userAnswer, timeTaken: $timeTaken, isMarked: $isMarked)";
   }
 }

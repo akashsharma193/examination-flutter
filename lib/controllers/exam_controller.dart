@@ -64,7 +64,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     homeController = Get.put(HomeController());
 
     questionList.value = questions.map((e) => e.toJson()).toList();
-    questionList.shuffle();
 
     _initializeCategories();
 
@@ -145,18 +144,34 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   void previousQuestion() {
     if (!isExamActive) return;
+
     if (currentQuestionIndex.value > 0) {
       currentQuestionIndex.value--;
+    } else {
+      final currentCategoryIndex = categories.indexOf(selectedCategory.value);
+      if (currentCategoryIndex > 0) {
+        final previousCategory = categories[currentCategoryIndex - 1];
+        selectCategory(previousCategory);
+        currentQuestionIndex.value = currentCategoryQuestions.length - 1;
+      }
     }
     _lastActivityTime = DateTime.now();
   }
 
   void nextQuestion() {
     if (!isExamActive) return;
+
     if (currentQuestionIndex.value < currentCategoryQuestions.length - 1) {
       currentQuestionIndex.value++;
     } else {
-      showExamSubumitConfirmationDialog();
+      final currentCategoryIndex = categories.indexOf(selectedCategory.value);
+      if (currentCategoryIndex < categories.length - 1) {
+        final nextCategory = categories[currentCategoryIndex + 1];
+        selectCategory(nextCategory);
+        currentQuestionIndex.value = 0;
+      } else {
+        showExamSubumitConfirmationDialog();
+      }
     }
     _lastActivityTime = DateTime.now();
   }
@@ -334,9 +349,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _questionTimer?.cancel();
     _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isTimerPaused && currentQuestionStartTime != null && isExamActive) {
-        int currentIndex = currentQuestionIndex.value;
-        questionTimeSpent[currentIndex] =
-            (questionTimeSpent[currentIndex] ?? 0) + 1;
+        final currentQuestion = currentCategoryQuestions[currentQuestionIndex.value];
+        final originalIndex = currentQuestion['originalIndex'] as int;
+        questionTimeSpent[originalIndex] = (questionTimeSpent[originalIndex] ?? 0) + 1;
 
         _lastActivityTime = DateTime.now();
       }
@@ -539,38 +554,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
           isAlreadySubmitted: isAlreadySubmitted,
         ));
   }
-
-  // void selectAnswer(String answer) {
-  //   if (!isExamActive) return;
-  //   questionList[currentQuestionIndex.value]["userAnswer"] = answer;
-  //   questionList.refresh();
-  //   _lastActivityTime = DateTime.now();
-  // }
-
-  // void clearAnswer() {
-  //   if (!isExamActive) return;
-  //   questionList[currentQuestionIndex.value]["userAnswer"] = '';
-  //   questionList.refresh();
-  //   _lastActivityTime = DateTime.now();
-  // }
-
-  // void previousQuestion() {
-  //   if (!isExamActive) return;
-  //   if (currentQuestionIndex.value > 0) {
-  //     currentQuestionIndex.value--;
-  //   }
-  //   _lastActivityTime = DateTime.now();
-  // }
-
-  // void nextQuestion() {
-  //   if (!isExamActive) return;
-  //   if (currentQuestionIndex.value < questionList.length - 1) {
-  //     currentQuestionIndex.value++;
-  //   } else {
-  //     showExamSubumitConfirmationDialog();
-  //   }
-  //   _lastActivityTime = DateTime.now();
-  // }
 
   void showExamSubumitConfirmationDialog(
       {String? message, bool isDismissable = true}) {

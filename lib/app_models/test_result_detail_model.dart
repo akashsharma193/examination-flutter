@@ -131,7 +131,7 @@ class FinalResult {
   String question;
   String? questionImage;
   List<String> option;
-  List<String>? optionImage;
+  List<String>? optionsImage;
   String correctAnswer;
   String userAnswer;
   bool isImage;
@@ -143,7 +143,7 @@ class FinalResult {
     required this.question,
     this.questionImage,
     required this.option,
-    this.optionImage,
+    this.optionsImage,
     required this.correctAnswer,
     required this.userAnswer,
     required this.isImage,
@@ -167,7 +167,7 @@ class FinalResult {
       question: json['question'] ?? '',
       questionImage: json['questionImage'],
       option: options,
-      optionImage: optionsImage,
+      optionsImage: optionsImage,
       correctAnswer: json['correctAnswer'] ?? '',
       userAnswer: json['userAnswer'] ?? '',
       isImage: json['isImage'] ?? false,
@@ -182,7 +182,7 @@ class FinalResult {
       'question': question,
       'questionImage': questionImage,
       'options': option,
-      'optionsImage': optionImage,
+      'optionsImage': optionsImage,
       'correctAnswer': correctAnswer,
       'userAnswer': userAnswer,
       'isImage': isImage,
@@ -194,6 +194,6 @@ class FinalResult {
 
   @override
   String toString() {
-    return 'FinalResult(question: $question, questionImage: $questionImage, option: $option, optionImage: $optionImage, correctAnswer: $correctAnswer, userAnswer: $userAnswer, isImage: $isImage, color: $color, timeTaken: $timeTaken, category: $category)';
+    return 'FinalResult(question: $question, questionImage: ${questionImage?.substring(0, 20)}..., option: $option, optionsImage: ${optionsImage != null ? "[${optionsImage!.length} images]" : "null"}, correctAnswer: $correctAnswer, userAnswer: $userAnswer, isImage: $isImage, color: $color, timeTaken: $timeTaken, category: $category)';
   }
 }
