@@ -582,6 +582,47 @@ class HomeController extends GetxController {
     });
   }
 
+  Future<bool> submitFeedback(String feedback) async {
+    if (!_isAuthenticated() || _isDisposed) return false;
+
+    try {
+      final result = await examRepo.submitFeedback(feedback);
+      
+      switch (result) {
+        case AppSuccess():
+          Get.snackbar(
+            'Success',
+            'Thank you for your feedback!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 2),
+          );
+          return true;
+        case AppFailure():
+          Get.snackbar(
+            'Error',
+            result.errorMessage ?? 'Failed to submit feedback',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 2),
+          );
+          return false;
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred while submitting feedback',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
+      return false;
+    }
+  }
+
   void _initializeActiveTimers() {
     if (_isDisposed) return;
     for (var exam in allExams) {

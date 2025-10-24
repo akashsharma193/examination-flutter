@@ -48,4 +48,3 @@ class TestResultDetailController extends GetxController {
     update();
   }
 }
-

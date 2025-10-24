@@ -139,3 +139,5 @@ class ForgotPasswordController extends GetxController {
     super.onClose();
   }
 }
+
+

@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart' as getx;
 import 'package:get/state_manager.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -85,10 +83,8 @@ class AppDioService {
         },
         contentType: 'application/json');
 
-    if (kDebugMode) {
-      _serviceDio.interceptors.add(PrettyDioLogger(
-          request: true, requestBody: true, responseBody: true));
-    }
+    _serviceDio.interceptors.add(
+        PrettyDioLogger(request: true, requestBody: true, responseBody: true));
 
     _serviceDio.interceptors.addAllIf(interceptors != null, interceptors ?? []);
     _serviceDio.interceptors.add(NetworkLogInterceptor());

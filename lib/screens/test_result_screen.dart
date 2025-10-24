@@ -7,6 +7,8 @@ import 'package:crackitx/app_models/test_result_detail_model.dart';
 import 'package:crackitx/core/constants/color_constants.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
 import 'package:crackitx/widgets/gradient_app_bar.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class TestResultScreen extends StatefulWidget {
   final SingleExamHistoryModel model;
@@ -78,6 +80,84 @@ class _TestResultScreenState extends State<TestResultScreen> {
         return 'Not Attempted';
       default:
         return 'All Questions';
+    }
+  }
+
+  String _getOptionIdentifier(FinalResult question, int index) {
+    if (question.optionsImage != null && question.optionsImage!.isNotEmpty) {
+      final hasTextOptions =
+          question.option.any((opt) => opt.trim().isNotEmpty);
+      final hasImageOptions = question.optionsImage!
+          .any((img) => img != null && img.trim().isNotEmpty);
+
+      if (hasTextOptions && hasImageOptions) {
+        return question.option[index];
+      } else if (hasImageOptions) {
+        return (index + 1).toString();
+      }
+    }
+    return question.option[index];
+  }
+
+  bool _isCorrectAnswer(FinalResult question, int index) {
+    final optionId = _getOptionIdentifier(question, index);
+    if (question.correctAnswer == optionId) return true;
+
+    final correctNum = int.tryParse(question.correctAnswer);
+    if (correctNum != null && correctNum == index + 1) return true;
+
+    return false;
+  }
+
+  bool _isUserAnswer(FinalResult question, int index) {
+    final optionId = _getOptionIdentifier(question, index);
+    if (question.userAnswer == optionId) return true;
+
+    final userNum = int.tryParse(question.userAnswer);
+    if (userNum != null && userNum == index + 1) return true;
+
+    return false;
+  }
+
+  Widget _buildBase64Image(String base64String, double height) {
+    try {
+      String cleanBase64 = base64String;
+      if (base64String.contains(',')) {
+        cleanBase64 = base64String.split(',').last;
+      }
+
+      final Uint8List bytes = base64Decode(cleanBase64);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        height: height,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: height,
+            color: Colors.grey.shade200,
+            child: const Center(
+              child: Icon(Icons.error, color: Colors.red),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      return Container(
+        height: height,
+        color: Colors.grey.shade200,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, color: Colors.red),
+              const SizedBox(height: 8),
+              Text('Error loading image',
+                  style: TextStyle(fontSize: 12, color: Colors.red.shade700)),
+            ],
+          ),
+        ),
+      );
     }
   }
 
@@ -377,13 +457,8 @@ class _TestResultScreenState extends State<TestResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  SizedBox(
-                    width: Get.width * 0.55,
-                    child: Text(
-                      question.question,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                  Expanded(
+                    child: _buildQuestionContent(question),
                   ),
                   Text(
                     "Time: ${question.timeTaken} sec",
@@ -393,50 +468,129 @@ class _TestResultScreenState extends State<TestResultScreen> {
               ),
               const SizedBox(height: 10),
               Column(
-                children: question.option.map<Widget>((option) {
-                  Color optionColor = Colors.grey[200]!;
-                  if (option == question.userAnswer) {
-                    optionColor = option == question.correctAnswer
-                        ? Colors.green
-                        : Colors.red;
-                  } else if (option == question.correctAnswer) {
-                    optionColor = Colors.greenAccent;
-                  }
-                  return Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: optionColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          option == question.userAnswer
-                              ? (option == question.correctAnswer
-                                  ? Icons.check_circle
-                                  : Icons.cancel)
-                              : Icons.circle_outlined,
-                          color: option == question.userAnswer
-                              ? Colors.white
-                              : Colors.black,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            option,
-                            style: const TextStyle(fontSize: 14),
+                children: List.generate(
+                  question.option.isNotEmpty
+                      ? question.option.length
+                      : (question.optionsImage?.length ?? 0),
+                  (index) {
+                    final option = question.option.isNotEmpty &&
+                            index < question.option.length
+                        ? question.option[index]
+                        : '';
+                    final optionImage = question.optionsImage != null &&
+                            index < question.optionsImage!.length
+                        ? question.optionsImage![index]
+                        : null;
+
+                    final isCorrect = _isCorrectAnswer(question, index);
+                    final isUserAns = _isUserAnswer(question, index);
+
+                    Color optionColor = Colors.grey[200]!;
+                    if (isUserAns) {
+                      optionColor = isCorrect ? Colors.green : Colors.red;
+                    } else if (isCorrect) {
+                      optionColor = Colors.greenAccent;
+                    }
+
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: optionColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            isUserAns
+                                ? (isCorrect
+                                    ? Icons.check_circle
+                                    : Icons.cancel)
+                                : Icons.circle_outlined,
+                            color: isUserAns ? Colors.white : Colors.black,
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildOptionContent(option, optionImage),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ).toList(),
               ),
             ],
           ),
         ),
       );
     }).toList();
+  }
+
+  Widget _buildQuestionContent(FinalResult question) {
+    final hasQuestionText = question.question.trim().isNotEmpty;
+    final hasQuestionImage = question.questionImage != null &&
+        question.questionImage!.trim().isNotEmpty;
+
+    if (hasQuestionText && hasQuestionImage) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            question.question,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: _buildBase64Image(question.questionImage!, 150),
+          ),
+        ],
+      );
+    } else if (hasQuestionImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: _buildBase64Image(question.questionImage!, 150),
+      );
+    } else {
+      return Text(
+        question.question,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      );
+    }
+  }
+
+  Widget _buildOptionContent(String option, String? optionImage) {
+    final hasText = option.trim().isNotEmpty;
+    final hasValidImage = optionImage != null &&
+        optionImage.trim().isNotEmpty &&
+        optionImage.length > 50;
+
+    if (hasText && hasValidImage) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            option,
+            style: const TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: _buildBase64Image(optionImage, 100),
+          ),
+        ],
+      );
+    } else if (hasValidImage) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: _buildBase64Image(optionImage, 100),
+      );
+    } else {
+      return Text(
+        option,
+        style: const TextStyle(fontSize: 14),
+      );
+    }
   }
 }

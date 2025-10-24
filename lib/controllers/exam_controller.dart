@@ -17,6 +17,10 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   final List<QuestionModel> questions;
   final String examDurationMinutes;
   final String testId;
+  var categories = <String>[].obs;
+  var selectedCategory = ''.obs;
+  var questionsByCategory = <String, List<Map<String, dynamic>>>{}.obs;
+  var currentCategoryQuestions = <Map<String, dynamic>>[].obs;
 
   final ScrollController scrollController = ScrollController();
 
@@ -52,7 +56,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   DateTime? _lastVisibilityChange;
   bool _hasShownWarningForCurrentBackground = false;
   bool _isSubmitDialogShown = false;
-  bool _isDrawerOpen = false;
 
   @override
   void onInit() {
@@ -61,7 +64,8 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     homeController = Get.put(HomeController());
 
     questionList.value = questions.map((e) => e.toJson()).toList();
-    questionList.shuffle();
+
+    _initializeCategories();
 
     for (int i = 0; i < questionList.length; i++) {
       questionTimeSpent[i] = 0;
@@ -77,11 +81,99 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     });
   }
 
-  void setDrawerState(bool isOpen) {
-    _isDrawerOpen = isOpen;
-    if (isOpen) {
-      _lastActivityTime = DateTime.now();
+  void _initializeCategories() {
+    Map<String, List<Map<String, dynamic>>> groups = {};
+    List<String> cats = [];
+
+    for (int i = 0; i < questionList.length; i++) {
+      final question = questionList[i];
+      final category = (question['category'] as String?) ?? 'Uncategorized';
+
+      if (!groups.containsKey(category)) {
+        groups[category] = [];
+        cats.add(category);
+      }
+
+      Map<String, dynamic> questionWithIndex =
+          Map<String, dynamic>.from(question);
+      questionWithIndex['originalIndex'] = i;
+      groups[category]!.add(questionWithIndex);
     }
+
+    categories.value = cats;
+    questionsByCategory.value = groups;
+
+    if (cats.isNotEmpty) {
+      selectedCategory.value = cats[0];
+      currentCategoryQuestions.value = groups[cats[0]]!;
+    }
+  }
+
+  void selectCategory(String category) {
+    if (selectedCategory.value != category) {
+      selectedCategory.value = category;
+      currentCategoryQuestions.value = questionsByCategory[category] ?? [];
+      currentQuestionIndex.value = 0;
+      scrollToCurrentIndex();
+    }
+  }
+
+  void selectAnswer(String answer) {
+    if (!isExamActive) return;
+
+    final currentQuestion =
+        currentCategoryQuestions[currentQuestionIndex.value];
+    final originalIndex = currentQuestion['originalIndex'] as int;
+
+    questionList[originalIndex]["userAnswer"] = answer;
+    questionList.refresh();
+    _lastActivityTime = DateTime.now();
+  }
+
+  void clearAnswer() {
+    if (!isExamActive) return;
+
+    final currentQuestion =
+        currentCategoryQuestions[currentQuestionIndex.value];
+    final originalIndex = currentQuestion['originalIndex'] as int;
+
+    questionList[originalIndex]["userAnswer"] = '';
+    questionList.refresh();
+    _lastActivityTime = DateTime.now();
+  }
+
+  void previousQuestion() {
+    if (!isExamActive) return;
+
+    if (currentQuestionIndex.value > 0) {
+      currentQuestionIndex.value--;
+    } else {
+      final currentCategoryIndex = categories.indexOf(selectedCategory.value);
+      if (currentCategoryIndex > 0) {
+        final previousCategory = categories[currentCategoryIndex - 1];
+        selectCategory(previousCategory);
+        currentQuestionIndex.value = currentCategoryQuestions.length - 1;
+      }
+    }
+    _lastActivityTime = DateTime.now();
+  }
+
+  void nextQuestion() {
+    if (!isExamActive) return;
+
+    if (currentQuestionIndex.value < currentCategoryQuestions.length - 1) {
+      currentQuestionIndex.value++;
+    } else {
+      final currentCategoryIndex = categories.indexOf(selectedCategory.value);
+      if (currentCategoryIndex < categories.length - 1) {
+        final nextCategory = categories[currentCategoryIndex + 1];
+        selectCategory(nextCategory);
+        currentQuestionIndex.value = 0;
+      } else {
+        showExamSubumitConfirmationDialog();
+      }
+    }
+    _lastActivityTime = DateTime.now();
   }
 
   void _initializeMonitoring() {
@@ -114,7 +206,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleLifecycleMessage(String? message) {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     switch (message) {
       case 'AppLifecycleState.paused':
@@ -130,7 +222,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _checkAppFocus() {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     final now = DateTime.now();
 
@@ -158,19 +250,18 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void _handleAppLostFocus() {
-    if (!isExamActive || _dialogShown || _isSubmitDialogShown || _isDrawerOpen)
-      return;
+    if (!isExamActive || _dialogShown || _isSubmitDialogShown) return;
 
     debugPrint('App lost focus detected');
 
     if (!_hasShownWarningForCurrentBackground) {
       _hasShownWarningForCurrentBackground = true;
       pauseQuestionTimer();
-      warningCount.value++;
 
-      debugPrint('Tab switch detected. Warning count: ${warningCount.value}');
+      debugPrint(
+          'Tab switch detected. Warning count: ${warningCount.value + 1}');
 
-      if (warningCount.value >= 3) {
+      if (warningCount.value >= 2) {
         _dialogShown = true;
         isExamActive = false;
 
@@ -190,12 +281,13 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         return;
       }
 
+      warningCount.value++;
+
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!_dialogShown &&
             !_isSubmitDialogShown &&
             isExamActive &&
-            _hasShownWarningForCurrentBackground &&
-            !_isDrawerOpen) {
+            _hasShownWarningForCurrentBackground) {
           showBackgroundWarning();
         }
       });
@@ -208,10 +300,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     debugPrint('App gained focus');
     _hasShownWarningForCurrentBackground = false;
 
-    if (isTimerPaused &&
-        !_dialogShown &&
-        !_isSubmitDialogShown &&
-        !_isDrawerOpen) {
+    if (isTimerPaused && !_dialogShown && !_isSubmitDialogShown) {
       resumeQuestionTimer();
     }
   }
@@ -260,9 +349,9 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _questionTimer?.cancel();
     _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isTimerPaused && currentQuestionStartTime != null && isExamActive) {
-        int currentIndex = currentQuestionIndex.value;
-        questionTimeSpent[currentIndex] =
-            (questionTimeSpent[currentIndex] ?? 0) + 1;
+        final currentQuestion = currentCategoryQuestions[currentQuestionIndex.value];
+        final originalIndex = currentQuestion['originalIndex'] as int;
+        questionTimeSpent[originalIndex] = (questionTimeSpent[originalIndex] ?? 0) + 1;
 
         _lastActivityTime = DateTime.now();
       }
@@ -287,15 +376,19 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   void scrollToCurrentIndex() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (scrollController.hasClients) {
-        const double itemWidth = 48.0;
-        final double viewportWidth =
-            scrollController.position.viewportDimension;
-        final double targetOffset = currentQuestionIndex.value * itemWidth;
-        final double centeredOffset =
-            targetOffset - (viewportWidth / 2) + (itemWidth / 2);
+        const int questionsPerRow = 7;
+        const int visibleRows = 2;
+        const int questionsPerPage = questionsPerRow * visibleRows;
+
+        final double itemHeight = 48.0;
+        final int currentIndex = currentQuestionIndex.value;
+
+        final int currentPage = currentIndex ~/ questionsPerPage;
+        final double targetOffset = currentPage * visibleRows * itemHeight;
+
         final double maxScrollExtent =
             scrollController.position.maxScrollExtent;
-        final double finalOffset = centeredOffset.clamp(0.0, maxScrollExtent);
+        final double finalOffset = targetOffset.clamp(0.0, maxScrollExtent);
 
         scrollController.animateTo(
           finalOffset,
@@ -323,7 +416,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!isExamActive || _isDrawerOpen) return;
+    if (!isExamActive) return;
 
     debugPrint('Lifecycle state changed: $state, Last known: $_lastKnownState');
 
@@ -342,9 +435,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
       case AppLifecycleState.inactive:
         if (Platform.isAndroid) {
           Future.delayed(const Duration(milliseconds: 300), () {
-            if (_lastKnownState == AppLifecycleState.inactive &&
-                isExamActive &&
-                !_isDrawerOpen) {
+            if (_lastKnownState == AppLifecycleState.inactive && isExamActive) {
               _handleAppLostFocus();
             }
           });
@@ -464,38 +555,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         ));
   }
 
-  void selectAnswer(String answer) {
-    if (!isExamActive) return;
-    questionList[currentQuestionIndex.value]["userAnswer"] = answer;
-    questionList.refresh();
-    _lastActivityTime = DateTime.now();
-  }
-
-  void clearAnswer() {
-    if (!isExamActive) return;
-    questionList[currentQuestionIndex.value]["userAnswer"] = '';
-    questionList.refresh();
-    _lastActivityTime = DateTime.now();
-  }
-
-  void previousQuestion() {
-    if (!isExamActive) return;
-    if (currentQuestionIndex.value > 0) {
-      currentQuestionIndex.value--;
-    }
-    _lastActivityTime = DateTime.now();
-  }
-
-  void nextQuestion() {
-    if (!isExamActive) return;
-    if (currentQuestionIndex.value < questionList.length - 1) {
-      currentQuestionIndex.value++;
-    } else {
-      showExamSubumitConfirmationDialog();
-    }
-    _lastActivityTime = DateTime.now();
-  }
-
   void showExamSubumitConfirmationDialog(
       {String? message, bool isDismissable = true}) {
     if (_dialogShown || !isExamActive) return;
@@ -597,8 +656,7 @@ class ExamController extends GetxController with WidgetsBindingObserver {
   }
 
   void showBackgroundWarning() {
-    if (_dialogShown || !isExamActive || _isSubmitDialogShown || _isDrawerOpen)
-      return;
+    if (_dialogShown || !isExamActive || _isSubmitDialogShown) return;
 
     _dialogShown = true;
     pauseQuestionTimer();

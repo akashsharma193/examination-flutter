@@ -129,49 +129,71 @@ class TestResultDetailModel {
 
 class FinalResult {
   String question;
+  String? questionImage;
   List<String> option;
+  List<String>? optionsImage;
   String correctAnswer;
   String userAnswer;
   bool isImage;
   String? color;
   int timeTaken;
+  String? category;
 
   FinalResult({
     required this.question,
+    this.questionImage,
     required this.option,
+    this.optionsImage,
     required this.correctAnswer,
     required this.userAnswer,
     required this.isImage,
     this.color,
     required this.timeTaken,
+    this.category,
   });
 
   factory FinalResult.fromJson(Map<String, dynamic> json) {
+    List<String> options = [];
+    if (json['options'] != null) {
+      options = List<String>.from(json['options']);
+    }
+
+    List<String>? optionsImage;
+    if (json['optionsImage'] != null) {
+      optionsImage = List<String>.from(json['optionsImage']);
+    }
+
     return FinalResult(
       question: json['question'] ?? '',
-      option: List<String>.from(json['options'] ?? []),
+      questionImage: json['questionImage'],
+      option: options,
+      optionsImage: optionsImage,
       correctAnswer: json['correctAnswer'] ?? '',
       userAnswer: json['userAnswer'] ?? '',
       isImage: json['isImage'] ?? false,
       color: json['color'],
       timeTaken: json['timeTaken'] ?? 0,
+      category: json['category'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'question': question,
+      'questionImage': questionImage,
       'options': option,
+      'optionsImage': optionsImage,
       'correctAnswer': correctAnswer,
       'userAnswer': userAnswer,
       'isImage': isImage,
       'color': color,
       'timeTaken': timeTaken,
+      'category': category,
     };
   }
 
   @override
   String toString() {
-    return 'FinalResult(question: $question, option: $option, correctAnswer: $correctAnswer, userAnswer: $userAnswer, isImage: $isImage, color: $color, timeTaken: $timeTaken)';
+    return 'FinalResult(question: $question, questionImage: ${questionImage?.substring(0, 20)}..., option: $option, optionsImage: ${optionsImage != null ? "[${optionsImage!.length} images]" : "null"}, correctAnswer: $correctAnswer, userAnswer: $userAnswer, isImage: $isImage, color: $color, timeTaken: $timeTaken, category: $category)';
   }
 }
