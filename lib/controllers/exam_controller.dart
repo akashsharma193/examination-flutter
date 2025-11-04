@@ -349,9 +349,11 @@ class ExamController extends GetxController with WidgetsBindingObserver {
     _questionTimer?.cancel();
     _questionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!isTimerPaused && currentQuestionStartTime != null && isExamActive) {
-        final currentQuestion = currentCategoryQuestions[currentQuestionIndex.value];
+        final currentQuestion =
+            currentCategoryQuestions[currentQuestionIndex.value];
         final originalIndex = currentQuestion['originalIndex'] as int;
-        questionTimeSpent[originalIndex] = (questionTimeSpent[originalIndex] ?? 0) + 1;
+        questionTimeSpent[originalIndex] =
+            (questionTimeSpent[originalIndex] ?? 0) + 1;
 
         _lastActivityTime = DateTime.now();
       }
@@ -643,15 +645,20 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
     AppDialog().show(
       title: "Alert !",
-      content: Text('$minute Minute Remaining...'),
+      content: Text(minute > 0 ? '$minute Minute Remaining...' : 'Time Up!'),
       buttonText: "OK",
       onPressed: () {
         Get.back();
         _dialogShown = false;
-        if (isExamActive) {
+        if (minute == 0) {
+          isExamActive = false;
+          goToCompletedScreen();
+        } else if (isExamActive) {
           resumeQuestionTimer();
         }
       },
+      restrictBack: minute == 0,
+      isDismissible: minute > 0,
     );
   }
 
