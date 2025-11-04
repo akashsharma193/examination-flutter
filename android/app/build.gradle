@@ -135,6 +135,12 @@ dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
     implementation 'com.google.android.gms:play-services-ads:24.6.0'
 
+    constraints {
+        implementation('net.bytebuddy:byte-buddy:1.14.11') {
+            because 'Requires Java 11 compatible version'
+        }
+    }
+
     // your other dependencies
 }
 flutter {

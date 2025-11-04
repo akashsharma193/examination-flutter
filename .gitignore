@@ -78,3 +78,6 @@ windows/flutter/ephemeral/
 
 # macOS related
 macos/Flutter/ephemeral/
+
+# FVM Version Cache
+.fvm/
