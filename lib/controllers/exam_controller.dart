@@ -256,12 +256,14 @@ class ExamController extends GetxController with WidgetsBindingObserver {
 
     if (!_hasShownWarningForCurrentBackground) {
       _hasShownWarningForCurrentBackground = true;
+
+      warningCount.value++;
+
       pauseQuestionTimer();
 
-      debugPrint(
-          'Tab switch detected. Warning count: ${warningCount.value + 1}');
+      debugPrint('Tab switch detected. Warning count: ${warningCount.value}');
 
-      if (warningCount.value >= 2) {
+      if (warningCount.value > 3) {
         _dialogShown = true;
         isExamActive = false;
 
@@ -280,8 +282,6 @@ class ExamController extends GetxController with WidgetsBindingObserver {
         );
         return;
       }
-
-      warningCount.value++;
 
       Future.delayed(const Duration(milliseconds: 500), () {
         if (!_dialogShown &&
