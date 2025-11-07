@@ -1,26 +1,12 @@
 import 'package:crackitx/app_models/missed_exam_model.dart';
 import 'package:crackitx/app_models/single_exam_history_model.dart';
-import 'package:crackitx/app_models/exam_model.dart';
 import 'package:crackitx/app_models/test_result_detail_model.dart';
 
 class MissedExamConverter {
   static SingleExamHistoryModel toSingleExamHistoryModel(
       MissedExamModel missedExam) {
-    List<QuestionModel> questionList =
-        missedExam.questionList.map((missedQuestion) {
-      return QuestionModel(
-        question: missedQuestion.question,
-        options: missedQuestion.options,
-        correctAnswer: missedQuestion.correctAnswer,
-        userAnswer: missedQuestion.userAnswer,
-        color: missedQuestion.color,
-        timeTaken: missedQuestion.timeTaken ?? 0,
-      );
-    }).toList();
-
     return SingleExamHistoryModel(
       id: missedExam.id,
-      answerPaper: null,
       subjectName: missedExam.subjectName,
       teacherName: missedExam.teacherName,
       orgCode: missedExam.orgCode,
@@ -29,13 +15,19 @@ class MissedExamConverter {
       questionId: missedExam.questionId,
       startTime: missedExam.startTime,
       endTime: missedExam.endTime,
-      examDuration: int.tryParse(missedExam.examDuration) ?? 0,
+      examDuration: int.tryParse(missedExam.examDuration),
       minusMarks: missedExam.minusMarks,
       studentCount: missedExam.studentCount,
       totalMarks: 0,
-      questionList: questionList,
-      totalQuestion: questionList.length,
+      totalQuestion: missedExam.questionList.length,
+      questionList: [],
+      showResult: true,
     );
+  }
+
+  static bool _isValidBase64(String? data) {
+    if (data == null || data.isEmpty || data.length < 50) return false;
+    return true;
   }
 
   static TestResultDetailModel toTestResultDetailModel(
@@ -44,25 +36,58 @@ class MissedExamConverter {
     int incorrectCount = 0;
     int unattemptedCount = 0;
 
-    List<FinalResult> finalResults =
-        missedExam.questionList.map((missedQuestion) {
-      if (missedQuestion.userAnswer == null ||
-          missedQuestion.userAnswer!.isEmpty) {
-        unattemptedCount++;
-      } else if (missedQuestion.userAnswer == missedQuestion.correctAnswer) {
-        correctCount++;
+    List<FinalResult> finalResults = missedExam.questionList.map((q) {
+      bool isAttempted = q.userAnswer != null && q.userAnswer!.isNotEmpty;
+      bool isCorrect = isAttempted && q.userAnswer == q.correctAnswer;
+
+      if (isAttempted) {
+        if (isCorrect) {
+          correctCount++;
+        } else {
+          incorrectCount++;
+        }
       } else {
-        incorrectCount++;
+        unattemptedCount++;
+      }
+
+      String questionText = '';
+      String? questionImageData;
+      List<String> optionsList = [];
+      List<String>? optionsImageList;
+
+      bool hasValidQuestionImage = _isValidBase64(q.questionImage);
+      bool hasValidQuestion = q.question != null && q.question!.isNotEmpty;
+
+      if (hasValidQuestionImage) {
+        questionImageData = q.questionImage;
+      } else if (hasValidQuestion) {
+        questionText = q.question!;
+      }
+
+      bool hasValidOptionsImages = q.optionsImage != null &&
+          q.optionsImage!.isNotEmpty &&
+          q.optionsImage!.any((img) => _isValidBase64(img));
+
+      bool hasValidOptions =
+          q.options.isNotEmpty && q.options.any((opt) => opt.isNotEmpty);
+
+      if (hasValidOptionsImages) {
+        optionsImageList = q.optionsImage;
+      } else if (hasValidOptions) {
+        optionsList = q.options;
       }
 
       return FinalResult(
-        question: missedQuestion.question,
-        option: missedQuestion.options,
-        correctAnswer: missedQuestion.correctAnswer,
-        userAnswer: missedQuestion.userAnswer ?? '',
-        isImage: missedQuestion.isImage,
-        color: missedQuestion.color,
-        timeTaken: missedQuestion.timeTaken ?? 0,
+        question: questionText,
+        questionImage: questionImageData,
+        option: optionsList,
+        optionsImage: optionsImageList,
+        correctAnswer: q.correctAnswer,
+        userAnswer: q.userAnswer ?? '',
+        isImage: hasValidQuestionImage || hasValidOptionsImages,
+        color: q.color,
+        timeTaken: q.timeTaken ?? 0,
+        category: q.catacategory ?? 'Uncategorized',
       );
     }).toList();
 

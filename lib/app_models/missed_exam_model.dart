@@ -90,8 +90,10 @@ class MissedExamModel {
 }
 
 class MissedQuestionModel {
-  final String question;
+  final String? question;
+  final String? questionImage;
   final List<String> options;
+  final List<String>? optionsImage;
   final String correctAnswer;
   final String? userAnswer;
   final bool isImage;
@@ -100,8 +102,10 @@ class MissedQuestionModel {
   final String? catacategory;
 
   MissedQuestionModel({
-    required this.question,
+    this.question,
+    this.questionImage,
     required this.options,
+    this.optionsImage,
     required this.correctAnswer,
     this.userAnswer,
     required this.isImage,
@@ -112,22 +116,28 @@ class MissedQuestionModel {
 
   factory MissedQuestionModel.fromJson(Map<String, dynamic> json) {
     return MissedQuestionModel(
-      question: json['question'] ?? '',
+      question: json['question'],
+      questionImage: json['questionImage'],
       options:
           json['options'] != null ? List<String>.from(json['options']) : [],
+      optionsImage: json['optionsImage'] != null
+          ? List<String>.from(json['optionsImage'])
+          : null,
       correctAnswer: json['correctAnswer'] ?? '',
       userAnswer: json['userAnswer'],
       isImage: json['isImage'] ?? false,
       color: json['color'],
       timeTaken: json['timeTaken'],
-      catacategory: json['catacategory'],
+      catacategory: json['category'] ?? json['catacategory'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'question': question,
+      'questionImage': questionImage,
       'options': options,
+      'optionsImage': optionsImage,
       'correctAnswer': correctAnswer,
       'userAnswer': userAnswer,
       'isImage': isImage,
