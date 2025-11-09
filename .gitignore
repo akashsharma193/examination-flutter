@@ -78,3 +78,5 @@ windows/flutter/ephemeral/
 
 # macOS related
 macos/Flutter/ephemeral/
+
+android/app/.cxx
