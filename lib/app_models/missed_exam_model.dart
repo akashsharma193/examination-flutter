@@ -31,21 +31,21 @@ class MissedExamModel {
 
   factory MissedExamModel.fromJson(Map<String, dynamic> json) {
     return MissedExamModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       questionList: json['questionList'] != null
           ? (json['questionList'] as List)
               .map((q) => MissedQuestionModel.fromJson(q))
               .toList()
           : [],
-      subjectName: json['subjectName'] ?? '',
-      teacherName: json['teacherName'] ?? '',
-      orgCode: json['orgCode'] ?? '',
-      batch: json['batch'] ?? '',
-      userId: json['userId'],
-      questionId: json['questionId'] ?? '',
+      subjectName: json['subjectName']?.toString() ?? '',
+      teacherName: json['teacherName']?.toString() ?? '',
+      orgCode: json['orgCode']?.toString() ?? '',
+      batch: json['batch']?.toString() ?? '',
+      userId: json['userId']?.toString(),
+      questionId: json['questionId']?.toString() ?? '',
       examDuration: json['examDuration']?.toString() ?? '0',
       minusMarks: json['minusMarks']?.toString(),
-      studentCount: json['studentCount'],
+      studentCount: json['studentCount'] is int ? json['studentCount'] : null,
       startTime: json['startTime'] != null
           ? DateTime.parse(json['startTime'])
           : DateTime.now(),
@@ -116,19 +116,22 @@ class MissedQuestionModel {
 
   factory MissedQuestionModel.fromJson(Map<String, dynamic> json) {
     return MissedQuestionModel(
-      question: json['question'],
-      questionImage: json['questionImage'],
-      options:
-          json['options'] != null ? List<String>.from(json['options']) : [],
+      question: json['question']?.toString(),
+      questionImage: json['questionImage']?.toString(),
+      options: json['options'] != null
+          ? List<String>.from(json['options'].map((e) => e?.toString() ?? ''))
+          : [],
       optionsImage: json['optionsImage'] != null
-          ? List<String>.from(json['optionsImage'])
+          ? List<String>.from(
+              json['optionsImage'].map((e) => e?.toString() ?? ''))
           : null,
-      correctAnswer: json['correctAnswer'] ?? '',
-      userAnswer: json['userAnswer'],
-      isImage: json['isImage'] ?? false,
-      color: json['color'],
-      timeTaken: json['timeTaken'],
-      catacategory: json['category'] ?? json['catacategory'],
+      correctAnswer: json['correctAnswer']?.toString() ?? '',
+      userAnswer: json['userAnswer']?.toString(),
+      isImage: json['isImage'] == true || json['isImage'] == 'true',
+      color: json['color']?.toString(),
+      timeTaken: json['timeTaken'] is int ? json['timeTaken'] : null,
+      catacategory:
+          json['category']?.toString() ?? json['catacategory']?.toString(),
     );
   }
 
