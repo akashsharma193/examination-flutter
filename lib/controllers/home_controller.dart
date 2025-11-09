@@ -587,7 +587,7 @@ class HomeController extends GetxController {
 
     try {
       final result = await examRepo.submitFeedback(feedback);
-      
+
       switch (result) {
         case AppSuccess():
           Get.snackbar(

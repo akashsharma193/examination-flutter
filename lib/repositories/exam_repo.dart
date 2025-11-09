@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:crackitx/app_models/configuration_model.dart';
 import 'package:crackitx/app_models/exam_model.dart';
@@ -133,13 +135,15 @@ class ExamRepo {
           endpoint: 'user-activity/getAllUnAttemptedTest',
           body: {"pageSize": pageSize, "pageNumber": pageNumber, "filter": {}});
 
+      log('Response from getMissedExams: ${response.toString()}');
+
       switch (response) {
         case AppSuccess():
           final data = response.value['data'];
 
           if (data != null) {
-            final pageInfo = data['page'];
             final content = data['content'];
+            final pageInfo = data['page'];
 
             int totalElements = pageInfo?['totalElements'] ?? 0;
             int totalPages = pageInfo?['totalPages'] ?? 0;
@@ -173,6 +177,7 @@ class ExamRepo {
               errorMessage: response.errorMessage, code: response.code);
       }
     } catch (e) {
+      log('Error in getMissedExams: $e');
       return AppResult.failure(const AppFailure());
     }
   }
