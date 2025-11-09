@@ -58,10 +58,12 @@ class MissedExamConverter {
       bool hasValidQuestionImage = _isValidBase64(q.questionImage);
       bool hasValidQuestion = q.question != null && q.question!.isNotEmpty;
 
+      if (hasValidQuestion) {
+        questionText = q.question!;
+      }
+
       if (hasValidQuestionImage) {
         questionImageData = q.questionImage;
-      } else if (hasValidQuestion) {
-        questionText = q.question!;
       }
 
       bool hasValidOptionsImages = q.optionsImage != null &&
@@ -71,10 +73,12 @@ class MissedExamConverter {
       bool hasValidOptions =
           q.options.isNotEmpty && q.options.any((opt) => opt.isNotEmpty);
 
+      if (hasValidOptions) {
+        optionsList = q.options;
+      }
+
       if (hasValidOptionsImages) {
         optionsImageList = q.optionsImage;
-      } else if (hasValidOptions) {
-        optionsList = q.options;
       }
 
       return FinalResult(
