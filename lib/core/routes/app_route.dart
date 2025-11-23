@@ -1,3 +1,4 @@
+import 'package:crackitx/screens/eresources_screen.dart';
 import 'package:get/route_manager.dart';
 import 'package:crackitx/core/constants/app_route_name_constants.dart';
 import 'package:crackitx/core/routes/app_bindings.dart';
@@ -47,6 +48,11 @@ class AppRoute {
           examDurationMinutes: args['time'],
         );
       },
+      binding: AppBindings(),
+    ),
+    GetPage(
+      name: AppRoutesNames.eResources,
+      page: () => const EResourcesScreen(),
       binding: AppBindings(),
     ),
   ];
