@@ -6,4 +6,5 @@ class AppRoutesNames {
   static const String userList = '/user-list-screen';
   static const String examScreen = '/exam-screen';
   static const String editUserScreen = '/edit-user-screen';
+  static const String eResources = '/e-resources';
 }

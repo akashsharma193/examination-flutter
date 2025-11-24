@@ -1,4 +1,5 @@
 import 'package:crackitx/controllers/home_controller.dart';
+import 'package:crackitx/core/constants/app_route_name_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/core/constants/textstyles_constants.dart';
@@ -28,6 +29,7 @@ class _AppDrawerState extends State<AppDrawer> {
     if (!AppLocalStorage.instance.user.isAdmin) {
       drawerItems['Exam History'] = FeatherIcons.clock;
       drawerItems['Ranking'] = FeatherIcons.award;
+      drawerItems['E-Resources'] = FeatherIcons.fileText;
       drawerItems['Feedback'] = FeatherIcons.messageSquare;
     }
     if (AppLocalStorage.instance.user.isAdmin) {
@@ -141,15 +143,15 @@ class _AppDrawerState extends State<AppDrawer> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(
+                  Icon(
                     FeatherIcons.messageSquare,
                     size: 28,
                     color: Color(0xFF5038ED),
                   ),
-                  const SizedBox(width: 12),
-                  const Text(
+                  SizedBox(width: 12),
+                  Text(
                     'Submit Feedback',
                     style: TextStyle(
                       fontSize: 20,
@@ -402,6 +404,9 @@ class _AppDrawerState extends State<AppDrawer> {
                               break;
                             case 'Ranking':
                               Get.to(() => const RankingScreen());
+                              break;
+                            case 'E-Resources':
+                              Get.toNamed(AppRoutesNames.eResources);
                               break;
                             case 'Feedback':
                               _showFeedbackDialog();
