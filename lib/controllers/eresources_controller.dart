@@ -1,11 +1,13 @@
 import 'dart:developer';
 import 'package:crackitx/app_models/eresources_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:crackitx/core/constants/app_result.dart';
 import 'package:crackitx/repositories/eresources_repo.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:open_file/open_file.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class EResourcesController extends GetxController {
   final EResourcesRepo eResourcesRepo = EResourcesRepo();
@@ -13,6 +15,8 @@ class EResourcesController extends GetxController {
   RxBool isLoading = false.obs;
   RxBool isLoadingMore = false.obs;
   RxList<EResourceModel> resources = <EResourceModel>[].obs;
+  RxList<EResourceModel> filteredResources = <EResourceModel>[].obs;
+  RxString searchQuery = ''.obs;
 
   int currentPage = 0;
   int pageSize = 10;
@@ -44,6 +48,7 @@ class EResourcesController extends GetxController {
           final data = resp.value;
           List<EResourceModel> fetchedResources = data['content'] ?? [];
           resources.value = fetchedResources;
+          filteredResources.value = fetchedResources;
 
           hasNextPage = data['hasNext'] ?? false;
           hasPreviousPage = data['hasPrevious'] ?? false;
@@ -54,12 +59,38 @@ class EResourcesController extends GetxController {
           Fluttertoast.showToast(
               msg: 'Failed to fetch resources: ${resp.errorMessage}');
           resources.value = [];
+          filteredResources.value = [];
           break;
       }
     } finally {
       isLoading.value = false;
       requestInProgress = false;
     }
+  }
+
+  void searchResources(String query) {
+    searchQuery.value = query;
+    if (query.isEmpty) {
+      filteredResources.value = resources;
+    } else {
+      filteredResources.value = resources.where((resource) {
+        final name = resource.name?.toLowerCase() ?? '';
+        final description = resource.description?.toLowerCase() ?? '';
+        final topic = resource.topic?.toLowerCase() ?? '';
+        final batch = resource.batch?.toLowerCase() ?? '';
+        final searchLower = query.toLowerCase();
+
+        return name.contains(searchLower) ||
+            description.contains(searchLower) ||
+            topic.contains(searchLower) ||
+            batch.contains(searchLower);
+      }).toList();
+    }
+  }
+
+  void clearSearch() {
+    searchQuery.value = '';
+    filteredResources.value = resources;
   }
 
   Future<void> loadMoreResources() async {
@@ -82,6 +113,11 @@ class EResourcesController extends GetxController {
 
           if (newResources.isNotEmpty) {
             resources.addAll(newResources);
+            if (searchQuery.value.isEmpty) {
+              filteredResources.addAll(newResources);
+            } else {
+              searchResources(searchQuery.value);
+            }
           }
 
           hasNextPage = data['hasNext'] ?? false;
@@ -101,8 +137,66 @@ class EResourcesController extends GetxController {
     }
   }
 
+  Future<bool> _requestStoragePermission() async {
+    if (await Permission.storage.isGranted) {
+      return true;
+    }
+
+    if (await Permission.photos.isGranted &&
+        await Permission.videos.isGranted) {
+      return true;
+    }
+
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.storage,
+      Permission.photos,
+      Permission.videos,
+    ].request();
+
+    if (statuses[Permission.storage]?.isGranted == true ||
+        (statuses[Permission.photos]?.isGranted == true &&
+            statuses[Permission.videos]?.isGranted == true)) {
+      return true;
+    }
+
+    if (statuses[Permission.storage]?.isPermanentlyDenied == true) {
+      final result = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('Storage Permission Required'),
+          content: const Text(
+            'Storage permission is required to download files. Please enable it in app settings.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Get.back(result: true);
+                openAppSettings();
+              },
+              child: const Text('Open Settings'),
+            ),
+          ],
+        ),
+      );
+      return result ?? false;
+    }
+
+    return false;
+  }
+
   Future<void> downloadResource(String resourceId) async {
     try {
+      final hasPermission = await _requestStoragePermission();
+      if (!hasPermission) {
+        Fluttertoast.showToast(
+          msg: 'Storage permission is required to download files',
+        );
+        return;
+      }
+
       Fluttertoast.showToast(msg: 'Downloading file...');
       final result = await eResourcesRepo.downloadResource(resourceId);
 
